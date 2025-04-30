@@ -1,6 +1,6 @@
 import type { SessionOptions } from "iron-session";
+import { env } from "../../env.mjs";
 import type { roleEnum } from "./enums";
-import { env } from "./env";
 
 // 8 hours in milliseconds
 const MAX_AGE = 8 * 60 * 60 * 1000;
