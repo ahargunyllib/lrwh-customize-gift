@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/shared/components/ui/button";
 import {
 	Card,
@@ -7,13 +9,23 @@ import {
 	CardTitle,
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
 import { cn } from "@/shared/lib/utils";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../../../shared/components/ui/form";
+import { useLoginForm } from "../hooks/use-login-form";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const form = useLoginForm();
+
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Card>
@@ -24,23 +36,50 @@ export function LoginForm({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form>
-						<div className="flex flex-col gap-6">
-							<div className="grid gap-3">
-								<Label htmlFor="email">Email</Label>
-								<Input id="email" type="email" placeholder="m@example.com" />
+					<Form {...form}>
+						<form onSubmit={form.onSubmitHandler}>
+							<div className="flex flex-col gap-6">
+								<FormField
+									control={form.control}
+									name="email"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel htmlFor="email">Email</FormLabel>
+											<FormControl>
+												<Input
+													id="email"
+													placeholder="Enter your email"
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="password"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel htmlFor="password">Password</FormLabel>
+											<FormControl>
+												<Input
+													id="password"
+													type="password"
+													placeholder="Enter your password"
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<Button type="submit" className="w-full">
+									Login
+								</Button>
 							</div>
-							<div className="grid gap-3">
-								<div className="flex items-center">
-									<Label htmlFor="password">Password</Label>
-								</div>
-								<Input id="password" type="password" />
-							</div>
-							<Button type="submit" className="w-full">
-								Login
-							</Button>
-						</div>
-					</form>
+						</form>
+					</Form>
 				</CardContent>
 			</Card>
 		</div>
