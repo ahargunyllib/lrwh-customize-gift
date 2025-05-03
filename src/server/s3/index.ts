@@ -41,10 +41,15 @@ export const uploadFileToS3 = async (file: File) => {
 		};
 	}
 
+	const fileUrl = new URL(
+		`${env.AWS_S3_BUCKET_NAME}/${file.name}`,
+		env.AWS_S3_URL,
+	).toString();
+
 	return {
 		success: true,
 		data: {
-			fileUrl: `${env.AWS_S3_URL}/${env.AWS_S3_BUCKET_NAME}/${file.name}`,
+			fileUrl,
 		},
 		message: "File uploaded successfully",
 	};
