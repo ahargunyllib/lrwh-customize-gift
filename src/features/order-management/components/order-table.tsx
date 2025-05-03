@@ -8,20 +8,18 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/components/ui/table";
+import type { Order } from "@/shared/types";
 import {
 	type ColumnDef,
 	flexRender,
 	getCoreRowModel,
+	getPaginationRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import { DataTablePagination } from "./order-table-pagination";
+import SearchFilter from "./search-filter";
 
-type OrderColumn = {
-	id: string;
-	order_number: string;
-	username: string;
-	image_url: string;
-	created_at: string;
-};
+type OrderColumn = Order;
 
 export const columns: ColumnDef<OrderColumn>[] = [
 	{
@@ -59,10 +57,14 @@ export function DataTable<TData, TValue>({
 		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
 	});
 
 	return (
 		<div className="rounded-md border">
+			<div className="flex items-center px-2 py-4">
+				<SearchFilter />
+			</div>
 			<Table>
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
@@ -105,6 +107,9 @@ export function DataTable<TData, TValue>({
 					)}
 				</TableBody>
 			</Table>
+			<div className="p-2 pt-3 border-t">
+				<DataTablePagination table={table} />
+			</div>
 		</div>
 	);
 }
