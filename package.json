@@ -11,6 +11,7 @@
 		"db:push": "pnpm exec drizzle-kit push"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.802.0",
 		"@hookform/resolvers": "^5.0.1",
 		"@neondatabase/serverless": "^1.0.0",
 		"@radix-ui/react-accordion": "^1.2.8",
