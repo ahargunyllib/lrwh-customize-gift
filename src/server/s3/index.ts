@@ -11,7 +11,32 @@ const s3 = new S3Client({
 	region: "ap-southeast-1",
 });
 
-export const uploadFileToS3 = async (file: File) => {
+/**
+ * Uploads a file to an S3 bucket.
+ *
+ * @param {File} file - The file to be uploaded. Must be a valid File object.
+ * @returns {Promise<{
+ *   success: boolean,
+ *   data?: { fileUrl: string },
+ *   error?: string,
+ *   message: string
+ * }>} - A promise resolving to an object indicating the result of the upload.
+ *   - On success: { success: true, data: { fileUrl: string }, message: string }
+ *   - On failure: { success: false, error: string, message: string }
+ * @throws {Error} If an unexpected error occurs during the upload process.
+ *
+ * Potential error cases:
+ * - Failure to convert the file to an ArrayBuffer.
+ * - Failure to upload the file to the S3 bucket.
+ */
+export const uploadFileToS3 = async (
+	file: File,
+): Promise<{
+	success: boolean;
+	data?: { fileUrl: string };
+	error?: string;
+	message: string;
+}> => {
 	const { data: arrayBuffer, error: bufferError } = await tryCatch(
 		file.arrayBuffer(),
 	);
