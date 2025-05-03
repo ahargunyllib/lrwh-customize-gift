@@ -6,6 +6,7 @@ export const env = createEnv({
 		SESSION_PASSWORD: z.string().min(32),
 		SESSION_SECRET: z.string().min(32),
 		SESSION_EXPIRATION_TIME: z.string().min(1),
+		DATABASE_URL: z.string().min(1),
 	},
 	client: {
 		NEXT_PUBLIC_APP_URL: z.string().min(1),
