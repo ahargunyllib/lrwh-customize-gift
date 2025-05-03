@@ -8,8 +8,7 @@
 		"start": "next start",
 		"lint": "next lint",
 		"prepare": "husky",
-		"db:push": "pnpm exec drizzle-kit push",
-		"db:seed": "node src/server/db/seed.ts"
+		"db:push": "pnpm exec drizzle-kit push"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.0.1",
