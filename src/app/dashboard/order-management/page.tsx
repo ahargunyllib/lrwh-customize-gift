@@ -20,7 +20,9 @@ function OrderContainer() {
 	const sp = useSearchParams();
 
 	const { data: res, isLoading } = useGetOrdersQuery({
-		// search: sp.get("search") || "",
+		search: sp.get("search") || "",
+		page: Number(sp.get("page")) || 1,
+		limit: Number(sp.get("limit")) || 10,
 	});
 
 	if (isLoading) return <div>Loading...</div>;
