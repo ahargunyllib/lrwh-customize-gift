@@ -5,5 +5,5 @@ export const ordersTable = pgTable("orders", {
 	orderNumber: varchar({ length: 255 }).notNull(),
 	username: varchar({ length: 255 }).notNull(),
 	imageUrl: varchar({ length: 255 }),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
