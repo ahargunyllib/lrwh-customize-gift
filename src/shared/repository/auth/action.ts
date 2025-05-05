@@ -1,5 +1,9 @@
 "use server";
 
+import { db } from "@/server/db";
+import { usersTable } from "@/server/db/schema/users";
+import { compare } from "bcrypt-ts";
+import { eq } from "drizzle-orm";
 import { encodeToken } from "../../lib/decode";
 import type { ApiResponse } from "../../types";
 import { destroySession } from "../session-manager/action";
@@ -8,20 +12,21 @@ import type { TLoginRequest, TLoginResponse } from "./dto";
 export async function login(
 	payload: TLoginRequest,
 ): Promise<ApiResponse<TLoginResponse>> {
-	const admins = [
-		{
-			user_id: "1",
-			email: "admin@gmail.com",
-			password: "password",
-			role: 1,
-		},
-	];
+	const [user] = await db
+		.select()
+		.from(usersTable)
+		.where(eq(usersTable.email, payload.email))
+		.execute();
+	if (!user) {
+		return {
+			success: false,
+			error: "Unauthorized",
+			message: "Invalid email or password",
+		};
+	}
 
-	const isAdmin = admins.find((admin) => {
-		return admin.email === payload.email && admin.password === payload.password;
-	});
-
-	if (!isAdmin) {
+	const isPasswordValid = await compare(payload.password, user.password);
+	if (!isPasswordValid) {
 		return {
 			success: false,
 			error: "Unauthorized",
@@ -30,9 +35,9 @@ export async function login(
 	}
 
 	const session = {
-		user_id: isAdmin.user_id,
-		email: isAdmin.email,
-		role: isAdmin.role,
+		user_id: user.id,
+		email: user.email,
+		role: user.role,
 	};
 
 	const access_token = await encodeToken(session);
