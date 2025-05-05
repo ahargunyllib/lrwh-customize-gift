@@ -46,6 +46,7 @@
 		"cookies-next": "^5.1.0",
 		"date-fns": "^4.1.0",
 		"embla-carousel-react": "^8.6.0",
+		"html2canvas": "^1.4.1",
 		"input-otp": "^1.4.2",
 		"iron-session": "^8.0.4",
 		"jose": "^6.0.10",
@@ -80,6 +81,5 @@
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
 			"biome check --write --no-errors-on-unmatched"
 		]
-	},
-	"packageManager": "pnpm@9.15.1"
+	}
 }
