@@ -10,6 +10,7 @@ export interface ImageElement {
 	position: Position;
 	width: number;
 	height: number;
+	draggable?: boolean;
 }
 
 export interface TextElement {
@@ -17,6 +18,7 @@ export interface TextElement {
 	type: "text";
 	content: string;
 	position: Position;
+	draggable?: boolean;
 	style: {
 		fontFamily: string;
 		fontSize: string;
