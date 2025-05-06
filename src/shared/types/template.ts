@@ -29,7 +29,18 @@ export interface TextElement {
     curveDirection?: "up" | "down";
     rotate?: number;
     centerX?: boolean;
-    maxWidth?: number|string;
+    maxWidth?: number | string;
+    backgroundColor?: string;
+    borderRadius?: number;
+    height?: number;
+    padding?: string | number;
+    paddingTop?: string | number;
+    paddingRight?: string | number;
+    paddingBottom?: string | number;
+    paddingLeft?: string | number;
+    paddingX?: string | number;
+    paddingY?: string | number;
+    paddingCenter?: boolean;
   };
 }
 

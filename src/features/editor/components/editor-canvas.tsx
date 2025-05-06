@@ -195,9 +195,8 @@ function TemplateImage({
   return (
     <div
       ref={dropZoneRef}
-      className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${
-        isDragOver ? "ring-2 ring-green-500" : ""
-      }`}
+      className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${isDragOver ? "ring-2 ring-green-500" : ""
+        }`}
       style={{
         left: image.position.x,
         top: image.position.y,
@@ -253,40 +252,60 @@ function TemplateText({
     rotate = 0,
     centerX = false,
     maxWidth,
+    height,
+    backgroundColor,
+    borderRadius,
+    padding,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
+    paddingX,
+    paddingY,
+    paddingCenter,
   } = text.style;
 
-  // Konversi fontSize ke number
   const fontSizeNum =
     typeof text.style.fontSize === "string"
       ? parseFloat(text.style.fontSize)
       : text.style.fontSize;
 
-  // Untuk curved text: hitung width dan sweepFlag
   const approxWidth = text.content.length * (fontSizeNum * 0.6);
   const sweepFlag = curveDirection === "up" ? 0 : 1;
 
-  // Wrapper style
+  const computedPadding: React.CSSProperties = {
+    padding,
+    paddingTop: paddingTop ?? paddingY,
+    paddingBottom: paddingBottom ?? paddingY,
+    paddingLeft: paddingLeft ?? paddingX,
+    paddingRight: paddingRight ?? paddingX,
+  };
+
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
-    top: text.position.y, // baseline arc akan tepat di sini
-    overflow: "visible",
+    top: text.position.y,
     transform: `rotate(${rotate}deg)`,
     transformOrigin: "center center",
-    ...(centerX
+    ...(centerX || paddingCenter
       ? { left: 0, right: 0, textAlign: "center" as const }
       : { left: text.position.x }),
   };
 
-  // Shared style untuk inner SVG/div
-  const childCommonStyle: React.CSSProperties = {
-    display: centerX ? "inline-block" : undefined,
-    ...(maxWidth
-      ? {
-          maxWidth,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "break-word",
-        }
-      : {}),
+  const contentWrapperStyle: React.CSSProperties = {
+    display: "inline-block",
+    fontFamily: text.style.fontFamily,
+    fontSize: fontSizeNum,
+    fontWeight: text.style.fontWeight,
+    color: text.style.color,
+    backgroundColor,
+    borderRadius,
+    height,
+    maxWidth: maxWidth ?? undefined,
+    lineHeight: text.style.lineHeight,
+    textAlign: text.style.textAlign as any,
+    whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+    ...computedPadding,
   };
 
   return (
@@ -310,65 +329,47 @@ function TemplateText({
           onKeyDown={onInputKeyDown}
           autoFocus
           className="min-w-[200px]"
-          style={{
-            fontFamily: text.style.fontFamily,
-            fontSize: fontSizeNum,
-            fontWeight: text.style.fontWeight,
-            color: text.style.color,
-            maxWidth: maxWidth ?? undefined,
-          }}
+          style={contentWrapperStyle}
         />
-      ) : curved ? (
-        <svg
-          width={approxWidth + 2}
-          height={curveRadius + fontSizeNum}
-          viewBox={`0 -${curveRadius} ${approxWidth + 2} ${
-            curveRadius + fontSizeNum
-          }`}
-          style={{ ...childCommonStyle, overflow: "visible" }}
-        >
-          <defs>
-            <path
-              id={`curve-path-${text.id}`}
-              d={`
-                M 0,0
-                A ${curveRadius},${curveRadius} 0 0,${sweepFlag}
-                  ${approxWidth},0
-              `}
-            />
-          </defs>
-          <text
-            fontFamily={text.style.fontFamily}
-            fontSize={fontSizeNum}
-            fontWeight={text.style.fontWeight}
-            fill={text.style.color}
-          >
-            <textPath
-              href={`#curve-path-${text.id}`}
-              startOffset="50%"
-              textAnchor="middle"
-            >
-              {text.content}
-            </textPath>
-          </text>
-        </svg>
       ) : (
-        <div
-          style={{
-            ...childCommonStyle,
-            fontFamily: text.style.fontFamily,
-            fontSize: fontSizeNum,
-            fontWeight: text.style.fontWeight,
-            color: text.style.color,
-            textAlign: text.style.textAlign as any,
-            lineHeight: text.style.lineHeight,
-          }}
-        >
-          {text.content}
+        <div style={contentWrapperStyle}>
+          {curved ? (
+            <svg
+              width={approxWidth + 2}
+              height={curveRadius + fontSizeNum}
+              viewBox={`0 -${curveRadius} ${approxWidth + 2} ${curveRadius + fontSizeNum
+                }`}
+              style={{ overflow: "visible" }}
+            >
+              <defs>
+                <path
+                  id={`curve-path-${text.id}`}
+                  d={`M 0,0 A ${curveRadius},${curveRadius} 0 0,${sweepFlag} ${approxWidth},0`}
+                />
+              </defs>
+              <text
+                fontFamily={text.style.fontFamily}
+                fontSize={fontSizeNum}
+                fontWeight={text.style.fontWeight}
+                fill={text.style.color}
+              >
+                <textPath
+                  href={`#curve-path-${text.id}`}
+                  startOffset="50%"
+                  textAnchor="middle"
+                >
+                  {text.content}
+                </textPath>
+              </text>
+            </svg>
+          ) : (
+            text.content
+          )}
         </div>
       )}
     </div>
   );
 }
+  
 
 export default EditorCanvas;
