@@ -263,6 +263,7 @@ function TemplateText({
     paddingX,
     paddingY,
     paddingCenter,
+    letterSpacing, 
   } = text.style;
 
   const fontSizeNum =
@@ -305,6 +306,7 @@ function TemplateText({
     textAlign: text.style.textAlign as any,
     whiteSpace: "pre-wrap",
     overflowWrap: "break-word",
+    letterSpacing,
     ...computedPadding,
   };
 
@@ -352,6 +354,7 @@ function TemplateText({
                 fontSize={fontSizeNum}
                 fontWeight={text.style.fontWeight}
                 fill={text.style.color}
+                style={{ letterSpacing }}
               >
                 <textPath
                   href={`#curve-path-${text.id}`}
@@ -370,6 +373,6 @@ function TemplateText({
     </div>
   );
 }
-  
+
 
 export default EditorCanvas;
