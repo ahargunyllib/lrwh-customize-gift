@@ -1,13 +1,17 @@
 "use client";
-import { Input } from "@/shared/components/ui/input";
+import { forwardRef, useEffect, useState } from "react";
+import type React from "react";
+
+import { Button } from "@/shared/components/ui/button";
 import type {
 	ImageElement,
 	Position,
 	TemplateData,
-	TextElement,
 } from "@/shared/types/template";
-import type React from "react";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useResizeImage } from "../hooks/use-resize-image";
+import TemplateImage from "./template-elements/template-image";
+import TemplateText from "./template-elements/template-text";
 
 interface EditorCanvasProps {
 	template: TemplateData;
@@ -15,11 +19,52 @@ interface EditorCanvasProps {
 	setActiveElement: (id: string | null) => void;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 	scale: number;
+	isCustomizing?: boolean;
+	initialTemplate?: TemplateData;
 }
 
 const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
-	({ template, activeElement, setActiveElement, setTemplate, scale }, ref) => {
+	(
+		{
+			template,
+			activeElement,
+			setActiveElement,
+			setTemplate,
+			scale,
+			isCustomizing = false,
+			initialTemplate,
+		},
+		ref,
+	) => {
 		const [editingTextId, setEditingTextId] = useState<string | null>(null);
+
+		const { resizingImageId, setResizingImageId, handleResizeStart } =
+			useResizeImage({ setTemplate, scale });
+
+		// Initialize with blank template or provided template
+		useEffect(() => {
+			if (initialTemplate && isCustomizing) {
+				setTemplate(initialTemplate);
+			} else if (isCustomizing) {
+				// Create a blank template
+				const blankTemplate: TemplateData = {
+					id: uuidv4(),
+					name: "Custom Template",
+					width: template.width,
+					height: template.height,
+					backgroundColor: "#ffffff",
+					images: [],
+					texts: [],
+				};
+				setTemplate(blankTemplate);
+			}
+		}, [
+			initialTemplate,
+			isCustomizing,
+			setTemplate,
+			template.width,
+			template.height,
+		]);
 
 		// Listen for imageReplace events
 		useEffect(() => {
@@ -40,10 +85,45 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 
 		const handleCanvasDrop = (e: React.DragEvent) => {
 			e.preventDefault();
+
+			// If customizing, allow dropping new images onto the canvas
+			if (isCustomizing && e.dataTransfer.files && e.dataTransfer.files[0]) {
+				const file = e.dataTransfer.files[0];
+				if (file.type.startsWith("image/")) {
+					const reader = new FileReader();
+					reader.onload = (ev) => {
+						if (ev.target?.result) {
+							const canvasRect = e.currentTarget.getBoundingClientRect();
+							const x = (e.clientX - canvasRect.left) / scale;
+							const y = (e.clientY - canvasRect.top) / scale;
+
+							const newImage: ImageElement = {
+								id: uuidv4(),
+								type: "image",
+								src: ev.target.result as string,
+								position: { x, y },
+								width: 200,
+								height: 200,
+								draggable: true,
+							};
+
+							setTemplate((prev) => ({
+								...prev,
+								images: [...prev.images, newImage],
+							}));
+
+							setActiveElement(newImage.id);
+						}
+					};
+					reader.readAsDataURL(file);
+				}
+			}
 		};
+
 		const handleCanvasDragOver = (e: React.DragEvent) => e.preventDefault();
 
 		const handleTextDoubleClick = (id: string) => setEditingTextId(id);
+
 		const handleTextInputChange = (
 			e: React.ChangeEvent<HTMLInputElement>,
 			id: string,
@@ -55,7 +135,9 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				),
 			}));
 		};
+
 		const handleTextInputBlur = () => setEditingTextId(null);
+
 		const handleTextInputKeyDown = (e: React.KeyboardEvent) => {
 			if (e.key === "Enter") setEditingTextId(null);
 		};
@@ -77,8 +159,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 								img.id === id ? { ...img, position } : img,
 							),
 						};
-						// biome-ignore lint/style/noUselessElse: <explanation>
-					} else if (type === "text") {
+					}
+					if (type === "text") {
 						return {
 							...prev,
 							texts: prev.texts.map((txt) =>
@@ -95,435 +177,124 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				document.removeEventListener("elementMove", handleElementMove);
 		}, [setTemplate]);
 
+		const handleDeleteElement = () => {
+			if (!activeElement) return;
+
+			setTemplate((prev) => {
+				// Check if it's an image
+				const imageIndex = prev.images.findIndex(
+					(img) => img.id === activeElement,
+				);
+				if (imageIndex >= 0) {
+					const newImages = [...prev.images];
+					newImages.splice(imageIndex, 1);
+					return { ...prev, images: newImages };
+				}
+
+				// Check if it's a text
+				const textIndex = prev.texts.findIndex(
+					(txt) => txt.id === activeElement,
+				);
+				if (textIndex >= 0) {
+					const newTexts = [...prev.texts];
+					newTexts.splice(textIndex, 1);
+					return { ...prev, texts: newTexts };
+				}
+
+				return prev;
+			});
+
+			setActiveElement(null);
+		};
+
+		// Handle keyboard events for delete
+		// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+		useEffect(() => {
+			const handleKeyDown = (e: KeyboardEvent) => {
+				if (
+					(e.key === "Delete" || e.key === "Backspace") &&
+					activeElement &&
+					!editingTextId
+				) {
+					handleDeleteElement();
+				}
+			};
+
+			document.addEventListener("keydown", handleKeyDown);
+			return () => document.removeEventListener("keydown", handleKeyDown);
+		}, [activeElement, editingTextId]);
+
 		return (
-			// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-			<div
-				ref={ref}
-				className="relative bg-white shadow-lg"
-				style={{
-					width: template.width * scale,
-					height: template.height * scale,
-					transform: `scale(${scale})`,
-					transformOrigin: "top left",
-				}}
-				onClick={() => setActiveElement(null)}
-				onDrop={handleCanvasDrop}
-				onDragOver={handleCanvasDragOver}
-				data-canvas="true"
-			>
-				{/* Background */}
+			<div className="relative">
+				{/* Canvas */}
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 				<div
-					className="absolute inset-0"
+					ref={ref}
+					className="relative bg-white shadow-lg"
 					style={{
-						backgroundColor: template.backgroundColor,
-						backgroundImage: template.backgroundImage
-							? `url(${template.backgroundImage})`
-							: undefined,
-						backgroundSize: "cover",
-						backgroundPosition: "center",
+						width: template.width * scale,
+						height: template.height * scale,
+						transform: `scale(${scale})`,
+						transformOrigin: "top left",
 					}}
-				/>
-
-				{/* Images */}
-				{template.images.map((image) => (
-					<TemplateImage
-						key={image.id}
-						image={image}
-						isActive={activeElement === image.id}
-						onClick={(e) => {
-							e.stopPropagation();
-							setActiveElement(image.id);
+					onClick={() => setActiveElement(null)}
+					onDrop={handleCanvasDrop}
+					onDragOver={handleCanvasDragOver}
+					data-canvas="true"
+				>
+					{/* Background */}
+					<div
+						className="absolute inset-0"
+						style={{
+							backgroundColor: template.backgroundColor,
+							backgroundImage: template.backgroundImage
+								? `url(${template.backgroundImage})`
+								: undefined,
+							backgroundSize: "cover",
+							backgroundPosition: "center",
 						}}
-						scale={scale}
 					/>
-				))}
 
-				{/* Texts */}
-				{template.texts.map((text) => (
-					<TemplateText
-						key={text.id}
-						text={text}
-						isActive={activeElement === text.id}
-						isEditing={editingTextId === text.id}
-						onClick={(e) => {
-							e.stopPropagation();
-							setActiveElement(text.id);
-						}}
-						onDoubleClick={() => handleTextDoubleClick(text.id)}
-						onInputChange={(e) => handleTextInputChange(e, text.id)}
-						onInputBlur={handleTextInputBlur}
-						onInputKeyDown={handleTextInputKeyDown}
-						scale={scale}
-					/>
-				))}
+					{/* Images */}
+					{template.images.map((image) => (
+						<TemplateImage
+							key={image.id}
+							image={image}
+							isActive={activeElement === image.id}
+							onClick={(e) => {
+								e.stopPropagation();
+								setActiveElement(image.id);
+							}}
+							scale={scale}
+							isCustomizing={isCustomizing}
+							onResizeStart={handleResizeStart}
+						/>
+					))}
+
+					{/* Texts */}
+					{template.texts.map((text) => (
+						<TemplateText
+							key={text.id}
+							text={text}
+							isActive={activeElement === text.id}
+							isEditing={editingTextId === text.id}
+							onClick={(e) => {
+								e.stopPropagation();
+								setActiveElement(text.id);
+							}}
+							onDoubleClick={() => handleTextDoubleClick(text.id)}
+							onInputChange={(e) => handleTextInputChange(e, text.id)}
+							onInputBlur={handleTextInputBlur}
+							onInputKeyDown={handleTextInputKeyDown}
+							scale={scale}
+						/>
+					))}
+				</div>
 			</div>
 		);
 	},
 );
 
 EditorCanvas.displayName = "EditorCanvas";
-
-// TemplateImage component (unchanged)
-function TemplateImage({
-	image,
-	isActive,
-	onClick,
-	scale = 1,
-}: {
-	image: ImageElement;
-	isActive: boolean;
-	onClick: (e: React.MouseEvent) => void;
-	scale?: number;
-}) {
-	const [isDragOver, setIsDragOver] = useState(false);
-	const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-	const dropZoneRef = useRef<HTMLDivElement>(null);
-
-	const [isDragging, setIsDragging] = useState(false);
-	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-	const clearDragTimeout = useCallback(() => {
-		if (dragTimeoutRef.current) {
-			clearTimeout(dragTimeoutRef.current);
-			dragTimeoutRef.current = null;
-		}
-	}, []);
-	useEffect(() => () => clearDragTimeout(), [clearDragTimeout]);
-
-	const handleDragEnter = (e: React.DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		clearDragTimeout();
-		if (e.dataTransfer.types.includes("Files")) setIsDragOver(true);
-	};
-	const handleDragOver = (e: React.DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		clearDragTimeout();
-	};
-	const handleDragLeave = (e: React.DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		if (
-			dropZoneRef.current &&
-			!dropZoneRef.current.contains(e.relatedTarget as Node)
-		) {
-			dragTimeoutRef.current = setTimeout(() => setIsDragOver(false), 50);
-		}
-	};
-	const handleDrop = (e: React.DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		clearDragTimeout();
-		setIsDragOver(false);
-		const file = e.dataTransfer.files[0];
-		if (file?.type.startsWith("image/")) {
-			const reader = new FileReader();
-			reader.onload = (ev) => {
-				if (ev.target?.result) {
-					document.dispatchEvent(
-						new CustomEvent("imageReplace", {
-							detail: { id: image.id, src: ev.target.result },
-						}),
-					);
-				}
-			};
-			reader.readAsDataURL(file);
-			onClick(e);
-		}
-	};
-
-	const handleMouseDown = (e: React.MouseEvent) => {
-		if (image.draggable) {
-			e.preventDefault();
-			const rect = e.currentTarget.getBoundingClientRect();
-			setDragOffset({
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			});
-			setIsDragging(true);
-		}
-	};
-
-	useEffect(() => {
-		if (!isDragging) return;
-
-		const handleMouseMove = (e: MouseEvent) => {
-			if (isDragging) {
-				const canvas = document.querySelector('[data-canvas="true"]');
-				if (canvas) {
-					const canvasRect = canvas.getBoundingClientRect();
-					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
-					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
-
-					document.dispatchEvent(
-						new CustomEvent("elementMove", {
-							detail: {
-								id: image.id,
-								type: "image",
-								position: { x: newX, y: newY },
-							},
-						}),
-					);
-				}
-			}
-		};
-
-		const handleMouseUp = () => {
-			setIsDragging(false);
-		};
-
-		document.addEventListener("mousemove", handleMouseMove);
-		document.addEventListener("mouseup", handleMouseUp);
-
-		return () => {
-			document.removeEventListener("mousemove", handleMouseMove);
-			document.removeEventListener("mouseup", handleMouseUp);
-		};
-	}, [isDragging, dragOffset, image.id, scale]);
-
-	return (
-		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-		<div
-			ref={dropZoneRef}
-			className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${isDragOver ? "ring-2 ring-green-500" : ""}`}
-			style={{
-				left: image.position.x,
-				top: image.position.y,
-				width: image.width,
-				height: image.height,
-			}}
-			onClick={onClick}
-			onDragEnter={handleDragEnter}
-			onDragOver={handleDragOver}
-			onDragLeave={handleDragLeave}
-			onDrop={handleDrop}
-			onMouseDown={handleMouseDown}
-		>
-			<img
-				src={image.src || "https://placecats.com/300/200"}
-				alt="Template element"
-				className="w-full h-full object-cover pointer-events-none"
-				draggable={false}
-			/>
-			{isDragOver && (
-				<div className="absolute inset-0 bg-green-500/20 flex items-center justify-center pointer-events-none">
-					<div className="bg-white/80 px-2 py-1 rounded text-xs font-medium">
-						Drop to replace
-					</div>
-				</div>
-			)}
-		</div>
-	);
-}
-
-function TemplateText({
-	text,
-	isActive,
-	isEditing,
-	onClick,
-	onDoubleClick,
-	onInputChange,
-	onInputBlur,
-	onInputKeyDown,
-	scale = 1,
-}: {
-	text: TextElement;
-	isActive: boolean;
-	isEditing: boolean;
-	onClick: (e: React.MouseEvent) => void;
-	onDoubleClick: () => void;
-	onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	onInputBlur: () => void;
-	onInputKeyDown: (e: React.KeyboardEvent) => void;
-	scale?: number;
-}) {
-	const {
-		curved,
-		curveRadius = 100,
-		curveDirection = "up",
-		rotate = 0,
-		centerX = false,
-		maxWidth,
-		height,
-		backgroundColor,
-		borderRadius,
-		padding,
-		paddingTop,
-		paddingRight,
-		paddingBottom,
-		paddingLeft,
-		paddingX,
-		paddingY,
-		paddingCenter,
-		letterSpacing,
-	} = text.style;
-
-	const [isDragging, setIsDragging] = useState(false);
-	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-	const fontSizeNum =
-		typeof text.style.fontSize === "string"
-			? Number.parseFloat(text.style.fontSize)
-			: text.style.fontSize;
-
-	const approxWidth = text.content.length * (fontSizeNum * 0.6);
-	const sweepFlag = curveDirection === "up" ? 0 : 1;
-
-	const computedPadding: React.CSSProperties = {
-		padding,
-		paddingTop: paddingTop ?? paddingY,
-		paddingBottom: paddingBottom ?? paddingY,
-		paddingLeft: paddingLeft ?? paddingX,
-		paddingRight: paddingRight ?? paddingX,
-	};
-
-	const wrapperStyle: React.CSSProperties = {
-		position: "absolute",
-		top: text.position.y,
-		transform: `rotate(${rotate}deg)`,
-		transformOrigin: "center center",
-		...(centerX || paddingCenter
-			? { left: 0, right: 0, textAlign: "center" as const }
-			: { left: text.position.x }),
-	};
-
-	const contentWrapperStyle: React.CSSProperties = {
-		display: "inline-block",
-		fontFamily: text.style.fontFamily,
-		fontSize: fontSizeNum,
-		fontWeight: text.style.fontWeight,
-		color: text.style.color,
-		backgroundColor,
-		borderRadius,
-		height,
-		maxWidth: maxWidth ?? undefined,
-		lineHeight: text.style.lineHeight,
-		textAlign: text.style.textAlign as React.CSSProperties["textAlign"],
-		whiteSpace: "pre-wrap",
-		overflowWrap: "break-word",
-		letterSpacing,
-		...computedPadding,
-	};
-
-	const handleMouseDown = (e: React.MouseEvent) => {
-		if (text.draggable && !isEditing) {
-			e.preventDefault();
-			const rect = e.currentTarget.getBoundingClientRect();
-			setDragOffset({
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			});
-			setIsDragging(true);
-		}
-	};
-
-	useEffect(() => {
-		if (!isDragging) return;
-
-		const handleMouseMove = (e: MouseEvent) => {
-			if (isDragging) {
-				const canvas = document.querySelector('[data-canvas="true"]');
-				if (canvas) {
-					const canvasRect = canvas.getBoundingClientRect();
-					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
-					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
-
-					document.dispatchEvent(
-						new CustomEvent("elementMove", {
-							detail: {
-								id: text.id,
-								type: "text",
-								position: { x: newX, y: newY },
-							},
-						}),
-					);
-				}
-			}
-		};
-
-		const handleMouseUp = () => {
-			setIsDragging(false);
-		};
-
-		document.addEventListener("mousemove", handleMouseMove);
-		document.addEventListener("mouseup", handleMouseUp);
-
-		return () => {
-			document.removeEventListener("mousemove", handleMouseMove);
-			document.removeEventListener("mouseup", handleMouseUp);
-		};
-	}, [isDragging, dragOffset, text.id, scale]);
-
-	return (
-		<div
-			className={isActive ? "ring-2 ring-blue-500 absolute" : "absolute"}
-			style={wrapperStyle}
-			onClick={(e) => {
-				e.stopPropagation();
-				onClick(e);
-			}}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					onClick(e as unknown as React.MouseEvent);
-				}
-			}}
-			onDoubleClick={(e) => {
-				e.stopPropagation();
-				onDoubleClick();
-			}}
-			onMouseDown={handleMouseDown}
-		>
-			{isEditing ? (
-				<Input
-					value={text.content}
-					onChange={onInputChange}
-					onBlur={onInputBlur}
-					onKeyDown={onInputKeyDown}
-					autoFocus
-					className="min-w-[200px]"
-					style={contentWrapperStyle}
-				/>
-			) : (
-				<div style={contentWrapperStyle}>
-					{curved ? (
-						// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-						<svg
-							width={approxWidth + 2}
-							height={curveRadius + fontSizeNum}
-							viewBox={`0 -${curveRadius} ${approxWidth + 2} ${curveRadius + fontSizeNum}`}
-							style={{ overflow: "visible" }}
-						>
-							<defs>
-								<path
-									id={`curve-path-${text.id}`}
-									d={`M 0,0 A ${curveRadius},${curveRadius} 0 0,${sweepFlag} ${approxWidth},0`}
-								/>
-							</defs>
-							<text
-								fontFamily={text.style.fontFamily}
-								fontSize={fontSizeNum}
-								fontWeight={text.style.fontWeight}
-								fill={text.style.color}
-								style={{ letterSpacing }}
-							>
-								<textPath
-									href={`#curve-path-${text.id}`}
-									startOffset="50%"
-									textAnchor="middle"
-								>
-									{text.content}
-								</textPath>
-							</text>
-						</svg>
-					) : (
-						text.content
-					)}
-				</div>
-			)}
-		</div>
-	);
-}
 
 export default EditorCanvas;
