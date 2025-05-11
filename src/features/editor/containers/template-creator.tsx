@@ -38,8 +38,8 @@ import {
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import EditorCanvas from "./editor-canvas";
-import ElementControls from "./template-elements/element-controls";
+import EditorCanvas from "../components/editor-canvas";
+import ElementControls from "../components/template-elements/element-controls";
 
 export default function TemplateCreator() {
 	const isMobile = useIsMobile();
@@ -61,7 +61,6 @@ export default function TemplateCreator() {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-	// Get active element properties
 	const activeImage = activeElement
 		? template.images.find((img) => img.id === activeElement)
 		: null;
@@ -77,12 +76,10 @@ export default function TemplateCreator() {
 		? activeImage.centerY
 		: activeText?.style.centerY || false;
 
-	// Toggle sidebar for mobile
 	const toggleSidebar = () => {
 		setSidebarOpen(!sidebarOpen);
 	};
 
-	// Update template when name or background color changes
 	useEffect(() => {
 		setTemplate((prev) => ({
 			...prev,
@@ -99,11 +96,10 @@ export default function TemplateCreator() {
 		}
 	};
 
-	// Update scale when window resizes
 	useEffect(() => {
 		const updateScale = () => {
 			if (canvasContainerRef.current) {
-				const containerWidth = canvasContainerRef.current.clientWidth - 32; // Subtract padding
+				const containerWidth = canvasContainerRef.current.clientWidth - 32;
 				const templateWidth = template.width;
 				const newScale = Math.min(1, containerWidth / templateWidth);
 				setScale(newScale);
@@ -115,7 +111,6 @@ export default function TemplateCreator() {
 		return () => window.removeEventListener("resize", updateScale);
 	}, [template.width]);
 
-	// Add a new image element
 	const addImageElement = () => {
 		const newImage: ImageElement = {
 			id: uuidv4(),
@@ -135,7 +130,6 @@ export default function TemplateCreator() {
 		setActiveElement(newImage.id);
 	};
 
-	// Add a new text element
 	const addTextElement = () => {
 		const newText: TextElement = {
 			id: uuidv4(),
@@ -161,7 +155,6 @@ export default function TemplateCreator() {
 		setActiveElement(newText.id);
 	};
 
-	// Handle image upload
 	const handleImageUpload = (id: string, file: File) => {
 		const reader = new FileReader();
 		reader.onload = (e) => {
@@ -177,7 +170,6 @@ export default function TemplateCreator() {
 		reader.readAsDataURL(file);
 	};
 
-	// Handle text content change
 	const handleTextChange = (id: string, value: string) => {
 		setTemplate((prev) => ({
 			...prev,
@@ -187,7 +179,6 @@ export default function TemplateCreator() {
 		}));
 	};
 
-	// Handle text style change
 	const handleTextStyleChange = (
 		id: string,
 		property: string,
@@ -203,12 +194,10 @@ export default function TemplateCreator() {
 		}));
 	};
 
-	// Delete active element
 	const deleteActiveElement = () => {
 		if (!activeElement) return;
 
 		setTemplate((prev) => {
-			// Check if it's an image
 			const imageIndex = prev.images.findIndex(
 				(img) => img.id === activeElement,
 			);
@@ -218,7 +207,6 @@ export default function TemplateCreator() {
 				return { ...prev, images: newImages };
 			}
 
-			// Check if it's a text
 			const textIndex = prev.texts.findIndex((txt) => txt.id === activeElement);
 			if (textIndex >= 0) {
 				const newTexts = [...prev.texts];
@@ -232,10 +220,7 @@ export default function TemplateCreator() {
 		setActiveElement(null);
 	};
 
-	// Save template
 	const saveTemplate = () => {
-		// Here you would typically save the template to your backend
-		// For now, we'll just save it to localStorage
 		const savedTemplates = JSON.parse(
 			localStorage.getItem("customTemplates") || "[]",
 		);
@@ -266,82 +251,6 @@ export default function TemplateCreator() {
 				},
 			}),
 		);
-	};
-
-	// Toggle centerX for elements
-	const toggleCenterX = () => {
-		if (!activeElement) return;
-
-		setTemplate((prev) => {
-			if (activeImage) {
-				return {
-					...prev,
-					images: prev.images.map((img) =>
-						img.id === activeElement
-							? {
-									...img,
-									centerX: !img.centerX,
-								}
-							: img,
-					),
-				};
-			}
-			if (activeText) {
-				return {
-					...prev,
-					texts: prev.texts.map((txt) =>
-						txt.id === activeElement
-							? {
-									...txt,
-									style: {
-										...txt.style,
-										centerX: !txt.style.centerX,
-									},
-								}
-							: txt,
-					),
-				};
-			}
-			return prev;
-		});
-	};
-
-	// Toggle centerY for elements
-	const toggleCenterY = () => {
-		if (!activeElement) return;
-
-		setTemplate((prev) => {
-			if (activeImage) {
-				return {
-					...prev,
-					images: prev.images.map((img) =>
-						img.id === activeElement
-							? {
-									...img,
-									centerY: !img.centerY,
-								}
-							: img,
-					),
-				};
-			}
-			if (activeText) {
-				return {
-					...prev,
-					texts: prev.texts.map((txt) =>
-						txt.id === activeElement
-							? {
-									...txt,
-									style: {
-										...txt.style,
-										centerY: !txt.style.centerY,
-									},
-								}
-							: txt,
-					),
-				};
-			}
-			return prev;
-		});
 	};
 
 	return (
