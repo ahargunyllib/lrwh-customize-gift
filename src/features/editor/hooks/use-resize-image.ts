@@ -53,14 +53,14 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 								break;
 							case "w": // left
 								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = mouseX;
+								newX = Math.min(mouseX, originalX + originalWidth - 50);
 								break;
 							case "s": // bottom
 								newHeight = Math.max(50, mouseY - originalY);
 								break;
 							case "n": // top
 								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = mouseY;
+								newY = Math.min(mouseY, originalY + originalHeight - 50);
 								break;
 							case "se": // bottom-right
 								newWidth = Math.max(50, mouseX - originalX);
@@ -68,21 +68,25 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 								break;
 							case "sw": // bottom-left
 								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = mouseX;
+								newX = Math.min(mouseX, originalX + originalWidth - 50);
 								newHeight = Math.max(50, mouseY - originalY);
 								break;
 							case "ne": // top-right
 								newWidth = Math.max(50, mouseX - originalX);
 								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = mouseY;
+								newY = Math.min(mouseY, originalY + originalHeight - 50);
 								break;
 							case "nw": // top-left
 								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = mouseX;
+								newX = Math.min(mouseX, originalX + originalWidth - 50);
 								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = mouseY;
+								newY = Math.min(mouseY, originalY + originalHeight - 50);
 								break;
 						}
+
+						// Constrain to canvas boundaries
+						newX = Math.max(0, Math.min(prev.width - newWidth, newX));
+						newY = Math.max(0, Math.min(prev.height - newHeight, newY));
 
 						return {
 							...img,

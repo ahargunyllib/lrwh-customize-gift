@@ -15,6 +15,19 @@ interface TemplateTextProps {
 	onInputBlur: () => void;
 	onInputKeyDown: (e: React.KeyboardEvent) => void;
 	scale?: number;
+	getSnapPosition?: (
+		position: { x: number; y: number },
+		width: number,
+		height: number,
+	) => { x: number; y: number };
+	constrainToCanvas?: (
+		position: { x: number; y: number },
+		width: number,
+		height: number,
+	) => { x: number; y: number };
+	isSnapping?: boolean;
+	canvasWidth?: number;
+	canvasHeight?: number;
 }
 
 export default function TemplateText({
@@ -27,6 +40,11 @@ export default function TemplateText({
 	onInputBlur,
 	onInputKeyDown,
 	scale = 1,
+	getSnapPosition,
+	constrainToCanvas,
+	isSnapping = false,
+	canvasWidth = 0,
+	canvasHeight = 0,
 }: TemplateTextProps) {
 	const {
 		curved,
@@ -34,6 +52,7 @@ export default function TemplateText({
 		curveDirection = "up",
 		rotate = 0,
 		centerX = false,
+		centerY = false,
 		maxWidth,
 		height,
 		backgroundColor,
@@ -58,6 +77,7 @@ export default function TemplateText({
 			: text.style.fontSize;
 
 	const approxWidth = text.content.length * (fontSizeNum * 0.6);
+	const approxHeight = fontSizeNum * 1.5; // Approximate height based on font size
 	const sweepFlag = curveDirection === "up" ? 0 : 1;
 
 	const computedPadding: React.CSSProperties = {
@@ -68,14 +88,31 @@ export default function TemplateText({
 		paddingRight: paddingRight ?? paddingX,
 	};
 
-	const wrapperStyle: React.CSSProperties = {
-		position: "absolute",
-		top: text.position.y,
-		transform: `rotate(${rotate}deg)`,
-		transformOrigin: "center center",
-		...(centerX || paddingCenter
-			? { left: 0, right: 0, textAlign: "center" as const }
-			: { left: text.position.x }),
+	// Calculate position based on centerX and centerY props
+	const getWrapperStyle = (): React.CSSProperties => {
+		const style: React.CSSProperties = {
+			position: "absolute",
+			transform: `rotate(${rotate}deg)`,
+			transformOrigin: "center center",
+		};
+
+		// Handle centerX
+		if (centerX) {
+			style.left = 0;
+			style.right = 0;
+			style.textAlign = "center";
+		} else {
+			style.left = text.position.x;
+		}
+
+		// Handle centerY
+		if (centerY && canvasHeight) {
+			style.top = canvasHeight / 2;
+		} else {
+			style.top = text.position.y;
+		}
+
+		return style;
 	};
 
 	const contentWrapperStyle: React.CSSProperties = {
@@ -119,12 +156,36 @@ export default function TemplateText({
 					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
 					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
 
+					let newPosition = { x: newX, y: newY };
+
+					// Apply snapping if available
+					// Only apply snapping if we're moving slowly (for more precise control)
+					const isMovingSlowly =
+						e.movementX * e.movementX + e.movementY * e.movementY < 25; // Adjust threshold as needed
+
+					if (getSnapPosition && isSnapping && isMovingSlowly) {
+						newPosition = getSnapPosition(
+							newPosition,
+							approxWidth,
+							approxHeight,
+						);
+					}
+
+					// Constrain to canvas boundaries
+					if (constrainToCanvas) {
+						newPosition = constrainToCanvas(
+							newPosition,
+							approxWidth,
+							approxHeight,
+						);
+					}
+
 					document.dispatchEvent(
 						new CustomEvent("elementMove", {
 							detail: {
 								id: text.id,
 								type: "text",
-								position: { x: newX, y: newY },
+								position: newPosition,
 							},
 						}),
 					);
@@ -143,12 +204,22 @@ export default function TemplateText({
 			document.removeEventListener("mousemove", handleMouseMove);
 			document.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [isDragging, dragOffset, text.id, scale]);
+	}, [
+		isDragging,
+		dragOffset,
+		text.id,
+		scale,
+		getSnapPosition,
+		constrainToCanvas,
+		isSnapping,
+		approxWidth,
+		approxHeight,
+	]);
 
 	return (
 		<div
 			className={isActive ? "ring-2 ring-blue-500 absolute" : "absolute"}
-			style={wrapperStyle}
+			style={getWrapperStyle()}
 			onClick={(e) => {
 				e.stopPropagation();
 				onClick(e);

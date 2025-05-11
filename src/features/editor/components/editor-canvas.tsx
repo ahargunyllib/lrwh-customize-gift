@@ -2,14 +2,15 @@
 import { forwardRef, useEffect, useState } from "react";
 import type React from "react";
 
-import { Button } from "@/shared/components/ui/button";
 import type {
 	ImageElement,
 	Position,
 	TemplateData,
 } from "@/shared/types/template";
 import { v4 as uuidv4 } from "uuid";
+import { useAlignmentGuides } from "../hooks/use-allignment-guides";
 import { useResizeImage } from "../hooks/use-resize-image";
+import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
 import TemplateText from "./template-elements/template-text";
 
@@ -40,6 +41,18 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 
 		const { resizingImageId, setResizingImageId, handleResizeStart } =
 			useResizeImage({ setTemplate, scale });
+
+		const {
+			guides,
+			centerElement,
+			isSnapping,
+			getSnapPosition,
+			constrainToCanvas,
+		} = useAlignmentGuides({
+			template,
+			activeElement,
+			scale,
+		});
 
 		// Initialize with blank template or provided template
 		useEffect(() => {
@@ -81,6 +94,69 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			document.addEventListener("imageReplace", handleImageReplace);
 			return () =>
 				document.removeEventListener("imageReplace", handleImageReplace);
+		}, [setTemplate]);
+
+		useEffect(() => {
+			const handleElementCenter = (e: Event) => {
+				const customEvent = e as CustomEvent<{
+					id: string;
+					type: string;
+					axis: "x" | "y" | "both";
+				}>;
+				const { id, type, axis } = customEvent.detail;
+
+				setTemplate((prev) => {
+					if (type === "image") {
+						const image = prev.images.find((img) => img.id === id);
+						if (!image) return prev;
+
+						const newImage = { ...image };
+
+						if (axis === "x" || axis === "both") {
+							newImage.centerX = true;
+						}
+
+						if (axis === "y" || axis === "both") {
+							newImage.centerY = true;
+						}
+
+						return {
+							...prev,
+							images: prev.images.map((img) =>
+								img.id === id ? newImage : img,
+							),
+						};
+					}
+
+					if (type === "text") {
+						const text = prev.texts.find((txt) => txt.id === id);
+						if (!text) return prev;
+
+						const newStyle = { ...text.style };
+
+						if (axis === "x" || axis === "both") {
+							newStyle.centerX = true;
+						}
+
+						if (axis === "y" || axis === "both") {
+							newStyle.centerY = true;
+						}
+
+						return {
+							...prev,
+							texts: prev.texts.map((txt) =>
+								txt.id === id ? { ...txt, style: newStyle } : txt,
+							),
+						};
+					}
+
+					return prev;
+				});
+			};
+
+			document.addEventListener("elementCenter", handleElementCenter);
+			return () =>
+				document.removeEventListener("elementCenter", handleElementCenter);
 		}, [setTemplate]);
 
 		const handleCanvasDrop = (e: React.DragEvent) => {
@@ -156,7 +232,15 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						return {
 							...prev,
 							images: prev.images.map((img) =>
-								img.id === id ? { ...img, position } : img,
+								img.id === id
+									? {
+											...img,
+											position,
+											// When manually moving, disable centering
+											centerX: false,
+											centerY: false,
+										}
+									: img,
 							),
 						};
 					}
@@ -164,7 +248,18 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						return {
 							...prev,
 							texts: prev.texts.map((txt) =>
-								txt.id === id ? { ...txt, position } : txt,
+								txt.id === id
+									? {
+											...txt,
+											position,
+											// When manually moving, disable centering in style
+											style: {
+												...txt.style,
+												centerX: false,
+												centerY: false,
+											},
+										}
+									: txt,
 							),
 						};
 					}
@@ -255,6 +350,13 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						}}
 					/>
 
+					{/* Alignment Guides */}
+					<AlignmentGuides
+						guides={guides}
+						canvasWidth={template.width}
+						canvasHeight={template.height}
+					/>
+
 					{/* Images */}
 					{template.images.map((image) => (
 						<TemplateImage
@@ -268,6 +370,11 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							scale={scale}
 							isCustomizing={isCustomizing}
 							onResizeStart={handleResizeStart}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+							isSnapping={isSnapping}
+							canvasWidth={template.width}
+							canvasHeight={template.height}
 						/>
 					))}
 
@@ -287,6 +394,11 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							onInputBlur={handleTextInputBlur}
 							onInputKeyDown={handleTextInputKeyDown}
 							scale={scale}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+							isSnapping={isSnapping}
+							canvasWidth={template.width}
+							canvasHeight={template.height}
 						/>
 					))}
 				</div>

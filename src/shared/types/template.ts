@@ -11,6 +11,8 @@ export interface ImageElement {
 	width: number;
 	height: number;
 	draggable?: boolean;
+	centerX?: boolean;
+	centerY?: boolean;
 }
 
 export interface TextElement {
@@ -31,6 +33,7 @@ export interface TextElement {
 		curveDirection?: "up" | "down";
 		rotate?: number;
 		centerX?: boolean;
+		centerY?: boolean;
 		maxWidth?: number | string;
 		backgroundColor?: string;
 		borderRadius?: number;

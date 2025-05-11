@@ -17,6 +17,19 @@ interface TemplateImageProps {
 		width: number,
 		height: number,
 	) => void;
+	getSnapPosition?: (
+		position: { x: number; y: number },
+		width: number,
+		height: number,
+	) => { x: number; y: number };
+	constrainToCanvas?: (
+		position: { x: number; y: number },
+		width: number,
+		height: number,
+	) => { x: number; y: number };
+	isSnapping?: boolean;
+	canvasWidth?: number;
+	canvasHeight?: number;
 }
 
 export default function TemplateImage({
@@ -26,6 +39,11 @@ export default function TemplateImage({
 	scale = 1,
 	isCustomizing = false,
 	onResizeStart,
+	getSnapPosition,
+	constrainToCanvas,
+	isSnapping = false,
+	canvasWidth = 0,
+	canvasHeight = 0,
 }: TemplateImageProps) {
 	const [isDragOver, setIsDragOver] = useState(false);
 	const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -112,12 +130,36 @@ export default function TemplateImage({
 					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
 					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
 
+					let newPosition = { x: newX, y: newY };
+
+					// Apply snapping if available
+					// Only apply snapping if we're moving slowly (for more precise control)
+					const isMovingSlowly =
+						e.movementX * e.movementX + e.movementY * e.movementY < 25; // Adjust threshold as needed
+
+					if (getSnapPosition && isSnapping && isMovingSlowly) {
+						newPosition = getSnapPosition(
+							newPosition,
+							image.width,
+							image.height,
+						);
+					}
+
+					// Constrain to canvas boundaries
+					if (constrainToCanvas) {
+						newPosition = constrainToCanvas(
+							newPosition,
+							image.width,
+							image.height,
+						);
+					}
+
 					document.dispatchEvent(
 						new CustomEvent("elementMove", {
 							detail: {
 								id: image.id,
 								type: "image",
-								position: { x: newX, y: newY },
+								position: newPosition,
 							},
 						}),
 					);
@@ -136,7 +178,17 @@ export default function TemplateImage({
 			document.removeEventListener("mousemove", handleMouseMove);
 			document.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [isDragging, dragOffset, image.id, scale]);
+	}, [
+		isDragging,
+		dragOffset,
+		image.id,
+		scale,
+		getSnapPosition,
+		constrainToCanvas,
+		isSnapping,
+		image.width,
+		image.height,
+	]);
 
 	// Resize handles
 	const renderResizeHandles = () => {
@@ -203,14 +255,31 @@ export default function TemplateImage({
 		));
 	};
 
+	// Calculate position based on centerX and centerY props
+	const getPositionStyle = () => {
+		const positionStyle: React.CSSProperties = {
+			left: image.position.x,
+			top: image.position.y,
+		};
+
+		if (image.centerX && canvasWidth) {
+			positionStyle.left = (canvasWidth - image.width) / 2;
+		}
+
+		if (image.centerY && canvasHeight) {
+			positionStyle.top = (canvasHeight - image.height) / 2;
+		}
+
+		return positionStyle;
+	};
+
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
 			ref={dropZoneRef}
 			className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${isDragOver ? "ring-2 ring-green-500" : ""}`}
 			style={{
-				left: image.position.x,
-				top: image.position.y,
+				...getPositionStyle(),
 				width: image.width,
 				height: image.height,
 			}}

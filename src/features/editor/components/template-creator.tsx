@@ -39,6 +39,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditorCanvas from "./editor-canvas";
+import ElementControls from "./template-elements/element-controls";
 
 export default function TemplateCreator() {
 	const isMobile = useIsMobile();
@@ -59,6 +60,22 @@ export default function TemplateCreator() {
 	const [scale, setScale] = useState(1);
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+	// Get active element properties
+	const activeImage = activeElement
+		? template.images.find((img) => img.id === activeElement)
+		: null;
+	const activeText = activeElement
+		? template.texts.find((txt) => txt.id === activeElement)
+		: null;
+
+	const isCenterX = activeImage
+		? activeImage.centerX
+		: activeText?.style.centerX || false;
+
+	const isCenterY = activeImage
+		? activeImage.centerY
+		: activeText?.style.centerY || false;
 
 	// Toggle sidebar for mobile
 	const toggleSidebar = () => {
@@ -232,6 +249,101 @@ export default function TemplateCreator() {
 		alert("Template saved successfully!");
 	};
 
+	const centerActiveElement = (axis: "x" | "y" | "both") => {
+		if (!activeElement) return;
+
+		const activeImage = template.images.find((img) => img.id === activeElement);
+		const activeText = template.texts.find((txt) => txt.id === activeElement);
+
+		if (!activeImage && !activeText) return;
+
+		document.dispatchEvent(
+			new CustomEvent("elementCenter", {
+				detail: {
+					id: activeElement,
+					type: activeImage ? "image" : "text",
+					axis,
+				},
+			}),
+		);
+	};
+
+	// Toggle centerX for elements
+	const toggleCenterX = () => {
+		if (!activeElement) return;
+
+		setTemplate((prev) => {
+			if (activeImage) {
+				return {
+					...prev,
+					images: prev.images.map((img) =>
+						img.id === activeElement
+							? {
+									...img,
+									centerX: !img.centerX,
+								}
+							: img,
+					),
+				};
+			}
+			if (activeText) {
+				return {
+					...prev,
+					texts: prev.texts.map((txt) =>
+						txt.id === activeElement
+							? {
+									...txt,
+									style: {
+										...txt.style,
+										centerX: !txt.style.centerX,
+									},
+								}
+							: txt,
+					),
+				};
+			}
+			return prev;
+		});
+	};
+
+	// Toggle centerY for elements
+	const toggleCenterY = () => {
+		if (!activeElement) return;
+
+		setTemplate((prev) => {
+			if (activeImage) {
+				return {
+					...prev,
+					images: prev.images.map((img) =>
+						img.id === activeElement
+							? {
+									...img,
+									centerY: !img.centerY,
+								}
+							: img,
+					),
+				};
+			}
+			if (activeText) {
+				return {
+					...prev,
+					texts: prev.texts.map((txt) =>
+						txt.id === activeElement
+							? {
+									...txt,
+									style: {
+										...txt.style,
+										centerY: !txt.style.centerY,
+									},
+								}
+							: txt,
+					),
+				};
+			}
+			return prev;
+		});
+	};
+
 	return (
 		<div className="flex h-screen flex-col">
 			<header className="border-b bg-white">
@@ -361,15 +473,26 @@ export default function TemplateCreator() {
 							</div>
 
 							{activeElement && (
-								<Button
-									variant="destructive"
-									size="sm"
-									onClick={deleteActiveElement}
-									className="mt-4 w-full"
-								>
-									<Trash2 className="mr-2 h-4 w-4" />
-									Delete Selected Element
-								</Button>
+								<>
+									<div className="mt-4">
+										<Label className="text-sm">Quick Alignment</Label>
+										<ElementControls
+											onCenterX={() => centerActiveElement("x")}
+											onCenterY={() => centerActiveElement("y")}
+											onCenterBoth={() => centerActiveElement("both")}
+										/>
+									</div>
+
+									<Button
+										variant="destructive"
+										size="sm"
+										onClick={deleteActiveElement}
+										className="mt-4 w-full"
+									>
+										<Trash2 className="mr-2 h-4 w-4" />
+										Delete Selected Element
+									</Button>
+								</>
 							)}
 						</TabsContent>
 
@@ -444,16 +567,28 @@ export default function TemplateCreator() {
 									</p>
 								</div>
 							)}
-							{activeElement && (
-								<Button
-									variant="destructive"
-									size="sm"
-									onClick={deleteActiveElement}
-									className="mt-4 w-full"
-								>
-									<Trash2 className="mr-2 h-4 w-4" />
-									Delete Selected Element
-								</Button>
+
+							{activeElement && activeImage && (
+								<>
+									<div className="mt-4">
+										<Label className="text-sm">Quick Alignment</Label>
+										<ElementControls
+											onCenterX={() => centerActiveElement("x")}
+											onCenterY={() => centerActiveElement("y")}
+											onCenterBoth={() => centerActiveElement("both")}
+										/>
+									</div>
+
+									<Button
+										variant="destructive"
+										size="sm"
+										onClick={deleteActiveElement}
+										className="mt-4 w-full"
+									>
+										<Trash2 className="mr-2 h-4 w-4" />
+										Delete Selected Element
+									</Button>
+								</>
 							)}
 						</TabsContent>
 
@@ -637,16 +772,28 @@ export default function TemplateCreator() {
 									</p>
 								</div>
 							)}
-							{activeElement && (
-								<Button
-									variant="destructive"
-									size="sm"
-									onClick={deleteActiveElement}
-									className="mt-4 w-full"
-								>
-									<Trash2 className="mr-2 h-4 w-4" />
-									Delete Selected Element
-								</Button>
+
+							{activeElement && activeText && (
+								<>
+									<div className="mt-4">
+										<Label className="text-sm">Quick Alignment</Label>
+										<ElementControls
+											onCenterX={() => centerActiveElement("x")}
+											onCenterY={() => centerActiveElement("y")}
+											onCenterBoth={() => centerActiveElement("both")}
+										/>
+									</div>
+
+									<Button
+										variant="destructive"
+										size="sm"
+										onClick={deleteActiveElement}
+										className="mt-4 w-full"
+									>
+										<Trash2 className="mr-2 h-4 w-4" />
+										Delete Selected Element
+									</Button>
+								</>
 							)}
 						</TabsContent>
 					</Tabs>
