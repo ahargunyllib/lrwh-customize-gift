@@ -132,10 +132,8 @@ export default function TemplateImage({
 
 					let newPosition = { x: newX, y: newY };
 
-					// Apply snapping if available
-					// Only apply snapping if we're moving slowly (for more precise control)
 					const isMovingSlowly =
-						e.movementX * e.movementX + e.movementY * e.movementY < 25; // Adjust threshold as needed
+						e.movementX * e.movementX + e.movementY * e.movementY < 25;
 
 					if (getSnapPosition && isSnapping && isMovingSlowly) {
 						newPosition = getSnapPosition(
@@ -145,7 +143,6 @@ export default function TemplateImage({
 						);
 					}
 
-					// Constrain to canvas boundaries
 					if (constrainToCanvas) {
 						newPosition = constrainToCanvas(
 							newPosition,
@@ -190,7 +187,6 @@ export default function TemplateImage({
 		image.height,
 	]);
 
-	// Resize handles
 	const renderResizeHandles = () => {
 		if (!isActive || !isCustomizing) return null;
 
@@ -255,7 +251,6 @@ export default function TemplateImage({
 		));
 	};
 
-	// Calculate position based on centerX and centerY props
 	const getPositionStyle = () => {
 		const positionStyle: React.CSSProperties = {
 			left: image.position.x,

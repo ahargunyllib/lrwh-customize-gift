@@ -156,7 +156,7 @@ export default function TemplateSelector() {
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{/* Built-in templates */}
+				{/* Built-in templates
 				{Object.entries(templateRegistry).map(([id, template]) => (
 					<Card key={id} className="overflow-hidden">
 						<CardContent className="p-4">
@@ -176,7 +176,7 @@ export default function TemplateSelector() {
 							</div>
 						</CardContent>
 					</Card>
-				))}
+				))} */}
 
 				{/* Custom templates */}
 				{customTemplates.map((template) => (

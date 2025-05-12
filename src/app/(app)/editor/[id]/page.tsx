@@ -41,7 +41,7 @@ export default function TemplateEditorPage() {
 	const templateData = getTemplateById(templateId);
 	const [selectedSize, setSelectedSize] = useState<PrintSizeConfig>(
 		printSizes[1],
-	); // Default to 10x15
+	);
 	const [template, setTemplate] = useState<TemplateData>(() =>
 		getTemplateForSize(templateData, selectedSize),
 	);
@@ -50,7 +50,6 @@ export default function TemplateEditorPage() {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-	// Update scale when window resizes or template size changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const updateScale = () => {

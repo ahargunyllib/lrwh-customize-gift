@@ -88,7 +88,6 @@ export default function TemplateText({
 		paddingRight: paddingRight ?? paddingX,
 	};
 
-	// Calculate position based on centerX and centerY props
 	const getWrapperStyle = (): React.CSSProperties => {
 		const style: React.CSSProperties = {
 			position: "absolute",
@@ -96,7 +95,6 @@ export default function TemplateText({
 			transformOrigin: "center center",
 		};
 
-		// Handle centerX
 		if (centerX) {
 			style.left = 0;
 			style.right = 0;
@@ -105,7 +103,6 @@ export default function TemplateText({
 			style.left = text.position.x;
 		}
 
-		// Handle centerY
 		if (centerY && canvasHeight) {
 			style.top = canvasHeight / 2;
 		} else {
@@ -158,11 +155,8 @@ export default function TemplateText({
 
 					let newPosition = { x: newX, y: newY };
 
-					// Apply snapping if available
-					// Only apply snapping if we're moving slowly (for more precise control)
 					const isMovingSlowly =
-						e.movementX * e.movementX + e.movementY * e.movementY < 25; // Adjust threshold as needed
-
+						e.movementX * e.movementX + e.movementY * e.movementY < 25;
 					if (getSnapPosition && isSnapping && isMovingSlowly) {
 						newPosition = getSnapPosition(
 							newPosition,
@@ -171,7 +165,6 @@ export default function TemplateText({
 						);
 					}
 
-					// Constrain to canvas boundaries
 					if (constrainToCanvas) {
 						newPosition = constrainToCanvas(
 							newPosition,

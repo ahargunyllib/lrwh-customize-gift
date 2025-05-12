@@ -54,12 +54,10 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			scale,
 		});
 
-		// Initialize with blank template or provided template
 		useEffect(() => {
 			if (initialTemplate && isCustomizing) {
 				setTemplate(initialTemplate);
 			} else if (isCustomizing) {
-				// Create a blank template
 				const blankTemplate: TemplateData = {
 					id: uuidv4(),
 					name: "Custom Template",
@@ -79,7 +77,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			template.height,
 		]);
 
-		// Listen for imageReplace events
 		useEffect(() => {
 			const handleImageReplace = (e: Event) => {
 				const customEvent = e as CustomEvent<{ id: string; src: string }>;
@@ -162,7 +159,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 		const handleCanvasDrop = (e: React.DragEvent) => {
 			e.preventDefault();
 
-			// If customizing, allow dropping new images onto the canvas
 			if (isCustomizing && e.dataTransfer.files && e.dataTransfer.files[0]) {
 				const file = e.dataTransfer.files[0];
 				if (file.type.startsWith("image/")) {
@@ -236,7 +232,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 									? {
 											...img,
 											position,
-											// When manually moving, disable centering
 											centerX: false,
 											centerY: false,
 										}
@@ -252,7 +247,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 									? {
 											...txt,
 											position,
-											// When manually moving, disable centering in style
 											style: {
 												...txt.style,
 												centerX: false,
@@ -276,7 +270,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			if (!activeElement) return;
 
 			setTemplate((prev) => {
-				// Check if it's an image
 				const imageIndex = prev.images.findIndex(
 					(img) => img.id === activeElement,
 				);
@@ -286,7 +279,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 					return { ...prev, images: newImages };
 				}
 
-				// Check if it's a text
 				const textIndex = prev.texts.findIndex(
 					(txt) => txt.id === activeElement,
 				);
