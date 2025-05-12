@@ -13,49 +13,40 @@ export type TemplateType = keyof typeof templateRegistry;
 
 // Create templates for different print sizes
 export function getTemplateForSize(
+	template: TemplateData,
 	size: PrintSizeConfig,
-	templateType: TemplateType = "default",
 ): TemplateData {
-	const baseTemplate = templateRegistry[templateType];
-	if (!baseTemplate) {
-		throw new Error(`Template type "${templateType}" not found`);
-	}
+	console.log(template, size);
+	const scaleX = size.width / template.width;
+	const scaleY = size.height / template.height;
 
-	const template = { ...baseTemplate };
-	template.width = size.width;
-	template.height = size.height;
-
-	// Adjust positions based on new dimensions
-	const scaleX = size.width / baseTemplate.width;
-	const scaleY = size.height / baseTemplate.height;
-
-	// Scale image positions and sizes
-	template.images = template.images.map((img) => ({
-		...img,
-		position: {
-			x: img.position.x * scaleX,
-			y: img.position.y * scaleY,
-		},
-		width: img.width * scaleX,
-		height: img.height * scaleY,
-	}));
-
-	// Scale text positions
-	template.texts = template.texts.map((text) => ({
-		...text,
-		position: {
-			x: text.position.x * scaleX,
-			y: text.position.y * scaleY,
-		},
-		style: {
-			...text.style,
-			fontSize: `${
-				Number.parseInt(text.style.fontSize) * Math.min(scaleX, scaleY)
-			}px`,
-		},
-	}));
-
-	return template;
+	return {
+		...template,
+		width: size.width,
+		height: size.height,
+		images: template.images.map((img) => ({
+			...img,
+			position: {
+				x: img.position.x * scaleX,
+				y: img.position.y * scaleY,
+			},
+			width: img.width * scaleX,
+			height: img.height * scaleY,
+		})),
+		texts: template.texts.map((txt) => ({
+			...txt,
+			position: {
+				x: txt.position.x * scaleX,
+				y: txt.position.y * scaleY,
+			},
+			style: {
+				...txt.style,
+				fontSize: `${
+					Number.parseFloat(txt.style.fontSize) * Math.min(scaleX, scaleY)
+				}px`,
+			},
+		})),
+	};
 }
 
 // Export print sizes

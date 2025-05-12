@@ -36,26 +36,36 @@ import {
 	X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditorCanvas from "../components/editor-canvas";
 import ElementControls from "../components/template-elements/element-controls";
+import { getTemplateById } from "../services";
 
-export default function TemplateCreator() {
+export default function TemplateCreator({
+	templateId,
+}: { templateId?: string }) {
 	const isMobile = useIsMobile();
-	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const [templateName, setTemplateName] = useState("Custom Template");
-	const [backgroundColor, setBackgroundColor] = useState("#ffffff");
-	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
 	const [template, setTemplate] = useState<TemplateData>({
 		id: uuidv4(),
-		name: templateName,
-		width: selectedSize.width,
-		height: selectedSize.height,
-		backgroundColor: backgroundColor,
+		name: "Custom Template",
+		width: printSizes[1].width,
+		height: printSizes[1].height,
+		backgroundColor: "#ffffff",
 		images: [],
 		texts: [],
 	});
+	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const [templateName, setTemplateName] = useState(template.name);
+	const [backgroundColor, setBackgroundColor] = useState(
+		template.backgroundColor,
+	);
+	const [selectedSize, setSelectedSize] = useState(
+		printSizes.find(
+			(s) => s.width === template.width && s.height === template.height,
+		) ?? printSizes[1],
+	);
+
 	const [activeElement, setActiveElement] = useState<string | null>(null);
 	const [scale, setScale] = useState(1);
 	const canvasRef = useRef<HTMLDivElement>(null);
@@ -68,17 +78,34 @@ export default function TemplateCreator() {
 		? template.texts.find((txt) => txt.id === activeElement)
 		: null;
 
-	const isCenterX = activeImage
-		? activeImage.centerX
-		: activeText?.style.centerX || false;
-
-	const isCenterY = activeImage
-		? activeImage.centerY
-		: activeText?.style.centerY || false;
-
 	const toggleSidebar = () => {
 		setSidebarOpen(!sidebarOpen);
 	};
+
+	useEffect(() => {
+		if (!templateId) return;
+
+		const data = getTemplateById(templateId);
+		if (!data) return;
+
+		setTemplate(data);
+
+		setTemplateName(data.name);
+		setBackgroundColor(data.backgroundColor);
+
+		const size = printSizes.find(
+			(s) => s.width === data.width && s.height === data.height,
+		);
+		if (size) setSelectedSize(size);
+	}, [templateId]);
+
+	useEffect(() => {
+		setTemplate((prev) => ({
+			...prev,
+			name: templateName,
+			backgroundColor,
+		}));
+	}, [templateName, backgroundColor]);
 
 	useEffect(() => {
 		setTemplate((prev) => ({
@@ -228,7 +255,17 @@ export default function TemplateCreator() {
 			...template,
 			name: templateName,
 		};
-		savedTemplates.push(templateToSave);
+
+		const existingIndex = savedTemplates.findIndex(
+			(t: TemplateData) => t.id === template.id,
+		);
+
+		if (existingIndex !== -1) {
+			savedTemplates[existingIndex] = templateToSave;
+		} else {
+			savedTemplates.push(templateToSave);
+		}
+
 		localStorage.setItem("customTemplates", JSON.stringify(savedTemplates));
 
 		alert("Template saved successfully!");
