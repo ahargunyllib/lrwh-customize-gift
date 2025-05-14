@@ -218,7 +218,7 @@ export default function TemplateText({
 				onClick(e);
 			}}
 			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
+				if (!isEditing && e.key === "Enter") {
 					e.preventDefault();
 					onClick(e as unknown as React.MouseEvent);
 				}
