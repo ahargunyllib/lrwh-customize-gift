@@ -97,6 +97,7 @@ export default function TemplateEditor({ templateId }: { templateId: string }) {
 								activeElement={editor.activeElement}
 								setActiveElement={editor.setActiveElement}
 								scale={scale}
+								allowDelete={false}
 							/>
 							<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500">
 								<Printer className="inline h-3 w-3 mr-1" />

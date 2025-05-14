@@ -24,6 +24,7 @@ interface EditorCanvasProps {
 	scale: number;
 	isCustomizing?: boolean;
 	initialTemplate?: TemplateData;
+	allowDelete?: boolean;
 }
 
 const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
@@ -36,6 +37,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			scale,
 			isCustomizing = false,
 			initialTemplate,
+			allowDelete = true,
 		},
 		ref,
 	) => {
@@ -49,6 +51,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			editingTextId,
 			setActiveElement,
 			setTemplate,
+			allowDelete,
 		});
 
 		const { handleCanvasDrop, handleCanvasDragOver } = useCanvasDrop({

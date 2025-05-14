@@ -7,6 +7,7 @@ interface Params {
 	editingTextId: string | null;
 	setActiveElement: (id: string | null) => void;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
+	allowDelete?: boolean;
 }
 
 export function useKeyboardDelete({
@@ -14,9 +15,18 @@ export function useKeyboardDelete({
 	editingTextId,
 	setActiveElement,
 	setTemplate,
+	allowDelete = true,
 }: Params) {
 	useEffect(() => {
+		if (!allowDelete) return;
 		const handler = (e: KeyboardEvent) => {
+			const tag = (e.target as HTMLElement)?.tagName;
+			if (
+				tag === "INPUT" ||
+				tag === "TEXTAREA" ||
+				(e.target as HTMLElement).isContentEditable
+			)
+				return;
 			if (
 				!["Delete", "Backspace"].includes(e.key) ||
 				!activeElement ||
@@ -42,5 +52,11 @@ export function useKeyboardDelete({
 
 		document.addEventListener("keydown", handler);
 		return () => document.removeEventListener("keydown", handler);
-	}, [activeElement, editingTextId, setActiveElement, setTemplate]);
+	}, [
+		activeElement,
+		editingTextId,
+		allowDelete,
+		setActiveElement,
+		setTemplate,
+	]);
 }
