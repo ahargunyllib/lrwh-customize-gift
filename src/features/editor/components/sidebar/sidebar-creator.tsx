@@ -24,7 +24,7 @@ export default function Sidebar({ open, onClose }: Props) {
 
 	const Panel = (
 		<div
-			className={`bg-gray-50 p-4 overflow-y-auto h-full w-72 md:w-64
+			className={`bg-gray-50 p-4 overflow-y-auto h-full w-72 md:w-84
       md:static md:translate-x-0 md:border-r md:shadow-none
       fixed top-0 left-0 z-50 shadow-xl transition-transform duration-300 ease-in-out
       ${open ? "translate-x-0" : "-translate-x-full"}`}
@@ -40,7 +40,7 @@ export default function Sidebar({ open, onClose }: Props) {
 			)}
 
 			<Tabs defaultValue="settings" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
+				<TabsList className="grid w-full grid-cols-3 gap-4">
 					<TabsTrigger value="settings">
 						<Layout className="h-4 w-4 mr-1" />
 						Settings
