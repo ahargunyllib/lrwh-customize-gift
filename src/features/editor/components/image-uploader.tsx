@@ -55,7 +55,6 @@ export default function ImageUploader({ image, onChange }: ImageUploaderProps) {
 				onDragLeave={handleDragLeave}
 				onDrop={handleDrop}
 			>
-				{/* biome-ignore lint/a11y/noRedundantAlt: <explanation> */}
 				<img
 					src={image.src || "https://placecats.com/300/200"}
 					// biome-ignore lint/a11y/noRedundantAlt: <explanation>

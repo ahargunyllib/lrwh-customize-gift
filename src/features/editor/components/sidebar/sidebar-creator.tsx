@@ -10,9 +10,9 @@ import { Fragment } from "react";
 
 import { Button } from "@/shared/components/ui/button";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
-import ImagesTab from "../../tabs/creator/images-tab";
-import SettingsTab from "../../tabs/creator/settings-tab";
-import TextTab from "../../tabs/creator/text-tab";
+import ImagesTab from "../tabs/creator/images-tab";
+import SettingsTab from "../tabs/creator/settings-tab";
+import TextTab from "../tabs/creator/text-tab";
 
 interface Props {
 	open: boolean;

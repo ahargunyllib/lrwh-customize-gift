@@ -27,14 +27,18 @@ function Provider({
 	const { setTemplate, template } = editor;
 
 	const { save } = useTemplatePersistence(loadId, setTemplate);
-
+	const router = useRouter();
 	return (
 		<TemplateCtx.Provider value={editor}>
 			{/* Header */}
 			<HeaderBar
 				title="Create New Template"
 				onMenuClick={() => editor.setActiveElement(null)}
-				onSave={() => save(template)}
+				onSave={() => {
+					save(template);
+					toast.success("Template saved");
+					router.push("/");
+				}}
 			/>
 			{children}
 		</TemplateCtx.Provider>
@@ -61,10 +65,12 @@ export default function TemplateCreator({
 	);
 }
 
+import { useRouter } from "next/navigation";
 import { forwardRef } from "react";
+import { toast } from "sonner";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
-import Sidebar from "../components/sidebar/creator/sidebar-creator";
+import Sidebar from "../components/sidebar/sidebar-creator";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
 import { useTemplateEditor } from "../hooks/use-template-editor";
 import { useTemplatePersistence } from "../hooks/use-template-persistence";
