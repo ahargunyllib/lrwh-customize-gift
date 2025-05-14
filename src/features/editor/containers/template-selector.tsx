@@ -16,11 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/components/ui/select";
-import {
-	getTemplateForSize,
-	printSizes,
-	templateRegistry,
-} from "@/shared/lib/template";
+import { getTemplateForSize, printSizes } from "@/shared/lib/template";
 import type { PrintSizeConfig, TemplateData } from "@/shared/types/template";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
@@ -64,7 +60,6 @@ export default function TemplateSelector() {
 		template: TemplateData,
 		size: PrintSizeConfig,
 	) => {
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const scaledTemplate = getTemplateForSize(template, size);
 		const scale = 0.2; // Preview scale
 
@@ -156,51 +151,6 @@ export default function TemplateSelector() {
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{/* Built-in templates
-				{Object.entries(templateRegistry).map(([id, template]) => (
-					<Card key={id} className="overflow-hidden">
-						<CardContent className="p-4">
-							<div className="flex flex-col items-center gap-4">
-								<div className="h-40 flex items-center justify-center">
-									{renderTemplatePreview(template, selectedSize)}
-								</div>
-								<div className="w-full">
-									<h3 className="text-lg font-medium mb-2">{template.name}</h3>
-									<Button
-										className="w-full"
-										onClick={() => handleTemplateSelect(id)}
-									>
-										Select Template
-									</Button>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				))} */}
-
-				{/* Custom templates */}
-				{customTemplates.map((template) => (
-					<Card key={template.id} className="overflow-hidden">
-						<CardContent className="p-4">
-							<div className="flex flex-col items-center gap-4">
-								<div className="h-40 flex items-center justify-center">
-									{renderTemplatePreview(template, selectedSize)}
-								</div>
-								<div className="w-full">
-									<h3 className="text-lg font-medium mb-2">
-										{template.name} (Custom)
-									</h3>
-									<Button
-										className="w-full"
-										onClick={() => handleTemplateSelect(template.id)}
-									>
-										Select Template
-									</Button>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				))}
 				{customTemplates.map((template) => (
 					<Card key={template.id} className="overflow-hidden">
 						<CardContent className="p-4">
@@ -238,9 +188,6 @@ export default function TemplateSelector() {
 													<Button
 														className="flex-1"
 														onClick={() => {
-															// In a real app, you'd use the template ID
-															// For now, we'll just navigate to the editor
-															// biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
 															router.push(`/editor/${template.id}`);
 														}}
 													>
