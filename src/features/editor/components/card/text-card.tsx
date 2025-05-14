@@ -10,6 +10,7 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { fontArray } from "@/shared/lib/font";
 import type { TextElement } from "@/shared/types/template";
 import { useTemplateContext } from "../../containers/template-creator";
 
@@ -38,63 +39,49 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 				/>
 
 				{/* Font family & size */}
-				<div className="grid grid-cols-2 gap-2">
-					<div className="space-y-0.5">
+				<div className="grid grid-cols-2 gap-2 col-span-2">
+					<div className="space-y-0.5 col-span-2 w-full">
 						<Label className="text-xs">Font</Label>
 						<Select
 							value={txt.style.fontFamily}
-							onValueChange={(v) =>
+							onValueChange={(value) =>
 								updateText(txt.id, {
-									style: { ...txt.style, fontFamily: v },
+									style: { ...txt.style, fontFamily: value },
 								})
 							}
 						>
-							<SelectTrigger className="h-8">
-								<SelectValue />
+							<SelectTrigger className="h-8 w-full">
+								<SelectValue placeholder="Select font" />
 							</SelectTrigger>
 							<SelectContent>
-								{[
-									"Arial, sans-serif",
-									"'Times New Roman', serif",
-									"'Courier New', monospace",
-									"Georgia, serif",
-								].map((f) => (
-									<SelectItem key={f} value={f}>
-										{f.split(",")[0].replace(/'/g, "")}
+								{fontArray.map((font) => (
+									<SelectItem key={font.fontname} value={font.fontname}>
+										{font.fontname}
 									</SelectItem>
 								))}
 							</SelectContent>
 						</Select>
 					</div>
 
-					<div className="space-y-0.5">
+					<div className="space-y-0.5 ">
 						<Label className="text-xs">Size</Label>
-						<Select
-							value={txt.style.fontSize}
-							onValueChange={(v) =>
+						<Input
+							type="number"
+							min="0"
+							value={txt.style.fontSize.replace("px", "")}
+							onChange={(e) =>
 								updateText(txt.id, {
-									style: { ...txt.style, fontSize: v },
+									style: { ...txt.style, fontSize: `${e.target.value}px` },
 								})
 							}
-						>
-							<SelectTrigger className="h-8">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{["12px", "14px", "16px", "18px", "24px", "32px", "48px"].map(
-									(s) => (
-										<SelectItem key={s} value={s}>
-											{s}
-										</SelectItem>
-									),
-								)}
-							</SelectContent>
-						</Select>
+							className="h-8"
+							onClick={(e) => e.stopPropagation()}
+						/>
 					</div>
 				</div>
 
 				{/* Color */}
-				<div className="space-y-0.5">
+				<div className="space-y-0.5 col-span-2">
 					<Label className="text-xs">Color</Label>
 					<div className="flex items-center gap-2">
 						<input

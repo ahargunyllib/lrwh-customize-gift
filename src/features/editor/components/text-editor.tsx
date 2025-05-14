@@ -12,6 +12,7 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { fontArray } from "@/shared/lib/font";
 import type { TextElement } from "@/shared/types/template";
 
 interface TextEditorProps {
@@ -61,21 +62,19 @@ export default function TextEditor({
 									<SelectValue placeholder="Font" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="Arial, sans-serif">Arial</SelectItem>
-									<SelectItem value="'Times New Roman', serif">
-										Times New Roman
-									</SelectItem>
-									<SelectItem value="'Courier New', monospace">
-										Courier New
-									</SelectItem>
-									<SelectItem value="Georgia, serif">Georgia</SelectItem>
-									<SelectItem value="'Segoe UI', sans-serif">
-										Segoe UI
-									</SelectItem>
-									<SelectItem value="'Mungil', sans-serif">Mungil</SelectItem>
-									<SelectItem value="'Flatlion Personal Use', sans-serif">
-										Flatlion
-									</SelectItem>
+									{fontArray.map((font) => (
+										<SelectItem key={font.fontname} value={font.fontname}>
+											<span
+												className="text-sm"
+												style={{
+													fontFamily: font.fontfamily,
+													font: font.fontname,
+												}}
+											>
+												{font.fontname}
+											</span>
+										</SelectItem>
+									))}
 								</SelectContent>
 							</Select>
 						</div>
@@ -84,23 +83,15 @@ export default function TextEditor({
 							<Label htmlFor={`size-${text.id}`} className="text-xs">
 								Size
 							</Label>
-							<Select
-								value={text.style.fontSize}
-								onValueChange={(value) => onStyleChange("fontSize", value)}
-							>
-								<SelectTrigger id={`size-${text.id}`} className="h-8">
-									<SelectValue placeholder="Size" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="12px">12px</SelectItem>
-									<SelectItem value="14px">14px</SelectItem>
-									<SelectItem value="16px">16px</SelectItem>
-									<SelectItem value="18px">18px</SelectItem>
-									<SelectItem value="24px">24px</SelectItem>
-									<SelectItem value="32px">32px</SelectItem>
-									<SelectItem value="48px">48px</SelectItem>
-								</SelectContent>
-							</Select>
+							<Input
+								id={`size-${text.id}`}
+								type="number"
+								value={text.style.fontSize.replace("px", "")}
+								onChange={(e) =>
+									onStyleChange("fontSize", `${e.target.value}px`)
+								}
+								className="h-8"
+							/>
 						</div>
 
 						<div className="space-y-1">
