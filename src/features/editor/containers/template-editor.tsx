@@ -1,14 +1,5 @@
 "use client";
 import { getTemplateById } from "@/features/editor/services";
-import { Button } from "@/shared/components/ui/button";
-import { Label } from "@/shared/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
 import { Printer } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";

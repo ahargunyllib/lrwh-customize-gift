@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import {
 	type ReactNode,
 	createContext,
@@ -6,6 +7,14 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { forwardRef } from "react";
+import { toast } from "sonner";
+import EditorCanvas from "../components/editor-canvas";
+import HeaderBar from "../components/header/header-creator";
+import Sidebar from "../components/sidebar/sidebar-creator";
+import { useCanvasScale } from "../hooks/use-canvas-scale";
+import { useTemplateEditor } from "../hooks/use-template-editor";
+import { useTemplatePersistence } from "../hooks/use-template-persistence";
 
 const TemplateCtx = createContext<ReturnType<typeof useTemplateEditor> | null>(
 	null,
@@ -65,15 +74,6 @@ export default function TemplateCreator({
 	);
 }
 
-import { useRouter } from "next/navigation";
-import { forwardRef } from "react";
-import { toast } from "sonner";
-import EditorCanvas from "../components/editor-canvas";
-import HeaderBar from "../components/header/header-creator";
-import Sidebar from "../components/sidebar/sidebar-creator";
-import { useCanvasScale } from "../hooks/use-canvas-scale";
-import { useTemplateEditor } from "../hooks/use-template-editor";
-import { useTemplatePersistence } from "../hooks/use-template-persistence";
 const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 	const { template, setTemplate, activeElement, setActiveElement } =
 		useTemplateContext();
