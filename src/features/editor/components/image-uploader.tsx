@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import PlaceholderImage from "@/shared/assets/placeholder.png";
 import { Button } from "@/shared/components/ui/button";
 import type { ImageElement } from "@/shared/types/template";
 import { Upload } from "lucide-react";
