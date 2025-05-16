@@ -1,7 +1,5 @@
+import TemplateSelector from "@/features/editor/containers/template-selector";
+
 export default function Page() {
-  return (
-    <section>
-      app
-    </section>
-  )
+	return <TemplateSelector />;
 }

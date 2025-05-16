@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.cdnfonts.com/css/mungil');
+@import url('https://fonts.cdnfonts.com/css/flatlion-personal-use');
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,4 +122,35 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .mungil {
+    font-family: 'Mungil', sans-serif;
+  }
+  .flatlion{
+    font-family: 'Flatlion Personal Use', sans-serif;
+  }
 }
+
+@font-face {
+  font-family: 'Flatlion';
+  src: url('/fonts/Flatlion Personal Use Only.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'More Sugar';
+  src: url('/fonts/MoreSugar-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+@font-face {
+  font-family: 'Mungil';
+  src: url('/fonts/Mungil-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
