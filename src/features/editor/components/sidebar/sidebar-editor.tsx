@@ -72,6 +72,7 @@ export default function EditorSidebar({ open, onClose }: Props) {
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 				<div
 					className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+					aria-hidden="true"
 					onClick={onClose}
 				/>
 			)}
