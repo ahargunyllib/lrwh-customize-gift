@@ -10,6 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/components/ui/select";
+import { triggerElementCenter } from "@/shared/lib/events";
 import { printSizes } from "@/shared/lib/template";
 import { Trash2 } from "lucide-react";
 import { Fragment } from "react";
@@ -79,27 +80,9 @@ export default function SettingsTab() {
 					<div className="pt-3">
 						<Label className="text-sm">Quick Alignment</Label>
 						<ElementControls
-							onCenterX={() =>
-								document.dispatchEvent(
-									new CustomEvent("elementCenter", {
-										detail: { id: activeElement, axis: "x" },
-									}),
-								)
-							}
-							onCenterY={() =>
-								document.dispatchEvent(
-									new CustomEvent("elementCenter", {
-										detail: { id: activeElement, axis: "y" },
-									}),
-								)
-							}
-							onCenterBoth={() =>
-								document.dispatchEvent(
-									new CustomEvent("elementCenter", {
-										detail: { id: activeElement, axis: "both" },
-									}),
-								)
-							}
+							onCenterX={() => triggerElementCenter(activeElement, "x")}
+							onCenterY={() => triggerElementCenter(activeElement, "y")}
+							onCenterBoth={() => triggerElementCenter(activeElement, "both")}
 						/>
 					</div>
 
