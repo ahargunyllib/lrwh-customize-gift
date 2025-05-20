@@ -1,6 +1,8 @@
 "use client";
 import { getTemplateById } from "@/features/editor/services";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { useGetTemplateById } from "@/shared/repository/templates/query";
+import type { TemplateData } from "@/shared/types/template";
 import { Printer } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";
 import EditorCanvas from "../components/editor-canvas";
@@ -19,11 +21,12 @@ export const useTemplateContext = () => {
 	return ctx;
 };
 
-export default function TemplateEditor({ templateId }: { templateId: string }) {
+export default function TemplateEditor({
+	original,
+}: { original: TemplateData }) {
 	// const isMobile = useIsMobile();
 	// const router = useRouter();
 
-	const original = getTemplateById(templateId);
 	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
 	const editor = useTemplateEditor(getTemplateForSize(original, selectedSize));
 

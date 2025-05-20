@@ -17,6 +17,7 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
 import type { PrintSizeConfig, TemplateData } from "@/shared/types/template";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
@@ -26,19 +27,9 @@ import { useEffect, useState } from "react";
 export default function TemplateSelector() {
 	const router = useRouter();
 	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
-	const [customTemplates, setCustomTemplates] = useState<TemplateData[]>([]);
+	const { data: res, isLoading, error } = useGetTemplatesQuery();
 
-	// Load custom templates from localStorage
-	useEffect(() => {
-		try {
-			const savedTemplates = JSON.parse(
-				localStorage.getItem("customTemplates") || "[]",
-			);
-			setCustomTemplates(savedTemplates);
-		} catch (error) {
-			console.error("Error loading custom templates:", error);
-		}
-	}, []);
+	const customTemplates = res?.data?.templates || [];
 
 	const handleSizeChange = (size: string) => {
 		const newSize = printSizes.find((s) => s.name === size);

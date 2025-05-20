@@ -3,12 +3,11 @@ import { useRouter } from "next/navigation";
 import {
 	type ReactNode,
 	createContext,
+	forwardRef,
 	useContext,
 	useRef,
 	useState,
 } from "react";
-import { forwardRef } from "react";
-import { toast } from "sonner";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
 import Sidebar from "../components/sidebar/sidebar-creator";
@@ -45,8 +44,6 @@ function Provider({
 				onMenuClick={() => editor.setActiveElement(null)}
 				onSave={() => {
 					save(template);
-					toast.success("Template saved");
-					router.push("/");
 				}}
 			/>
 			{children}

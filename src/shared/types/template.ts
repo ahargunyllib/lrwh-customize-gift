@@ -69,3 +69,9 @@ export interface PrintSizeConfig {
 	height: number;
 	label: string;
 }
+
+export type TemplateEntity = {
+	id: string;
+	name: string;
+	data: Omit<TemplateData, "id" | "name">;
+};
