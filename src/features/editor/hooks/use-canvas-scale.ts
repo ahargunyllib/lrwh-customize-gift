@@ -18,5 +18,15 @@ export function useCanvasScale(
 		return () => window.removeEventListener("resize", calc);
 	}, [ref, templateWidth]);
 
-	return scale;
+	function zoomIn() {
+		setScale((prev) => Math.min(2, prev + 0.1));
+	}
+	function zoomOut() {
+		setScale((prev) => Math.max(0.1, prev - 0.1));
+	}
+	function resetZoom() {
+		setScale(1);
+	}
+
+	return { scale, zoomIn, zoomOut, resetZoom };
 }
