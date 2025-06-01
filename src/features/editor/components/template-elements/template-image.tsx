@@ -110,12 +110,16 @@ export default function TemplateImage({
 	const handleMouseDown = (e: React.MouseEvent) => {
 		if (image.draggable) {
 			e.preventDefault();
-			const rect = e.currentTarget.getBoundingClientRect();
-			setDragOffset({
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			});
-			setIsDragging(true);
+			const canvas = document.querySelector('[data-canvas="true"]');
+			if (canvas) {
+				const canvasRect = canvas.getBoundingClientRect();
+				// Calculate the offset in unscaled coordinates
+				setDragOffset({
+					x: (e.clientX - canvasRect.left) / scale - image.position.x,
+					y: (e.clientY - canvasRect.top) / scale - image.position.y,
+				});
+				setIsDragging(true);
+			}
 		}
 	};
 
@@ -127,8 +131,8 @@ export default function TemplateImage({
 				const canvas = document.querySelector('[data-canvas="true"]');
 				if (canvas) {
 					const canvasRect = canvas.getBoundingClientRect();
-					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
-					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
+					const newX = (e.clientX - canvasRect.left) / scale - dragOffset.x;
+					const newY = (e.clientY - canvasRect.top) / scale - dragOffset.y;
 
 					let newPosition = { x: newX, y: newY };
 
@@ -253,16 +257,16 @@ export default function TemplateImage({
 
 	const getPositionStyle = () => {
 		const positionStyle: React.CSSProperties = {
-			left: image.position.x,
-			top: image.position.y,
+			left: image.position.x * scale,
+			top: image.position.y * scale,
 		};
 
 		if (image.centerX && canvasWidth) {
-			positionStyle.left = (canvasWidth - image.width) / 2;
+			positionStyle.left = ((canvasWidth - image.width) / 2) * scale;
 		}
 
 		if (image.centerY && canvasHeight) {
-			positionStyle.top = (canvasHeight - image.height) / 2;
+			positionStyle.top = ((canvasHeight - image.height) / 2) * scale;
 		}
 
 		return positionStyle;
@@ -275,8 +279,8 @@ export default function TemplateImage({
 			className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${isDragOver ? "ring-2 ring-green-500" : ""}`}
 			style={{
 				...getPositionStyle(),
-				width: image.width,
-				height: image.height,
+				width: image.width * scale,
+				height: image.height * scale,
 			}}
 			onClick={onClick}
 			onDragEnter={handleDragEnter}
