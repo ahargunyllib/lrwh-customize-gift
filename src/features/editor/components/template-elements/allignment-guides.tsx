@@ -3,12 +3,14 @@
 import type { Guide } from "../../hooks/use-allignment-guides";
 
 interface AlignmentGuidesProps {
+	scale: number;
 	guides: Guide[];
 	canvasWidth: number;
 	canvasHeight: number;
 }
 
 export default function AlignmentGuides({
+	scale,
 	guides,
 	canvasWidth,
 	canvasHeight,
@@ -22,7 +24,7 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute top-0 bottom-0 w-px bg-blue-500"
 							style={{
-								left: guide.position,
+								left: guide.position * scale,
 								boxShadow: "0 0 2px rgba(59, 130, 246, 0.8)",
 							}}
 						/>
@@ -35,7 +37,7 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute left-0 right-0 h-px bg-blue-500"
 							style={{
-								top: guide.position,
+								top: guide.position * scale,
 								boxShadow: "0 0 2px rgba(59, 130, 246, 0.8)",
 							}}
 						/>
@@ -48,8 +50,8 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute w-px bg-purple-500"
 							style={{
-								left: guide.position,
-								top: guide.startPosition,
+								left: guide.position * scale,
+								top: (guide.startPosition ?? 0) * scale,
 								height:
 									guide.endPosition && guide.startPosition
 										? guide.endPosition - guide.startPosition
@@ -66,8 +68,8 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute h-px bg-purple-500"
 							style={{
-								top: guide.position,
-								left: guide.startPosition,
+								top: guide.position * scale,
+								left: (guide.startPosition ?? 0) * scale,
 								width:
 									guide.endPosition && guide.startPosition
 										? guide.endPosition - guide.startPosition
@@ -84,7 +86,7 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute top-0 bottom-0 w-px bg-green-500"
 							style={{
-								left: guide.position,
+								left: guide.position * scale,
 								boxShadow: "0 0 2px rgba(34, 197, 94, 0.8)",
 							}}
 						/>
@@ -97,7 +99,7 @@ export default function AlignmentGuides({
 							key={`${guide.type}-${index}`}
 							className="absolute left-0 right-0 h-px bg-green-500"
 							style={{
-								top: guide.position,
+								top: guide.position * scale,
 								boxShadow: "0 0 2px rgba(34, 197, 94, 0.8)",
 							}}
 						/>
