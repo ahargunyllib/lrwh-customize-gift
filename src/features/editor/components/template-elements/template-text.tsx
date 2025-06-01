@@ -183,8 +183,6 @@ export default function TemplateText({
 					}
 
 					if (constrainToCanvas) {
-						console.log("constrainToCanvas", textSize);
-
 						newPosition = constrainToCanvas(
 							newPosition,
 							textSize.width,

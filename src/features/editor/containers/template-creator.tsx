@@ -1,12 +1,10 @@
 "use client";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import {
 	type ReactNode,
 	createContext,
 	forwardRef,
 	useContext,
-	useEffect,
 	useRef,
 	useState,
 } from "react";
