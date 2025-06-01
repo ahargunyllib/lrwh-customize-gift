@@ -10,6 +10,12 @@ export function useCanvasScale(
 	useEffect(() => {
 		const calc = () => {
 			if (!ref.current) return;
+			const deviceWidth = window.innerWidth;
+
+			if (deviceWidth < 640) {
+				setScale(Math.min(1, deviceWidth / templateWidth));
+				return;
+			}
 			const containerWidth = ref.current.clientWidth - 32; // padding
 			setScale(Math.min(1, containerWidth / templateWidth));
 		};
@@ -28,5 +34,5 @@ export function useCanvasScale(
 		setScale(1);
 	}
 
-	return { scale, zoomIn, zoomOut, resetZoom };
+	return { scale, zoomIn, zoomOut, resetZoom, setScale };
 }
