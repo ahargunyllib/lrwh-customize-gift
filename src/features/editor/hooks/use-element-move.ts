@@ -1,12 +1,12 @@
 "use client";
 import type { Position, TemplateData } from "@/shared/types/template";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export function useElementMove(
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>,
 ) {
-	useEffect(() => {
-		const handler = (e: Event) => {
+	const handler = useCallback(
+		(e: Event) => {
 			const { id, type, position } = (
 				e as CustomEvent<{
 					id: string;
@@ -42,8 +42,12 @@ export function useElementMove(
 				}
 				return prev;
 			});
-		};
+		},
+		[setTemplate],
+	);
+
+	useEffect(() => {
 		document.addEventListener("elementMove", handler);
 		return () => document.removeEventListener("elementMove", handler);
-	}, [setTemplate]);
+	}, [handler]);
 }
