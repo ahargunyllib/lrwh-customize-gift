@@ -76,6 +76,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			scale,
 		});
 
+		// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 		useEffect(() => {
 			if (!isCustomizing) return;
 			if (initialTemplate) {
@@ -94,13 +95,13 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 		}, [
 			initialTemplate,
 			isCustomizing,
-			setTemplate,
-			template.width,
-			template.height,
+			// setTemplate,
+			// template.width,
+			// template.height,
 		]);
 
 		return (
-			<div className="relative">
+			<>
 				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 				<div
 					ref={ref}
@@ -109,7 +110,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						width: template.width * scale,
 						height: template.height * scale,
 						transform: `scale(${scale})`,
-						transformOrigin: "top left",
+						// translate: `${canvasOffset.x}px ${canvasOffset.y}px`,
+						transformOrigin: "center center",
 					}}
 					onClick={() => setActiveElement(null)}
 					onDrop={handleCanvasDrop}
@@ -131,6 +133,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 
 					{/* Alignment Guides */}
 					<AlignmentGuides
+						scale={scale}
 						guides={guides}
 						canvasWidth={template.width}
 						canvasHeight={template.height}
@@ -189,8 +192,12 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							canvasHeight={template.height}
 						/>
 					))}
+					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500">
+						{template.width}×{template.height}px &nbsp; (scale{" "}
+						{scale.toFixed(2)})
+					</div>
 				</div>
-			</div>
+			</>
 		);
 	},
 );

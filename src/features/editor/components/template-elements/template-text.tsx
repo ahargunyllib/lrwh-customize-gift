@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type React from "react";
 
 import { Input } from "@/shared/components/ui/input";
@@ -68,16 +68,29 @@ export default function TemplateText({
 		letterSpacing,
 	} = text.style;
 
+	const textRef = useRef<HTMLDivElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+	const [textSize, setTextSize] = useState({
+		width: 0,
+		height: 0,
+	});
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		if (textRef.current) {
+			setTextSize({
+				width: textRef.current.clientWidth,
+				height: textRef.current.clientHeight,
+			});
+		}
+	}, [text]);
 
 	const fontSizeNum =
 		typeof text.style.fontSize === "string"
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
 
-	const approxWidth = text.content.length * (fontSizeNum * 0.6);
-	const approxHeight = fontSizeNum * 1.5; // Approximate height based on font size
 	const sweepFlag = curveDirection === "up" ? 0 : 1;
 
 	const computedPadding: React.CSSProperties = {
@@ -91,8 +104,9 @@ export default function TemplateText({
 	const getWrapperStyle = (): React.CSSProperties => {
 		const style: React.CSSProperties = {
 			position: "absolute",
-			transform: `rotate(${rotate}deg)`,
-			transformOrigin: "center center",
+			transform: `scale(${scale}) rotate(${rotate}deg)`,
+			transformOrigin: "top left",
+			width: "max-content",
 		};
 
 		if (centerX) {
@@ -100,13 +114,13 @@ export default function TemplateText({
 			style.right = 0;
 			style.textAlign = "center";
 		} else {
-			style.left = text.position.x;
+			style.left = text.position.x * scale;
 		}
 
 		if (centerY && canvasHeight) {
 			style.top = canvasHeight / 2;
 		} else {
-			style.top = text.position.y;
+			style.top = text.position.y * scale;
 		}
 
 		return style;
@@ -133,12 +147,15 @@ export default function TemplateText({
 	const handleMouseDown = (e: React.MouseEvent) => {
 		if (text.draggable && !isEditing) {
 			e.preventDefault();
-			const rect = e.currentTarget.getBoundingClientRect();
-			setDragOffset({
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			});
-			setIsDragging(true);
+			const canvas = document.querySelector('[data-canvas="true"]');
+			if (canvas) {
+				const canvasRect = canvas.getBoundingClientRect();
+				setDragOffset({
+					x: (e.clientX - canvasRect.left) / scale - text.position.x,
+					y: (e.clientY - canvasRect.top) / scale - text.position.y,
+				});
+				setIsDragging(true);
+			}
 		}
 	};
 
@@ -150,8 +167,8 @@ export default function TemplateText({
 				const canvas = document.querySelector('[data-canvas="true"]');
 				if (canvas) {
 					const canvasRect = canvas.getBoundingClientRect();
-					const newX = (e.clientX - canvasRect.left - dragOffset.x) / scale;
-					const newY = (e.clientY - canvasRect.top - dragOffset.y) / scale;
+					const newX = (e.clientX - canvasRect.left) / scale - dragOffset.x;
+					const newY = (e.clientY - canvasRect.top) / scale - dragOffset.y;
 
 					let newPosition = { x: newX, y: newY };
 
@@ -160,16 +177,16 @@ export default function TemplateText({
 					if (getSnapPosition && isSnapping && isMovingSlowly) {
 						newPosition = getSnapPosition(
 							newPosition,
-							approxWidth,
-							approxHeight,
+							textSize.width,
+							textSize.height,
 						);
 					}
 
 					if (constrainToCanvas) {
 						newPosition = constrainToCanvas(
 							newPosition,
-							approxWidth,
-							approxHeight,
+							textSize.width,
+							textSize.height,
 						);
 					}
 
@@ -205,12 +222,12 @@ export default function TemplateText({
 		getSnapPosition,
 		constrainToCanvas,
 		isSnapping,
-		approxWidth,
-		approxHeight,
+		textSize,
 	]);
 
 	return (
 		<div
+			ref={textRef}
 			className={isActive ? "ring-2 ring-blue-500 absolute" : "absolute"}
 			style={getWrapperStyle()}
 			onClick={(e) => {
@@ -244,16 +261,17 @@ export default function TemplateText({
 					{curved ? (
 						// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
 						<svg
-							width={approxWidth + 2}
+							// +2 ?
+							width={textSize.width + 2}
 							height={curveRadius + fontSizeNum}
-							viewBox={`0 -${curveRadius} ${approxWidth + 2} ${curveRadius + fontSizeNum}`}
+							viewBox={`0 -${curveRadius} ${textSize.width + 2} ${curveRadius + fontSizeNum}`}
 							style={{ overflow: "visible" }}
 							aria-label={text.content}
 						>
 							<defs>
 								<path
 									id={`curve-path-${text.id}`}
-									d={`M 0,0 A ${curveRadius},${curveRadius} 0 0,${sweepFlag} ${approxWidth},0`}
+									d={`M 0,0 A ${curveRadius},${curveRadius} 0 0,${sweepFlag} ${textSize.width},0`}
 								/>
 							</defs>
 							<text
