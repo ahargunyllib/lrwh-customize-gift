@@ -28,10 +28,6 @@ export default function AppSidebar() {
 	const { data, isLoading } = useSessionQuery();
 	const { mutate: logout, isPending } = useLogoutMutation();
 
-	if (!data?.isLoggedIn) {
-		return null;
-	}
-
 	return (
 		<Sidebar variant="floating">
 			<SidebarHeader>
@@ -57,7 +53,7 @@ export default function AppSidebar() {
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				{isLoading || !data || !data.role ? (
+				{isLoading || !data || !data.isLoggedIn || !data.role ? (
 					<SidebarGroup>
 						<SidebarMenuSkeleton showIcon />
 						<SidebarMenuSkeleton showIcon />
