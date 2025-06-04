@@ -4,15 +4,30 @@ import {
 	DataTable,
 	columns,
 } from "@/features/order-management/components/order-table";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/shared/components/ui/card";
 import { useGetOrdersQuery } from "@/shared/repository/order/query";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {
 	return (
-		<section>
-			Order Management
-			<OrderContainer />
-		</section>
+		<Card>
+			<CardHeader>
+				<CardTitle>Order Management</CardTitle>
+				<CardDescription>
+					Manage your orders efficiently with our comprehensive order management
+					system.
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<OrderContainer />
+			</CardContent>
+		</Card>
 	);
 }
 
