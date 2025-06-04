@@ -1,6 +1,6 @@
 export type Order = {
 	id: number;
-	order_number: string;
+	orderNumber: string;
 	username: string;
 	imageUrl?: string;
 	createdAt: string;

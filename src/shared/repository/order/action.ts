@@ -1,37 +1,28 @@
 "use server";
 
 import { db } from "@/server/db";
+import { ordersTable } from "@/server/db/schema/orders";
+import { desc, ilike, or } from "drizzle-orm";
 import { tryCatch } from "../../lib/try-catch";
-import type { Order } from "../../types";
 import type { GetOrdersQuery } from "./dto";
 
 export const getOrders = async (query: GetOrdersQuery) => {
-	let queryBuilder = `
-    select *
-    from orders
-  `;
-	const args = [];
-
-	if (query?.search) {
-		queryBuilder += ` where order_number ilike $${args.length + 1} or username ilike $${args.length + 1}`;
-		args.push(`%${query.search}%`);
-	}
-
-	if (query?.page && query?.limit) {
-		if (query.page < 1) {
-			query.page = 1;
-		}
-
-		if (query.limit < 1) {
-			query.limit = 10;
-		}
-
-		const offset = (query.page - 1) * query.limit;
-		queryBuilder += ` limit $${args.length + 1} offset $${args.length + 2}`;
-		args.push(query.limit, offset);
-	}
-
-	const { data, error } = await tryCatch(db.execute<Order>(queryBuilder));
+	const { data: orders, error } = await tryCatch(
+		db
+			.select()
+			.from(ordersTable)
+			.where(
+				query.search
+					? or(
+							ilike(ordersTable.orderNumber, `%${query.search}%`),
+							ilike(ordersTable.username, `%${query.search}%`),
+						)
+					: undefined,
+			)
+			.orderBy(desc(ordersTable.createdAt))
+			.limit(query.limit || 10)
+			.offset(((query.page || 1) - 1) * (query.limit || 10)),
+	);
 	if (error) {
 		return {
 			success: false,
@@ -39,8 +30,6 @@ export const getOrders = async (query: GetOrdersQuery) => {
 			message: "Failed to fetch orders",
 		};
 	}
-
-	const { rows: orders } = data;
 
 	return {
 		success: true,
