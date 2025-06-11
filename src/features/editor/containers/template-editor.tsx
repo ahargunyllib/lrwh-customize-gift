@@ -7,6 +7,8 @@ import { Printer } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
+import ZoomControl from "../components/zoom-control";
+import { useCanvasGesture } from "../hooks/use-canvas-gesture";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
 import { useExportImage } from "../hooks/use-export-image";
 import { useTemplateEditor } from "../hooks/use-template-editor";
@@ -33,10 +35,11 @@ export default function TemplateEditor({
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
 	const canvasRef = useRef<HTMLDivElement>(null!);
-	const scale = useCanvasScale(
+	const { scale, zoomIn, zoomOut, resetZoom } = useCanvasScale(
 		canvasContainerRef as React.RefObject<HTMLDivElement>,
 		editor.template.width,
 	);
+	const { canvasOffset, bindGesture } = useCanvasGesture();
 
 	const { exportAsImage } = useExportImage(canvasRef);
 
@@ -91,8 +94,14 @@ export default function TemplateEditor({
 					<div
 						ref={canvasContainerRef}
 						className="flex-1 overflow-auto bg-gray-100 p-8 flex items-center justify-center"
+						{...bindGesture}
 					>
-						<div className="relative">
+						<div
+							className="relative"
+							style={{
+								translate: `${canvasOffset.x}px ${canvasOffset.y}px`,
+							}}
+						>
 							<EditorCanvas
 								ref={canvasRef}
 								template={editor.template}
@@ -102,13 +111,13 @@ export default function TemplateEditor({
 								scale={scale}
 								allowDelete={false}
 							/>
-							<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500">
-								<Printer className="inline h-3 w-3 mr-1" />
-								{selectedSize.label} (
-								{Math.round(editor.template.width * scale)}×
-								{Math.round(editor.template.height * scale)}px)
-							</div>
 						</div>
+
+						<ZoomControl
+							zoomIn={zoomIn}
+							zoomOut={zoomOut}
+							resetZoom={resetZoom}
+						/>
 					</div>
 				</div>
 			</div>

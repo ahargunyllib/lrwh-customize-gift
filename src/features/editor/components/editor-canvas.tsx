@@ -12,6 +12,7 @@ import { useElementCenter } from "@/features/editor/hooks/use-element-center";
 import { useElementMove } from "@/features/editor/hooks/use-element-move";
 import { useImageReplace } from "@/features/editor/hooks/use-image-replace";
 import { useKeyboardDelete } from "@/features/editor/hooks/use-keyboard-delete";
+import { Printer } from "lucide-react";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
 import TemplateText from "./template-elements/template-text";
@@ -192,8 +193,9 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							canvasHeight={template.height}
 						/>
 					))}
-					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500">
-						{template.width}×{template.height}px &nbsp; (scale{" "}
+					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
+						<Printer className="inline h-3 w-3 mr-1" />
+						{template.width}×{template.height}px&nbsp;(scale&nbsp;
 						{scale.toFixed(2)})
 					</div>
 				</div>

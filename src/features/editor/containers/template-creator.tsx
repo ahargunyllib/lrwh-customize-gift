@@ -11,6 +11,7 @@ import {
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
 import Sidebar from "../components/sidebar/sidebar-creator";
+import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
 import { useTemplateEditor } from "../hooks/use-template-editor";
@@ -105,36 +106,7 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 			</div>
 
 			{/* Zoom control in out */}
-			<div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2">
-				<button
-					type="button"
-					onClick={zoomIn}
-					className="p-2 hover:bg-gray-100 rounded transition-colors"
-					title="Zoom In"
-				>
-					<ZoomIn size={20} />
-				</button>
-				<button
-					type="button"
-					onClick={zoomOut}
-					className="p-2 hover:bg-gray-100 rounded transition-colors"
-					title="Zoom Out"
-				>
-					<ZoomOut size={20} />
-				</button>
-				{/* <span className="px-3 py-2 text-sm font-mono bg-gray-50 rounded">
-					{Math.round(scale * 100)}%
-				</span>
-				<div className="w-px bg-gray-300" /> */}
-				<button
-					type="button"
-					onClick={resetZoom}
-					className="p-2 hover:bg-gray-100 rounded transition-colors"
-					title="Reset Zoom"
-				>
-					<RotateCcw size={20} />
-				</button>
-			</div>
+			<ZoomControl zoomIn={zoomIn} zoomOut={zoomOut} resetZoom={resetZoom} />
 		</div>
 	);
 });
