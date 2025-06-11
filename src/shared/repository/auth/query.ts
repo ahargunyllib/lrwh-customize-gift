@@ -24,10 +24,10 @@ export const useLoginMutation = () => {
 
 			toast.success(res.message);
 			await createSession(res.data.access_token);
-			router.replace(returnTo || "/dashboard");
+			router.replace(returnTo || "/");
 			setCookie("returnTo", "");
 
-			queryClient.refetchQueries({ queryKey: ["auth"] });
+			queryClient.refetchQueries({ queryKey: ["auth-session-manager"] });
 		},
 	});
 };
@@ -39,7 +39,8 @@ export const useLogoutMutation = () => {
 		mutationKey: ["auth"],
 		mutationFn: () => logout(),
 		onSuccess: () => {
-			queryClient.resetQueries({ queryKey: ["auth"] });
+			// queryClient.resetQueries({ queryKey: ["auth"] });
+			queryClient.resetQueries({ queryKey: ["auth-session-manager"] });
 		},
 	});
 };
