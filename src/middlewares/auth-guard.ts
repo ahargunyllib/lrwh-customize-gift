@@ -24,6 +24,4 @@ export const authGuard: MiddlewareFunction = async ({ req, session }) => {
 			return response;
 		}
 	}
-
-	return NextResponse.next();
 };
