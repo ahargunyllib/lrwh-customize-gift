@@ -92,7 +92,7 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 			<div
 				// Apply the canvas offset to the canvas container
 				style={{
-					translate: `${canvasOffset.x}px ${canvasOffset.y}px`,
+					transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
 				}}
 			>
 				<EditorCanvas

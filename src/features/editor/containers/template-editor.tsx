@@ -99,7 +99,7 @@ export default function TemplateEditor({
 						<div
 							className="relative"
 							style={{
-								translate: `${canvasOffset.x}px ${canvasOffset.y}px`,
+								transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
 							}}
 						>
 							<EditorCanvas
