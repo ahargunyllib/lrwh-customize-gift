@@ -24,7 +24,7 @@ export const useLoginMutation = () => {
 
 			toast.success(res.message);
 			await createSession(res.data.access_token);
-			router.replace(returnTo || "/");
+			router.replace(returnTo || "/dashboard");
 			setCookie("returnTo", "");
 
 			queryClient.refetchQueries({ queryKey: ["auth-session-manager"] });

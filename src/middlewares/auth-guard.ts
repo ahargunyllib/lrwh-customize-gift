@@ -12,8 +12,6 @@ export const authGuard: MiddlewareFunction = async ({ req, session }) => {
 	);
 
 	const isProtected = !!matchedRoute;
-	// const hasRequiredRole =
-	//   !matchedRoute?.roles || matchedRoute.roles.includes(session?.role);
 
 	if (isProtected) {
 		if (!session?.isLoggedIn) {
@@ -25,10 +23,6 @@ export const authGuard: MiddlewareFunction = async ({ req, session }) => {
 			});
 			return response;
 		}
-
-		// if (!hasRequiredRole) {
-		//   return NextResponse.redirect(new URL("/unauthorized", req.nextUrl));
-		// }
 	}
 
 	return NextResponse.next();
