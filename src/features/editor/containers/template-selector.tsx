@@ -164,6 +164,9 @@ export default function TemplateSelector() {
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end" className="px-0">
 									<DropdownMenuLabel>Hi, Admin</DropdownMenuLabel>
+									<DropdownMenuItem className="rounded-none" asChild>
+										<Link href="/dashboard/profile">Dashboard</Link>
+									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
 										className="text-red-600 hover:!text-red-700 font-medium rounded-none"
