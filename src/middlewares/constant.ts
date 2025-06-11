@@ -8,6 +8,9 @@ export const PROTECTED_ROUTES = [
 		roles: ["editor"],
 	},
 	{
+		path: /^\/editor\/create$/, // matches /editor/create
+	},
+	{
 		path: /^\/design-system/,
 	},
 ];
