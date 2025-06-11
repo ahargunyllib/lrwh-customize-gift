@@ -21,7 +21,7 @@ export default function HeaderBar({ title, onMenuClick, onSave }: Props) {
 							<Menu className="h-5 w-5" />
 						</Button>
 					)}
-					<Link href="/templates">
+					<Link href="/">
 						<Button variant="ghost" size="icon">
 							<ArrowLeft className="h-5 w-5" />
 						</Button>
