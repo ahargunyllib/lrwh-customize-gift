@@ -6,7 +6,9 @@ export const authGuard: MiddlewareFunction = async ({ req, session }) => {
 	const pathname = req.nextUrl.pathname;
 
 	const matchedRoute = PROTECTED_ROUTES.find((route) =>
-		pathname.startsWith(route.path),
+		route.path instanceof RegExp
+			? route.path.test(pathname)
+			: pathname.startsWith(route.path),
 	);
 
 	const isProtected = !!matchedRoute;
