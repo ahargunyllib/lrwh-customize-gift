@@ -18,6 +18,7 @@ export default function ZoomControl({
 				onClick={zoomIn}
 				className="p-2 hover:bg-gray-100 rounded transition-colors"
 				title="Zoom In"
+				aria-label="Zoom In"
 			>
 				<ZoomIn size={20} />
 			</button>
@@ -26,6 +27,7 @@ export default function ZoomControl({
 				onClick={zoomOut}
 				className="p-2 hover:bg-gray-100 rounded transition-colors"
 				title="Zoom Out"
+				aria-label="Zoom Out"
 			>
 				<ZoomOut size={20} />
 			</button>
@@ -34,6 +36,7 @@ export default function ZoomControl({
 				onClick={resetZoom}
 				className="p-2 hover:bg-gray-100 rounded transition-colors"
 				title="Reset Zoom"
+				aria-label="Reset Zoom"
 			>
 				<RotateCcw size={20} />
 			</button>
