@@ -1,6 +1,6 @@
-import { DEV_ONLY_ROUTES } from "@/middleware";
 import type { MiddlewareFunction } from "@/shared/types/middleware";
 import { NextResponse } from "next/server";
+import { DEV_ONLY_ROUTES } from "./constant";
 
 export const devOnlyGuard: MiddlewareFunction = async ({ req }) => {
 	const pathname = req.nextUrl.pathname;

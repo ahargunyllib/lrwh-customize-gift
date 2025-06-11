@@ -1,6 +1,6 @@
-import { ROUTE_REDIRECTS } from "@/middleware";
 import type { MiddlewareFunction } from "@/shared/types/middleware";
 import { NextResponse } from "next/server";
+import { ROUTE_REDIRECTS } from "./constant";
 
 export const redirectRules: MiddlewareFunction = async ({ req }) => {
 	const pathname = req.nextUrl.pathname;
