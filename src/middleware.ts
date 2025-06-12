@@ -17,19 +17,6 @@ export async function middleware(req: NextRequest) {
 		roleBasedAccess,
 	]);
 }
-
-export const config = {
-	matcher: ["/dashboard/:path*", "/design-system"],
-};
-
-export const PROTECTED_ROUTES = ["/dashboard"];
-
-export const DEV_ONLY_ROUTES = ["/design-system"];
-
-export const ROUTE_REDIRECTS = {
-	"/dashboard": "/dashboard/profile",
-} as const;
-
 async function runMiddleware(
 	req: NextRequest,
 	middlewares: MiddlewareFunction[],
@@ -44,3 +31,12 @@ async function runMiddleware(
 
 	return NextResponse.next();
 }
+
+export const config = {
+	matcher: [
+		"/editor/:path*",
+		"/design-system",
+		"/api/:path*",
+		"/dashboard/:path*",
+	],
+};

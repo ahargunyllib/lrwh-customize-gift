@@ -1,4 +1,4 @@
-import { ReceiptIcon, User2Icon } from "lucide-react";
+import { LayoutTemplate, ReceiptIcon, User2Icon } from "lucide-react";
 
 export const tabsData = {
 	1: [
@@ -11,6 +11,11 @@ export const tabsData = {
 			label: "Order Management",
 			href: "/dashboard/order-management",
 			icon: ReceiptIcon,
+		},
+		{
+			label: "Manage Templates",
+			href: "/",
+			icon: LayoutTemplate,
 		},
 	],
 } as const;

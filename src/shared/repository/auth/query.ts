@@ -27,7 +27,7 @@ export const useLoginMutation = () => {
 			router.replace(returnTo || "/dashboard");
 			setCookie("returnTo", "");
 
-			queryClient.refetchQueries({ queryKey: ["auth"] });
+			queryClient.refetchQueries({ queryKey: ["auth-session-manager"] });
 		},
 	});
 };
@@ -39,7 +39,8 @@ export const useLogoutMutation = () => {
 		mutationKey: ["auth"],
 		mutationFn: () => logout(),
 		onSuccess: () => {
-			queryClient.resetQueries({ queryKey: ["auth"] });
+			// queryClient.resetQueries({ queryKey: ["auth"] });
+			queryClient.resetQueries({ queryKey: ["auth-session-manager"] });
 		},
 	});
 };

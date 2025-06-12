@@ -10,6 +10,14 @@ import {
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -17,17 +25,21 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { useLogoutMutation } from "@/shared/repository/auth/query";
+import { useSessionQuery } from "@/shared/repository/session-manager/query";
 import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
 import type { PrintSizeConfig, TemplateData } from "@/shared/types/template";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function TemplateSelector() {
 	const router = useRouter();
 	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
 	const { data: res, isLoading, error } = useGetTemplatesQuery();
+	const session = useSessionQuery();
+	const { mutate: logout } = useLogoutMutation();
 
 	const customTemplates = res?.data?.templates || [];
 
@@ -132,12 +144,42 @@ export default function TemplateSelector() {
 							</SelectContent>
 						</Select>
 					</div>
-					<Link href="/editor/create">
-						<Button variant="outline" className="flex items-center gap-2">
-							<PlusCircle className="h-4 w-4" />
-							Create New
-						</Button>
-					</Link>
+					{session.data?.isLoggedIn && (
+						<>
+							<Link href="/editor/create">
+								<Button variant="outline" className="flex items-center gap-2">
+									<PlusCircle className="h-4 w-4" />
+									Create New
+								</Button>
+							</Link>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="outline"
+										size="icon"
+										className="rounded-full"
+									>
+										<UserRound />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="px-0">
+									<DropdownMenuLabel>Hi, Admin</DropdownMenuLabel>
+									<DropdownMenuItem className="rounded-none" asChild>
+										<Link href="/dashboard/profile">Dashboard</Link>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										className="text-red-600 hover:!text-red-700 font-medium rounded-none"
+										onClick={() => {
+											logout();
+										}}
+									>
+										Logout
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</>
+					)}
 				</div>
 			</div>
 
@@ -167,15 +209,17 @@ export default function TemplateSelector() {
 													as is.
 												</p>
 												<div className="flex gap-2">
-													<Button
-														className="flex-1"
-														variant="outline"
-														onClick={() =>
-															router.push(`/editor/${template.id}/edit`)
-														}
-													>
-														Edit Template
-													</Button>
+													{session.data?.isLoggedIn && (
+														<Button
+															className="flex-1"
+															variant="outline"
+															onClick={() =>
+																router.push(`/editor/${template.id}/edit`)
+															}
+														>
+															Edit Template
+														</Button>
+													)}
 													<Button
 														className="flex-1"
 														onClick={() => {
