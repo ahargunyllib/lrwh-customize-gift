@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export default function TextCard({ txt, selected, onSelect }: Props) {
-	const { updateText } = useTemplateContext();
+	const { updateText, deleteElement } = useTemplateContext();
 
 	return (
 		<Card
@@ -220,6 +221,16 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						}
 					/>
 				</div>
+				<Button
+					variant="destructive"
+					size="sm"
+					className="h-7 mt-1 text-xs"
+					onClick={(e) => {
+						deleteElement(txt.id);
+					}}
+				>
+					Delete
+				</Button>
 			</CardContent>
 		</Card>
 	);
