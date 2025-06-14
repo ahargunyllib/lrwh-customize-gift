@@ -15,6 +15,9 @@ export function useBackgroundCanvas(
 					backgroundImage: result,
 				}));
 			};
+			reader.onerror = () => {
+				console.error("Error reading file for background image");
+			};
 			reader.readAsDataURL(file);
 		},
 		[setTemplate],
