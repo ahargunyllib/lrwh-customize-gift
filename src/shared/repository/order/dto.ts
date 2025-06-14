@@ -41,3 +41,10 @@ export type UpdateOrderParams = {
 export type DeleteOrderParams = {
 	id: Order["id"];
 };
+
+export const submitOrderSchema = z.object({
+	file: z.instanceof(Blob).refine((file) => file.size > 0, "File is required"),
+	orderId: z.number().int().positive("Order ID must be a positive integer"),
+});
+
+export type SubmitOrderRequest = z.infer<typeof submitOrderSchema>;

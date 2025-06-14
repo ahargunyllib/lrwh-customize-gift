@@ -7,12 +7,14 @@ import {
 	createOrder,
 	deleteOrder,
 	getOrders,
+	submitOrder,
 	updateOrder,
 	verifyOrderByUsernameAndOrderNumber,
 } from "./action";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
+	SubmitOrderRequest,
 	UpdateOrderParams,
 	UpdateOrderRequest,
 	VerifyOrderByUsernameAndOrderNumberRequest,
@@ -89,6 +91,24 @@ export const useDeleteOrderMutation = (id: UpdateOrderParams) => {
 			}
 
 			toast.success(res.message);
+			queryClient.invalidateQueries({
+				queryKey: ["orders"],
+			});
+		},
+	});
+};
+
+export const useSubmitOrderMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationKey: ["submit-order"],
+		mutationFn: (data: SubmitOrderRequest) => submitOrder(data),
+		onSuccess: (res) => {
+			if (!res.success) {
+				return;
+			}
+
 			queryClient.invalidateQueries({
 				queryKey: ["orders"],
 			});
