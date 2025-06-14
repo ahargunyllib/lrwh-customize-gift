@@ -1,9 +1,21 @@
 import { tabsData } from "@/features/dashboard/data/tabs";
 import type { MiddlewareFunction } from "@/shared/types/middleware";
 import { NextResponse } from "next/server";
+import { PROTECTED_ROUTES } from "./constant";
 
 export const roleBasedAccess: MiddlewareFunction = async ({ req, session }) => {
 	const pathname = req.nextUrl.pathname;
+
+	const matchedRoute = PROTECTED_ROUTES.find((route) =>
+		route.path instanceof RegExp
+			? route.path.test(pathname)
+			: pathname.startsWith(route.path),
+	);
+
+	const isProtected = !!matchedRoute;
+	if (!isProtected) {
+		return NextResponse.next();
+	}
 
 	if (!session?.isLoggedIn) {
 		const returnTo = `${pathname}${req.nextUrl.search}`;
