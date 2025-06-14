@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function ImageCard({ img, selected, onSelect }: Props) {
-	const { updateImage } = useTemplateContext();
+	const { updateImage, deleteElement } = useTemplateContext();
 	const inputId = `file-${img.id}`;
 
 	return (
@@ -59,6 +59,16 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 							}}
 						>
 							Replace
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							className="h-7 mt-1 text-xs"
+							onClick={(e) => {
+								deleteElement(img.id);
+							}}
+						>
+							Delete
 						</Button>
 					</div>
 				</div>
