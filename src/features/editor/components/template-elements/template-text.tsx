@@ -106,21 +106,24 @@ export default function TemplateText({
 			position: "absolute",
 			transform: `scale(${scale}) rotate(${rotate}deg)`,
 			transformOrigin: "top left",
-			width: "max-content",
+			width: centerX ? "100%" : "max-content", // ini penting!
+			display: centerX ? "flex" : undefined,
+			justifyContent: centerX ? "center" : undefined,
 		};
 
 		if (centerX) {
 			style.left = 0;
 			style.right = 0;
-			style.textAlign = "center";
-		} else {
-			style.left = text.position.x * scale;
 		}
 
 		if (centerY && canvasHeight) {
 			style.top = canvasHeight / 2;
 		} else {
 			style.top = text.position.y * scale;
+		}
+
+		if (!centerX) {
+			style.left = text.position.x * scale;
 		}
 
 		return style;
