@@ -1,5 +1,5 @@
 "use client";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { useCallback } from "react";
 
 export function useExportImage(ref: React.RefObject<HTMLElement>) {
@@ -14,7 +14,7 @@ export function useExportImage(ref: React.RefObject<HTMLElement>) {
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement("a");
 		link.href = url;
-		link.download = "template.png";
+		link.download = "LRWH customize gift.png";
 		link.click();
 		URL.revokeObjectURL(url);
 	}, [ref]);
