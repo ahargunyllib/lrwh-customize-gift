@@ -32,7 +32,10 @@ export default function OnboardingFormModal({ defaultOpen }: Props) {
 
 	return (
 		<Dialog open={isOpen}>
-			<DialogContent showCloseButton={false}>
+			<DialogContent
+				showCloseButton={false}
+				overlayClassName="backdrop-blur-xs"
+			>
 				<DialogHeader>
 					<DialogTitle>Welcome to LRWH Customize Gift Card Editor!</DialogTitle>
 					<DialogDescription>

@@ -1,7 +1,5 @@
 "use client";
-import { getTemplateById } from "@/features/editor/services";
 import { Button } from "@/shared/components/ui/button";
-import { Label } from "@/shared/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -10,9 +8,7 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
-import { useGetTemplateById } from "@/shared/repository/templates/query";
 import type { TemplateData } from "@/shared/types/template";
-import { Printer } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
@@ -50,7 +46,7 @@ export default function TemplateEditor({
 	);
 	const { canvasOffset, bindGesture } = useCanvasGesture();
 
-	const { exportAsImage } = useExportImage(canvasRef);
+	const { exportAsImage, isLoading } = useExportImage(canvasRef);
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -86,8 +82,9 @@ export default function TemplateEditor({
 							size="sm"
 							onClick={exportAsImage}
 							className="ml-auto"
+							disabled={isLoading}
 						>
-							Export PNG
+							{isLoading ? "Loading..." : "Submit"}
 						</Button>
 					</div>
 				</div>
