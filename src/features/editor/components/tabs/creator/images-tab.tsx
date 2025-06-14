@@ -3,7 +3,7 @@
 import { useTemplateContext } from "@/features/editor/containers/template-creator";
 import type React from "react";
 
-import { useBackgroundCanvas } from "@/features/editor/hooks/useBackgroundCanvas";
+import { useBackgroundCanvas } from "@/features/editor/hooks/use-background-canvas";
 import { Button } from "@/shared/components/ui/button";
 import { ImagePlus } from "lucide-react";
 import { useCallback, useRef } from "react";
