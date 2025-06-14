@@ -6,15 +6,16 @@ import { useDialogStore } from "../../hooks/use-dialog";
 import {
 	createOrder,
 	deleteOrder,
-	getOrderByUsernameAndOrderNumber,
 	getOrders,
 	updateOrder,
+	verifyOrderByUsernameAndOrderNumber,
 } from "./action";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
 	UpdateOrderParams,
 	UpdateOrderRequest,
+	VerifyOrderByUsernameAndOrderNumberRequest,
 } from "./dto";
 
 export const useGetOrdersQuery = (query: GetOrdersQuery) => {
@@ -24,13 +25,11 @@ export const useGetOrdersQuery = (query: GetOrdersQuery) => {
 	});
 };
 
-export const useGetOrderByUsernameAndOrderNumberQuery = (query: {
-	username: string;
-	orderNumber: string;
-}) => {
-	return useQuery({
-		queryKey: ["orders", query],
-		queryFn: () => getOrderByUsernameAndOrderNumber(query),
+export const useVerifyOrderByUsernameAndOrderNumberMutation = () => {
+	return useMutation({
+		mutationKey: ["verify-order"],
+		mutationFn: (data: VerifyOrderByUsernameAndOrderNumberRequest) =>
+			verifyOrderByUsernameAndOrderNumber(data),
 	});
 };
 

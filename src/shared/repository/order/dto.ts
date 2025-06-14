@@ -7,9 +7,17 @@ export type GetOrdersQuery = {
 	limit?: number;
 };
 
-export type GetOrderByUsernameAndOrderNumberQuery = {
-	username: string;
-	orderNumber: string;
+export const VerifyOrderByUsernameAndOrderNumberSchema = z.object({
+	username: z.string().min(1, "Username is required"),
+	orderNumber: z.string().min(1, "Order number is required"),
+});
+
+export type VerifyOrderByUsernameAndOrderNumberRequest = z.infer<
+	typeof VerifyOrderByUsernameAndOrderNumberSchema
+>;
+
+export type VerifyOrderByUsernameAndOrderNumberResponse = {
+	order: Order;
 };
 
 export const createOrderSchema = z.object({

@@ -4,12 +4,14 @@ import { db } from "@/server/db";
 import { ordersTable } from "@/server/db/schema/orders";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import { tryCatch } from "../../lib/try-catch";
+import type { ApiResponse } from "../../types";
 import type {
 	CreateOrderRequest,
-	GetOrderByUsernameAndOrderNumberQuery,
 	GetOrdersQuery,
 	UpdateOrderParams,
 	UpdateOrderRequest,
+	VerifyOrderByUsernameAndOrderNumberRequest,
+	VerifyOrderByUsernameAndOrderNumberResponse,
 } from "./dto";
 
 export const getOrders = async (query: GetOrdersQuery) => {
@@ -46,17 +48,17 @@ export const getOrders = async (query: GetOrdersQuery) => {
 	};
 };
 
-export const getOrderByUsernameAndOrderNumber = async (
-	query: GetOrderByUsernameAndOrderNumberQuery,
-) => {
+export const verifyOrderByUsernameAndOrderNumber = async (
+	req: VerifyOrderByUsernameAndOrderNumberRequest,
+): Promise<ApiResponse<VerifyOrderByUsernameAndOrderNumberResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
 			.select()
 			.from(ordersTable)
 			.where(
 				and(
-					eq(ordersTable.username, query.username),
-					eq(ordersTable.orderNumber, query.orderNumber),
+					eq(ordersTable.username, req.username),
+					eq(ordersTable.orderNumber, req.orderNumber),
 				),
 			),
 	);
@@ -68,10 +70,20 @@ export const getOrderByUsernameAndOrderNumber = async (
 		};
 	}
 
+	if (orders.length === 0) {
+		return {
+			success: false,
+			error: "Order not found",
+			message: "Order not found",
+		};
+	}
+
+	const order = orders[0];
+
 	return {
 		success: true,
 		data: {
-			orders,
+			order,
 		},
 		message: "Order fetched successfully",
 	};
