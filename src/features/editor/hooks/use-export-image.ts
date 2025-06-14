@@ -15,7 +15,10 @@ export function useExportImage(ref: React.RefObject<HTMLElement>) {
 
 	const exportAsImage = useCallback(async () => {
 		if (!ref.current) return;
-		const blob = await toBlob(ref.current);
+		const canvas = await html2canvas(ref.current, { backgroundColor: null });
+		const blob = await new Promise<Blob | null>((res) =>
+			canvas.toBlob(res, "image/png"),
+		);
 		if (!blob) {
 			toast.error("Failed to convert element to image.");
 			return;
