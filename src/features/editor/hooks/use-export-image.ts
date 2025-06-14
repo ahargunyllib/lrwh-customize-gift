@@ -1,7 +1,9 @@
 "use client";
 
+import { tryCatch } from "@/shared/lib/try-catch";
 import { useSubmitOrderMutation } from "@/shared/repository/order/query";
-import { toBlob } from "html-to-image";
+import type { Order } from "@/shared/types";
+import html2canvas from "html2canvas-pro";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
@@ -29,12 +31,20 @@ export function useExportImage(ref: React.RefObject<HTMLElement>) {
 			return;
 		}
 
-		const orderId = JSON.parse(orderIdJson);
+		const { data: orderId, error } = await tryCatch(JSON.parse(orderIdJson));
+		if (error) {
+			toast.error("Invalid order ID format.");
+		}
+
+		if (!orderId || typeof orderId !== "number") {
+			toast.error("Invalid order ID. Please verify your order first.");
+			return;
+		}
 
 		submitOrder(
 			{
 				file: blob,
-				orderId,
+				orderId: orderId as Order["id"],
 			},
 			{
 				onSuccess: (res) => {
