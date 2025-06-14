@@ -6,7 +6,7 @@ import type React from "react";
 import { useBackgroundCanvas } from "@/features/editor/hooks/useBackgroundCanvas";
 import { Button } from "@/shared/components/ui/button";
 import { ImagePlus } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import ImageCard from "../../card/image-card";
 import ImageUploader from "../../image-uploader";
 
@@ -16,6 +16,8 @@ export default function ImagesTab() {
 
 	const { handleBackgroundChange, removeBackground } =
 		useBackgroundCanvas(setTemplate);
+
+	const backgroundImageRef = useRef<HTMLInputElement>(null);
 
 	return (
 		<div className="space-y-4 pt-4">
@@ -40,13 +42,14 @@ export default function ImagesTab() {
 						variant="outline"
 						className="w-full"
 						onClick={() => {
-							document.getElementById("upload-background")?.click();
+							backgroundImageRef.current?.click();
 						}}
 					>
 						<ImagePlus className="h-4 w-4 mr-2" />
 						Upload Background
 						<input
 							id="upload-background"
+							ref={backgroundImageRef}
 							type="file"
 							accept="image/*"
 							className="hidden"
