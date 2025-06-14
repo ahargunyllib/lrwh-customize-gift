@@ -276,11 +276,14 @@ export default function TemplateImage({
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
 			ref={dropZoneRef}
-			className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${isDragOver ? "ring-2 ring-green-500" : ""}`}
+			className={`absolute overflow-hidden ${isActive ? "ring-2 ring-blue-500" : ""} ${
+				isDragOver ? "ring-2 ring-green-500" : ""
+			}`}
 			style={{
 				...getPositionStyle(),
 				width: image.width * scale,
 				height: image.height * scale,
+				borderRadius: image.borderRadius ?? 0, // tambahkan ini
 			}}
 			onClick={onClick}
 			onDragEnter={handleDragEnter}
@@ -294,6 +297,10 @@ export default function TemplateImage({
 				alt="Template element"
 				className="w-full h-full object-cover pointer-events-none"
 				draggable={false}
+				style={{
+					filter: image.grayscale ? "grayscale(1)" : "none",
+					borderRadius: image.borderRadius ?? 0,
+				}}
 			/>
 			{isDragOver && (
 				<div className="absolute inset-0 bg-green-500/20 flex items-center justify-center pointer-events-none">
