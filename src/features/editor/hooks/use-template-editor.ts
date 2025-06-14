@@ -1,5 +1,7 @@
 "use client";
 import { scaleTemplate } from "@/shared/lib/template";
+import type { LineElement } from "@/shared/types/element/line";
+import type { ShapeElement } from "@/shared/types/element/shape";
 import type {
 	ImageElement,
 	TemplateData,
@@ -9,17 +11,28 @@ import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export function useTemplateEditor(initial?: TemplateData) {
-	const [template, setTemplate] = useState<TemplateData>(
-		initial ?? {
-			id: uuidv4(),
-			name: "Custom Template",
-			width: 10 * 40, // default width in pixels (10cm * 40px/cm)
-			height: 20 * 40, // default height in pixels (20cm * 40px/cm)
-			backgroundColor: "#ffffff",
-			images: [],
-			texts: [],
-		},
-	);
+	// const [template, setTemplate] = useState<TemplateData>(
+	// 	initial ?? {
+	// 		id: uuidv4(),
+	// 		name: "Custom Template",
+	// 		width: printSizes[1].width,
+	// 		height: printSizes[1].height,
+	// 		backgroundColor: "#ffffff",
+	// 		images: [],
+	// 		texts: [],
+	//     shapes: [],
+	// 	},
+	// );
+	const [template, setTemplate] = useState<TemplateData>({
+		id: uuidv4(),
+		name: "Custom Template",
+		width: 10 * 40, // 10 cm in pixels (assuming 1cm = 40px)
+		height: 20 * 40, // 10 cm in pixels (assuming 1cm = 40px)
+		backgroundColor: "#ffffff",
+		images: [],
+		texts: [],
+		shapes: [],
+	});
 	const [activeElement, setActiveElement] = useState<string | null>(null);
 
 	const addImage = (): string => {
@@ -62,11 +75,42 @@ export function useTemplateEditor(initial?: TemplateData) {
 		return id;
 	};
 
+	/* Start Shape Element */
+	const addShape = (type: ShapeElement["type"]) => {
+		const id = uuidv4();
+		const shape: ShapeElement = {
+			id,
+			type,
+			width: 100,
+			height: 100,
+			position: { x: template.width / 2 - 50, y: template.height / 2 - 50 },
+			rotation: 0,
+			fill: "#000000",
+			stroke: "#ffffff",
+			strokeWidth: 1,
+			draggable: true,
+		};
+
+		setTemplate((p) => {
+			console.log(p);
+			return { ...p, shapes: [...p.shapes, shape] };
+		});
+		setActiveElement(id);
+		return id;
+	};
+	const updateShape = (id: string, payload: Partial<ShapeElement>) =>
+		setTemplate((p) => ({
+			...p,
+			shapes: p.shapes.map((s) => (s.id === id ? { ...s, ...payload } : s)),
+		}));
+	/* End Shape Element */
+
 	const deleteElement = (id: string) =>
 		setTemplate((p) => ({
 			...p,
 			images: p.images.filter((i) => i.id !== id),
 			texts: p.texts.filter((t) => t.id !== id),
+			shapes: p.shapes.filter((s) => s.id !== id),
 		}));
 
 	const updateImage = (id: string, payload: Partial<ImageElement>) =>
@@ -100,6 +144,8 @@ export function useTemplateEditor(initial?: TemplateData) {
 		setActiveElement,
 		addImage,
 		addText,
+		addShape,
+		updateShape,
 		deleteElement,
 		updateImage,
 		updateText,
