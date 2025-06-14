@@ -1,5 +1,14 @@
 "use client";
 import { getTemplateById } from "@/features/editor/services";
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
 import { useGetTemplateById } from "@/shared/repository/templates/query";
 import type { TemplateData } from "@/shared/types/template";
@@ -48,9 +57,9 @@ export default function TemplateEditor({
 	return (
 		<TemplateCtx.Provider value={{ ...editor, selectedSize }}>
 			<div className="flex h-screen flex-col">
-				{/* <div className="border-b bg-white">
-					<div className="container py-2 flex items-center gap-4">
-						<Label className="text-sm whitespace-nowrap">Print Size:</Label>
+				<div className="border-b bg-white">
+					<div className="px-4 md:px-8 lg:px-12 py-2 flex items-center gap-4">
+						<h1>Print Size:</h1>
 						<Select
 							value={selectedSize.name}
 							onValueChange={(v) => {
@@ -81,7 +90,7 @@ export default function TemplateEditor({
 							Export PNG
 						</Button>
 					</div>
-				</div> */}
+				</div>
 
 				{/* Body */}
 				<div className="flex flex-1 overflow-hidden relative">
