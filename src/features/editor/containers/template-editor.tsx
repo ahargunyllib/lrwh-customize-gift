@@ -56,8 +56,8 @@ export default function TemplateEditor({
 	const orderIdJson = sessionStorage.getItem("orderId");
 	const session = useSessionQuery();
 	const router = useRouter();
-	const canSave = session.data?.isLoggedIn || !!orderIdJson;
-	if (!canSave) {
+	const canAccess = session.data?.isLoggedIn || !!orderIdJson;
+	if (!canAccess) {
 		router.replace("/");
 		return null;
 	}
