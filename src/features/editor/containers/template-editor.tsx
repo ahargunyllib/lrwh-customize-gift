@@ -8,7 +8,9 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { useSessionQuery } from "@/shared/repository/session-manager/query";
 import type { TemplateData } from "@/shared/types/template";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useRef, useState } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
@@ -50,6 +52,16 @@ export default function TemplateEditor({
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
+	// check if guest try to access editor without orderId
+	const orderIdJson = sessionStorage.getItem("orderId");
+	const session = useSessionQuery();
+	const router = useRouter();
+	const canSave = session.data?.isLoggedIn && !!orderIdJson;
+	if (!canSave) {
+		router.replace("/");
+		return null;
+	}
+
 	return (
 		<TemplateCtx.Provider value={{ ...editor, selectedSize }}>
 			<div className="flex h-screen flex-col">
@@ -77,15 +89,17 @@ export default function TemplateEditor({
 							</SelectContent>
 						</Select>
 
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={exportAsImage}
-							className="ml-auto"
-							disabled={isLoading}
-						>
-							{isLoading ? "Loading..." : "Submit"}
-						</Button>
+						{canSave && (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={exportAsImage}
+								className="ml-auto"
+								disabled={isLoading}
+							>
+								{isLoading ? "Loading..." : "Submit"}
+							</Button>
+						)}
 					</div>
 				</div>
 
