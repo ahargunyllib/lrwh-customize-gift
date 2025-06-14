@@ -13,6 +13,8 @@ export interface ImageElement {
 	draggable?: boolean;
 	centerX?: boolean;
 	centerY?: boolean;
+	borderRadius?: number;
+	grayscale?: boolean;
 }
 
 export interface TextElement {
