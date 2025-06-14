@@ -3,13 +3,17 @@
 import { db } from "@/server/db";
 import { ordersTable } from "@/server/db/schema/orders";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { uploadFileToS3 } from "../../../server/s3";
 import { tryCatch } from "../../lib/try-catch";
+import type { ApiResponse } from "../../types";
 import type {
 	CreateOrderRequest,
-	GetOrderByUsernameAndOrderNumberQuery,
 	GetOrdersQuery,
+	SubmitOrderRequest,
 	UpdateOrderParams,
 	UpdateOrderRequest,
+	VerifyOrderByUsernameAndOrderNumberRequest,
+	VerifyOrderByUsernameAndOrderNumberResponse,
 } from "./dto";
 
 export const getOrders = async (query: GetOrdersQuery) => {
@@ -46,17 +50,17 @@ export const getOrders = async (query: GetOrdersQuery) => {
 	};
 };
 
-export const getOrderByUsernameAndOrderNumber = async (
-	query: GetOrderByUsernameAndOrderNumberQuery,
-) => {
+export const verifyOrderByUsernameAndOrderNumber = async (
+	req: VerifyOrderByUsernameAndOrderNumberRequest,
+): Promise<ApiResponse<VerifyOrderByUsernameAndOrderNumberResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
 			.select()
 			.from(ordersTable)
 			.where(
 				and(
-					eq(ordersTable.username, query.username),
-					eq(ordersTable.orderNumber, query.orderNumber),
+					eq(ordersTable.username, req.username),
+					eq(ordersTable.orderNumber, req.orderNumber),
 				),
 			),
 	);
@@ -68,10 +72,20 @@ export const getOrderByUsernameAndOrderNumber = async (
 		};
 	}
 
+	if (orders.length === 0) {
+		return {
+			success: false,
+			error: "Order not found",
+			message: "Order not found",
+		};
+	}
+
+	const order = orders[0];
+
 	return {
 		success: true,
 		data: {
-			orders,
+			order,
 		},
 		message: "Order fetched successfully",
 	};
@@ -149,5 +163,52 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 		success: true,
 		data: null,
 		message: "Order deleted successfully",
+	};
+};
+
+export const submitOrder = async (req: SubmitOrderRequest) => {
+	const file = new File([req.file], `order-${req.orderId}-${Date.now()}.png`, {
+		type: req.file.type,
+	});
+
+	const { data: uploadResult, error: uploadError } = await tryCatch(
+		uploadFileToS3(file),
+	);
+	if (uploadError) {
+		return {
+			success: false,
+			error: uploadError.message,
+			message: "Failed to upload file",
+		};
+	}
+
+	if (!uploadResult.success) {
+		return {
+			success: false,
+			error: uploadResult.error,
+			message: "Failed to upload file",
+		};
+	}
+
+	const { error: orderError } = await tryCatch(
+		db
+			.update(ordersTable)
+			.set({
+				imageUrl: uploadResult.data?.fileUrl,
+			})
+			.where(eq(ordersTable.id, req.orderId)),
+	);
+
+	if (orderError) {
+		return {
+			success: false,
+			error: orderError.message,
+			message: "Failed to update order with image URL",
+		};
+	}
+
+	return {
+		success: true,
+		message: "File uploaded and order updated successfully",
 	};
 };

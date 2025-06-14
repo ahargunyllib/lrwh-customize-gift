@@ -7,9 +7,17 @@ export type GetOrdersQuery = {
 	limit?: number;
 };
 
-export type GetOrderByUsernameAndOrderNumberQuery = {
-	username: string;
-	orderNumber: string;
+export const VerifyOrderByUsernameAndOrderNumberSchema = z.object({
+	username: z.string().min(1, "Username is required"),
+	orderNumber: z.string().min(1, "Order number is required"),
+});
+
+export type VerifyOrderByUsernameAndOrderNumberRequest = z.infer<
+	typeof VerifyOrderByUsernameAndOrderNumberSchema
+>;
+
+export type VerifyOrderByUsernameAndOrderNumberResponse = {
+	order: Order;
 };
 
 export const createOrderSchema = z.object({
@@ -33,3 +41,10 @@ export type UpdateOrderParams = {
 export type DeleteOrderParams = {
 	id: Order["id"];
 };
+
+export const submitOrderSchema = z.object({
+	file: z.instanceof(Blob).refine((file) => file.size > 0, "File is required"),
+	orderId: z.number().int().positive("Order ID must be a positive integer"),
+});
+
+export type SubmitOrderRequest = z.infer<typeof submitOrderSchema>;

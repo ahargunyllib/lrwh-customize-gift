@@ -6,15 +6,18 @@ import { useDialogStore } from "../../hooks/use-dialog";
 import {
 	createOrder,
 	deleteOrder,
-	getOrderByUsernameAndOrderNumber,
 	getOrders,
+	submitOrder,
 	updateOrder,
+	verifyOrderByUsernameAndOrderNumber,
 } from "./action";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
+	SubmitOrderRequest,
 	UpdateOrderParams,
 	UpdateOrderRequest,
+	VerifyOrderByUsernameAndOrderNumberRequest,
 } from "./dto";
 
 export const useGetOrdersQuery = (query: GetOrdersQuery) => {
@@ -24,13 +27,11 @@ export const useGetOrdersQuery = (query: GetOrdersQuery) => {
 	});
 };
 
-export const useGetOrderByUsernameAndOrderNumberQuery = (query: {
-	username: string;
-	orderNumber: string;
-}) => {
-	return useQuery({
-		queryKey: ["orders", query],
-		queryFn: () => getOrderByUsernameAndOrderNumber(query),
+export const useVerifyOrderByUsernameAndOrderNumberMutation = () => {
+	return useMutation({
+		mutationKey: ["verify-order"],
+		mutationFn: (data: VerifyOrderByUsernameAndOrderNumberRequest) =>
+			verifyOrderByUsernameAndOrderNumber(data),
 	});
 };
 
@@ -90,6 +91,24 @@ export const useDeleteOrderMutation = (id: UpdateOrderParams) => {
 			}
 
 			toast.success(res.message);
+			queryClient.invalidateQueries({
+				queryKey: ["orders"],
+			});
+		},
+	});
+};
+
+export const useSubmitOrderMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationKey: ["submit-order"],
+		mutationFn: (data: SubmitOrderRequest) => submitOrder(data),
+		onSuccess: (res) => {
+			if (!res.success) {
+				return;
+			}
+
 			queryClient.invalidateQueries({
 				queryKey: ["orders"],
 			});

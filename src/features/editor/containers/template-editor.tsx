@@ -1,7 +1,5 @@
 "use client";
-import { getTemplateById } from "@/features/editor/services";
 import { Button } from "@/shared/components/ui/button";
-import { Label } from "@/shared/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -10,9 +8,9 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { getTemplateForSize, printSizes } from "@/shared/lib/template";
-import { useGetTemplateById } from "@/shared/repository/templates/query";
+import { useSessionQuery } from "@/shared/repository/session-manager/query";
 import type { TemplateData } from "@/shared/types/template";
-import { Printer } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useRef, useState } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
@@ -50,9 +48,19 @@ export default function TemplateEditor({
 	);
 	const { canvasOffset, bindGesture } = useCanvasGesture();
 
-	const { exportAsImage } = useExportImage(canvasRef);
+	const { exportAsImage, isLoading } = useExportImage(canvasRef);
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+
+	// check if guest try to access editor without orderId
+	const orderIdJson = sessionStorage.getItem("orderId");
+	const session = useSessionQuery();
+	const router = useRouter();
+	const canAccess = session.data?.isLoggedIn || !!orderIdJson;
+	if (!canAccess) {
+		router.replace("/");
+		return null;
+	}
 
 	return (
 		<TemplateCtx.Provider value={{ ...editor, selectedSize }}>
@@ -81,14 +89,17 @@ export default function TemplateEditor({
 							</SelectContent>
 						</Select>
 
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={exportAsImage}
-							className="ml-auto"
-						>
-							Export PNG
-						</Button>
+						{!!orderIdJson && (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={exportAsImage}
+								className="ml-auto"
+								disabled={isLoading}
+							>
+								{isLoading ? "Loading..." : "Submit"}
+							</Button>
+						)}
 					</div>
 				</div>
 
