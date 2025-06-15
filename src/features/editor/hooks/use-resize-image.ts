@@ -1,108 +1,159 @@
 "use client";
-import { useEffect, useState } from "react";
+
 import type React from "react";
 
 import type { TemplateData } from "@/shared/types/template";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseResizeImageProps {
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 	scale: number;
 }
 
+interface ResizeState {
+	imageId: string;
+	direction: string;
+	startX: number;
+	startY: number;
+	startWidth: number;
+	startHeight: number;
+	aspectRatio: number;
+}
+
 export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 	const [resizingImageId, setResizingImageId] = useState<string | null>(null);
-	const [resizeDirection, setResizeDirection] = useState<string | null>(null);
-	const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
-	const [initialMousePos, setInitialMousePos] = useState({ x: 0, y: 0 });
+	const [resizeState, setResizeState] = useState<ResizeState | null>(null);
 
-	// Handle image resize
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		if (!resizingImageId) return;
+	const handleResizeStart = useCallback(
+		(
+			e: React.MouseEvent,
+			imageId: string,
+			direction: string,
+			width: number,
+			height: number,
+		) => {
+			e.preventDefault();
+			e.stopPropagation();
 
-		const handleMouseMove = (e: MouseEvent) => {
 			const canvas = document.querySelector('[data-canvas="true"]');
 			if (!canvas) return;
 
 			const canvasRect = canvas.getBoundingClientRect();
-			const mouseX = (e.clientX - canvasRect.left) / scale;
-			const mouseY = (e.clientY - canvasRect.top) / scale;
+			const startX = (e.clientX - canvasRect.left) / scale;
+			const startY = (e.clientY - canvasRect.top) / scale;
 
-			setTemplate((prev) => {
-				return {
-					...prev,
-					images: prev.images.map((img) => {
-						if (img.id !== resizingImageId) return img;
+			setResizingImageId(imageId);
+			setResizeState({
+				imageId,
+				direction,
+				startX,
+				startY,
+				startWidth: width,
+				startHeight: height,
+				aspectRatio: width / height,
+			});
+		},
+		[scale],
+	);
 
-						// Get the original values
-						const originalX = img.position.x;
-						const originalY = img.position.y;
-						const originalWidth = initialSize.width;
-						const originalHeight = initialSize.height;
+	const handleMouseMove = useCallback(
+		(e: MouseEvent) => {
+			if (!resizeState) return;
 
-						// Calculate new dimensions and position based on resize direction
-						let newWidth = originalWidth;
-						let newHeight = originalHeight;
-						let newX = originalX;
-						let newY = originalY;
+			const canvas = document.querySelector('[data-canvas="true"]');
+			if (!canvas) return;
 
-						// Handle different resize directions
-						switch (resizeDirection) {
-							case "e": // right
-								newWidth = Math.max(50, mouseX - originalX);
-								break;
-							case "w": // left
-								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = Math.min(mouseX, originalX + originalWidth - 50);
-								break;
-							case "s": // bottom
-								newHeight = Math.max(50, mouseY - originalY);
-								break;
-							case "n": // top
-								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = Math.min(mouseY, originalY + originalHeight - 50);
-								break;
-							case "se": // bottom-right
-								newWidth = Math.max(50, mouseX - originalX);
-								newHeight = Math.max(50, mouseY - originalY);
-								break;
-							case "sw": // bottom-left
-								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = Math.min(mouseX, originalX + originalWidth - 50);
-								newHeight = Math.max(50, mouseY - originalY);
-								break;
-							case "ne": // top-right
-								newWidth = Math.max(50, mouseX - originalX);
-								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = Math.min(mouseY, originalY + originalHeight - 50);
-								break;
-							case "nw": // top-left
-								newWidth = Math.max(50, originalX + originalWidth - mouseX);
-								newX = Math.min(mouseX, originalX + originalWidth - 50);
-								newHeight = Math.max(50, originalY + originalHeight - mouseY);
-								newY = Math.min(mouseY, originalY + originalHeight - 50);
-								break;
+			const canvasRect = canvas.getBoundingClientRect();
+			const currentX = (e.clientX - canvasRect.left) / scale;
+			const currentY = (e.clientY - canvasRect.top) / scale;
+
+			const deltaX = currentX - resizeState.startX;
+			const deltaY = currentY - resizeState.startY;
+
+			let newWidth = resizeState.startWidth;
+			let newHeight = resizeState.startHeight;
+
+			// Calculate new dimensions based on resize direction
+			switch (resizeState.direction) {
+				case "e": // East (right)
+					newWidth = Math.max(20, resizeState.startWidth + deltaX);
+					break;
+				case "w": // West (left)
+					newWidth = Math.max(20, resizeState.startWidth - deltaX);
+					break;
+				case "n": // North (top)
+					newHeight = Math.max(20, resizeState.startHeight - deltaY);
+					break;
+				case "s": // South (bottom)
+					newHeight = Math.max(20, resizeState.startHeight + deltaY);
+					break;
+				case "ne": // Northeast
+					newWidth = Math.max(20, resizeState.startWidth + deltaX);
+					newHeight = Math.max(20, resizeState.startHeight - deltaY);
+					break;
+				case "nw": // Northwest
+					newWidth = Math.max(20, resizeState.startWidth - deltaX);
+					newHeight = Math.max(20, resizeState.startHeight - deltaY);
+					break;
+				case "se": // Southeast
+					newWidth = Math.max(20, resizeState.startWidth + deltaX);
+					newHeight = Math.max(20, resizeState.startHeight + deltaY);
+					break;
+				case "sw": // Southwest
+					newWidth = Math.max(20, resizeState.startWidth - deltaX);
+					newHeight = Math.max(20, resizeState.startHeight + deltaY);
+					break;
+			}
+
+			// Maintain aspect ratio for corner handles (hold Shift to ignore)
+			if (
+				["ne", "nw", "se", "sw"].includes(resizeState.direction) &&
+				!e.shiftKey
+			) {
+				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+					newHeight = newWidth / resizeState.aspectRatio;
+				} else {
+					newWidth = newHeight * resizeState.aspectRatio;
+				}
+			}
+
+			// Update template with new dimensions
+			setTemplate((prev) => ({
+				...prev,
+				images: prev.images.map((img) => {
+					if (img.id === resizeState.imageId) {
+						const newPosition = { ...img.position };
+
+						// Adjust position for handles that affect the top-left corner
+						if (resizeState.direction.includes("w")) {
+							newPosition.x = img.position.x + (img.width - newWidth);
 						}
-
-						// Constrain to canvas boundaries
-						newX = Math.max(0, Math.min(prev.width - newWidth, newX));
-						newY = Math.max(0, Math.min(prev.height - newHeight, newY));
+						if (resizeState.direction.includes("n")) {
+							newPosition.y = img.position.y + (img.height - newHeight);
+						}
 
 						return {
 							...img,
-							width: newWidth,
-							height: newHeight,
-							position: { x: newX, y: newY },
+							width: Math.round(newWidth),
+							height: Math.round(newHeight),
+							position: newPosition,
 						};
-					}),
-				};
-			});
-		};
+					}
+					return img;
+				}),
+			}));
+		},
+		[resizeState, scale, setTemplate],
+	);
 
-		const handleMouseUp = () => {
-			setResizingImageId(null);
-			setResizeDirection(null);
-		};
+	const handleMouseUp = useCallback(() => {
+		setResizingImageId(null);
+		setResizeState(null);
+	}, []);
+
+	// Set up mouse event listeners
+	useEffect(() => {
+		if (!resizeState) return;
 
 		document.addEventListener("mousemove", handleMouseMove);
 		document.addEventListener("mouseup", handleMouseUp);
@@ -111,38 +162,11 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 			document.removeEventListener("mousemove", handleMouseMove);
 			document.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [
-		resizingImageId,
-		resizeDirection,
-		initialSize,
-		initialMousePos,
-		scale,
-		setTemplate,
-	]);
-
-	const handleResizeStart = (
-		e: React.MouseEvent,
-		imageId: string,
-		direction: string,
-		width: number,
-		height: number,
-	) => {
-		e.stopPropagation();
-		setResizingImageId(imageId);
-		setResizeDirection(direction);
-		setInitialSize({ width, height });
-		setInitialMousePos({ x: e.clientX, y: e.clientY });
-	};
+	}, [resizeState, handleMouseMove, handleMouseUp]);
 
 	return {
 		resizingImageId,
 		setResizingImageId,
-		resizeDirection,
-		setResizeDirection,
-		initialSize,
-		setInitialSize,
-		initialMousePos,
-		setInitialMousePos,
 		handleResizeStart,
 	};
 }
