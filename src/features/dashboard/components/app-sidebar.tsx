@@ -28,6 +28,14 @@ export default function AppSidebar() {
 	const { data, isLoading } = useSessionQuery();
 	const { mutate: logout, isPending } = useLogoutMutation();
 
+	const onLogout = () => {
+		logout(undefined, {
+			onSuccess: () => {
+				router.replace("/");
+			},
+		});
+	};
+
 	return (
 		<Sidebar variant="floating">
 			<SidebarHeader>
@@ -93,7 +101,7 @@ export default function AppSidebar() {
 						<SidebarMenuButton asChild>
 							<Button
 								variant="destructive"
-								onClick={() => logout()}
+								onClick={onLogout}
 								disabled={isPending}
 								className="cursor-pointer justify-start"
 							>
