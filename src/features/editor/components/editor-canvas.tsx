@@ -1,18 +1,20 @@
 "use client";
-import { forwardRef, useEffect, useState } from "react";
-import type React from "react";
-import { v4 as uuidv4 } from "uuid";
-
-import type { TemplateData } from "@/shared/types/template";
-import { useAlignmentGuides } from "../hooks/use-allignment-guides";
-import { useResizeImage } from "../hooks/use-resize-image";
 
 import { useCanvasDrop } from "@/features/editor/hooks/use-canvas-drop";
 import { useElementCenter } from "@/features/editor/hooks/use-element-center";
 import { useElementMove } from "@/features/editor/hooks/use-element-move";
 import { useImageReplace } from "@/features/editor/hooks/use-image-replace";
 import { useKeyboardDelete } from "@/features/editor/hooks/use-keyboard-delete";
+import { validateTextElement } from "@/shared/lib/elements";
+import type { TemplateData } from "@/shared/types/template";
 import { Printer } from "lucide-react";
+import { forwardRef, useEffect, useState } from "react";
+import type React from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useAlignmentGuides } from "../hooks/use-allignment-guides";
+import { useAutoTextHeight } from "../hooks/use-auto-text-height";
+import { useResizeImage } from "../hooks/use-resize-image";
+import { useResizeText } from "../hooks/use-resize-text";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
 import TemplateText from "./template-elements/template-text";
@@ -62,8 +64,25 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			setActiveElement,
 		});
 
-		const { resizingImageId, setResizingImageId, handleResizeStart } =
-			useResizeImage({ setTemplate, scale });
+		const {
+			resizingImageId,
+			setResizingImageId,
+			handleResizeStart: handleImageResizeStart,
+		} = useResizeImage({
+			setTemplate,
+			scale,
+		});
+
+		const {
+			resizingTextId,
+			setResizingTextId,
+			handleResizeStart: handleTextResizeStart,
+		} = useResizeText({
+			setTemplate,
+			scale,
+		});
+
+		const { updateTextHeight } = useAutoTextHeight({ setTemplate });
 
 		const {
 			guides,
@@ -80,10 +99,12 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 		// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 		useEffect(() => {
 			if (!isCustomizing) return;
+
 			if (initialTemplate) {
 				setTemplate(initialTemplate);
 				return;
 			}
+
 			setTemplate({
 				id: uuidv4(),
 				name: "Custom Template",
@@ -111,7 +132,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						width: template.width * scale,
 						height: template.height * scale,
 						transform: `scale(${scale})`,
-						// translate: `${canvasOffset.x}px ${canvasOffset.y}px`,
 						transformOrigin: "center center",
 					}}
 					onClick={() => setActiveElement(null)}
@@ -119,7 +139,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 					onDragOver={handleCanvasDragOver}
 					data-canvas="true"
 				>
-					{/* Background */}
 					<div
 						className="absolute inset-0"
 						style={{
@@ -132,7 +151,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						}}
 					/>
 
-					{/* Alignment Guides */}
 					<AlignmentGuides
 						scale={scale}
 						guides={guides}
@@ -140,7 +158,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						canvasHeight={template.height}
 					/>
 
-					{/* Images */}
 					{template.images.map((image) => (
 						<TemplateImage
 							key={image.id}
@@ -152,7 +169,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							}}
 							scale={scale}
 							isCustomizing={isCustomizing}
-							onResizeStart={handleResizeStart}
+							onResizeStart={handleImageResizeStart}
 							getSnapPosition={getSnapPosition}
 							constrainToCanvas={constrainToCanvas}
 							isSnapping={isSnapping}
@@ -161,7 +178,6 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						/>
 					))}
 
-					{/* Texts */}
 					{template.texts.map((text) => (
 						<TemplateText
 							key={text.id}
@@ -177,13 +193,17 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 								setTemplate((prev) => ({
 									...prev,
 									texts: prev.texts.map((t) =>
-										t.id === text.id ? { ...t, content: e.target.value } : t,
+										t.id === text.id
+											? validateTextElement({ ...t, content: e.target.value })
+											: t,
 									),
 								}))
 							}
 							onInputBlur={() => setEditingTextId(null)}
 							onInputKeyDown={(e) => {
-								if (e.key === "Enter") setEditingTextId(null);
+								if (e.key === "Enter" && e.ctrlKey) {
+									setEditingTextId(null);
+								}
 							}}
 							scale={scale}
 							getSnapPosition={getSnapPosition}
@@ -191,8 +211,11 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							isSnapping={isSnapping}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							onResizeStart={handleTextResizeStart}
+							setTemplate={setTemplate}
 						/>
 					))}
+
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
 						<Printer className="inline h-3 w-3 mr-1" />
 						{template.width}×{template.height}px&nbsp;(scale&nbsp;
@@ -205,4 +228,5 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 );
 
 EditorCanvas.displayName = "EditorCanvas";
+
 export default EditorCanvas;

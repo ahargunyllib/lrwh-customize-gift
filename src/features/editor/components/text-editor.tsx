@@ -86,7 +86,11 @@ export default function TextEditor({
 							<Input
 								id={`size-${text.id}`}
 								type="number"
-								value={text.style.fontSize.replace("px", "")}
+								value={
+									typeof text.style.fontSize === "string"
+										? text.style.fontSize.replace("px", "")
+										: text.style.fontSize
+								}
 								onChange={(e) =>
 									onStyleChange("fontSize", `${e.target.value}px`)
 								}

@@ -12,9 +12,14 @@ import {
 } from "@/shared/components/ui/select";
 import { Switch } from "@/shared/components/ui/switch";
 import { Textarea } from "@/shared/components/ui/textarea";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@/shared/components/ui/toggle-group";
 import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
 import { useTemplateContext } from "../../containers/template-creator";
 
 interface Props {
@@ -75,7 +80,11 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							min={1}
 							value={Math.max(
 								1,
-								Number.parseInt(txt.style.fontSize.replace("px", "")),
+								Number.parseInt(
+									typeof txt.style.fontSize === "string"
+										? txt.style.fontSize.replace("px", "")
+										: String(txt.style.fontSize),
+								),
 							)}
 							onChange={(e) =>
 								updateText(txt.id, {
@@ -221,6 +230,38 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						}
 					/>
 				</div>
+				{/* Text Align */}
+				<div className="space-y-0.5 col-span-2">
+					<Label className="text-xs">Text Align</Label>
+					<ToggleGroup
+						type="single"
+						value={txt.style.textAlign ?? "left"}
+						onValueChange={(value) =>
+							value &&
+							updateText(txt.id, {
+								style: {
+									...txt.style,
+									textAlign: value as "left" | "center" | "right" | "justify",
+								},
+							})
+						}
+						className="grid grid-cols-4 gap-1"
+					>
+						<ToggleGroupItem value="left" className="p-2">
+							<AlignLeft className="w-4 h-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem value="center" className="p-2">
+							<AlignCenter className="w-4 h-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem value="right" className="p-2">
+							<AlignRight className="w-4 h-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem value="justify" className="p-2">
+							<AlignJustify className="w-4 h-4" />
+						</ToggleGroupItem>
+					</ToggleGroup>
+				</div>
+
 				<Button
 					variant="destructive"
 					size="sm"
