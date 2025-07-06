@@ -67,27 +67,46 @@ export default function TemplateText({
 
 	const textRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const hiddenTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
 	const fontSizeNum =
 		typeof text.style.fontSize === "string"
 			? Number.parseFloat(text.style.fontSize)
-			: text.style.fontSize || 16;
+			: text.style.fontSize;
 
-	// Calculate scaled values
-	const scaledFontSize = fontSizeNum * scale;
-	const scaledPadding =
-		(typeof padding === "string" ? Number.parseFloat(padding) : padding || 8) *
-		scale;
-	const scaledLetterSpacing =
-		typeof letterSpacing === "string"
-			? letterSpacing.includes("px")
-				? `${Number.parseFloat(letterSpacing) * scale}px`
-				: letterSpacing
-			: typeof letterSpacing === "number"
-				? letterSpacing * scale
-				: "normal";
+	const updateHeightFromTextarea = (content: string) => {
+		if (hiddenTextareaRef.current) {
+			const hiddenTextarea = hiddenTextareaRef.current;
+			hiddenTextarea.value = content;
+			hiddenTextarea.style.height = "auto";
+			const newHeight = hiddenTextarea.scrollHeight;
+
+			setTemplate((prev) => ({
+				...prev,
+				texts: prev.texts.map((t) =>
+					t.id === text.id ? { ...t, height: newHeight } : t,
+				),
+			}));
+		}
+	};
+
+	// Update height when content changes (hanya saat tidak sedang resize)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		// Cek apakah sedang dalam proses resize
+		const isResizing = document.querySelector(`[data-resizing="${text.id}"]`);
+		if (!isResizing) {
+			updateHeightFromTextarea(text.content);
+		}
+	}, [
+		text.content,
+		text.width,
+		fontSizeNum,
+		text.style.lineHeight,
+		text.style.fontFamily,
+	]);
 
 	// Auto-resize textarea height when editing
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -98,17 +117,15 @@ export default function TemplateText({
 			const newHeight = textarea.scrollHeight;
 			textarea.style.height = `${newHeight}px`;
 
-			// Convert back to unscaled height for template storage
-			const unscaledHeight = newHeight / scale;
-
+			// Update template height to match textarea
 			setTemplate((prev) => ({
 				...prev,
 				texts: prev.texts.map((t) =>
-					t.id === text.id ? { ...t, height: unscaledHeight } : t,
+					t.id === text.id ? { ...t, height: newHeight } : t,
 				),
 			}));
 		}
-	}, [text.content, isEditing, text.id, setTemplate, scale]);
+	}, [text.content, isEditing, text.id, setTemplate]);
 
 	const getContainerStyle = (): React.CSSProperties => ({
 		position: "absolute",
@@ -119,7 +136,7 @@ export default function TemplateText({
 		transform: `rotate(${rotate}deg)`,
 		transformOrigin: "center center",
 		backgroundColor: backgroundColor || "transparent",
-		borderRadius: (borderRadius || 0) * scale,
+		borderRadius: borderRadius || 0,
 		border: isActive ? "2px solid #3b82f6" : "2px solid transparent",
 		cursor: text.draggable && !isEditing ? "move" : "default",
 		boxSizing: "border-box",
@@ -129,13 +146,13 @@ export default function TemplateText({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: scaledFontSize, // Apply scale to font size
+		fontSize: fontSizeNum,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: scaledPadding, // Apply scale to padding
+		padding: padding || 8,
 		margin: 0,
 		border: "none",
 		outline: "none",
@@ -144,7 +161,7 @@ export default function TemplateText({
 		overflow: "hidden",
 		wordWrap: "break-word",
 		whiteSpace: "pre-wrap",
-		letterSpacing: scaledLetterSpacing, // Apply scale to letter spacing
+		letterSpacing: letterSpacing || "normal",
 		boxSizing: "border-box",
 	});
 
@@ -152,25 +169,22 @@ export default function TemplateText({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: scaledFontSize, // Apply scale to font size
+		fontSize: fontSizeNum,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: scaledPadding, // Apply scale to padding
+		padding: padding || 8,
 		margin: 0,
 		border: "none",
 		outline: "none",
 		background: "transparent",
 		wordWrap: "break-word",
 		whiteSpace: "pre-wrap",
-		letterSpacing: scaledLetterSpacing, // Apply scale to letter spacing
+		letterSpacing: letterSpacing || "normal",
 		boxSizing: "border-box",
 		overflow: "hidden",
-		display: "flex",
-		alignItems: "flex-start",
-		justifyContent: "flex-start",
 	});
 
 	const handleMouseDown = (e: React.MouseEvent) => {
@@ -195,6 +209,9 @@ export default function TemplateText({
 
 	const handleResizeMouseDown = (e: React.MouseEvent, direction: string) => {
 		if (onResizeStart) {
+			// Tambahkan marker untuk menandai sedang resize
+			e.currentTarget.setAttribute("data-resizing", text.id);
+
 			onResizeStart(
 				e,
 				text.id,
@@ -207,9 +224,11 @@ export default function TemplateText({
 		}
 	};
 
+	// Custom input change handler that preserves fontSize and updates height
 	const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const newContent = e.target.value;
 
+		// Update content while preserving all other properties
 		setTemplate((prev) => ({
 			...prev,
 			texts: prev.texts.map((t) =>
@@ -219,13 +238,14 @@ export default function TemplateText({
 							content: newContent,
 							style: {
 								...t.style,
-								fontSize: t.style.fontSize,
+								fontSize: t.style.fontSize, // Preserve fontSize
 							},
 						}
 					: t,
 			),
 		}));
 
+		// Call parent's onInputChange
 		onInputChange(e);
 	};
 
@@ -280,6 +300,13 @@ export default function TemplateText({
 
 		const handleMouseUp = () => {
 			setIsDragging(false);
+			// Remove resize marker
+			const resizeMarker = document.querySelector(
+				`[data-resizing="${text.id}"]`,
+			);
+			if (resizeMarker) {
+				resizeMarker.removeAttribute("data-resizing");
+			}
 		};
 
 		document.addEventListener("mousemove", handleMouseMove);
@@ -305,6 +332,21 @@ export default function TemplateText({
 
 	return (
 		<>
+			{/* Hidden textarea for height calculation */}
+			<textarea
+				ref={hiddenTextareaRef}
+				style={{
+					...getTextStyle(),
+					position: "absolute",
+					top: "-9999px",
+					left: "-9999px",
+					visibility: "hidden",
+					pointerEvents: "none",
+					width: (text.width || 200) * scale,
+				}}
+				readOnly
+			/>
+
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
 				ref={textRef}
@@ -334,85 +376,35 @@ export default function TemplateText({
 					<div style={getDisplayStyle()}>{text.content}</div>
 				)}
 
-				{/* Resize Handles - Scale the handle size and position */}
+				{/* Resize Handles - Only horizontal resize handles for text */}
 				{isActive && !isEditing && (
 					<>
-						{/* Edge handles - untuk resize width/height saja */}
+						{/* Horizontal edge */}
 						<div
-							className="absolute border border-white bg-blue-500"
-							style={{
-								left: -3 * scale,
-								top: "50%",
-								transform: "translateY(-50%)",
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "w-resize",
-							}}
+							className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-w-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "w")}
-							title="Resize width"
 						/>
 						<div
-							className="absolute border border-white bg-blue-500"
-							style={{
-								right: -3 * scale,
-								top: "50%",
-								transform: "translateY(-50%)",
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "e-resize",
-							}}
+							className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-e-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "e")}
-							title="Resize width"
 						/>
 
-						{/* Corner handles - untuk resize font size + border */}
+						{/* Corner */}
 						<div
-							className="absolute border border-white bg-orange-500"
-							style={{
-								top: -3 * scale,
-								left: -3 * scale,
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "nw-resize",
-							}}
+							className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-nw-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
-							title="Resize font size + border"
 						/>
 						<div
-							className="absolute border border-white bg-orange-500"
-							style={{
-								top: -3 * scale,
-								right: -3 * scale,
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "ne-resize",
-							}}
+							className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-ne-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
-							title="Resize font size + border"
 						/>
 						<div
-							className="absolute border border-white bg-orange-500"
-							style={{
-								bottom: -3 * scale,
-								left: -3 * scale,
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "sw-resize",
-							}}
+							className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-sw-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
-							title="Resize font size + border"
 						/>
 						<div
-							className="absolute border border-white bg-orange-500"
-							style={{
-								bottom: -3 * scale,
-								right: -3 * scale,
-								width: 6 * scale,
-								height: 6 * scale,
-								cursor: "se-resize",
-							}}
+							className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-se-resize"
 							onMouseDown={(e) => handleResizeMouseDown(e, "se")}
-							title="Resize font size + border"
 						/>
 					</>
 				)}
