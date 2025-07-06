@@ -101,7 +101,7 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 					activeElement={activeElement}
 					setActiveElement={setActiveElement}
 					scale={scale}
-					isCustomizing
+					isCustomizing={true}
 				/>
 			</div>
 
