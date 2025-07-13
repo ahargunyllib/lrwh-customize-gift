@@ -1,5 +1,5 @@
 export type Order = {
-	id: number;
+	id: string;
 	orderNumber: string;
 	username: string;
 	imageUrl: string | null;
