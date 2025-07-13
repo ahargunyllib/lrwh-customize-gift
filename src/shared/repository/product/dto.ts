@@ -43,6 +43,14 @@ export type DeleteProductParams = {
 export const createProductVariantSchema = z.object({
 	name: z.string().min(1, "Variant name is required"),
 	description: z.string().optional(),
+	width: z.coerce
+		.number()
+		.positive()
+		.min(1, "Width must be a positive integer"),
+	height: z.coerce
+		.number()
+		.positive()
+		.min(1, "Height must be a positive integer"),
 });
 
 export type CreateProductVariantRequest = z.infer<
@@ -56,6 +64,16 @@ export type CreateProductVariantParams = {
 export const updateProductVariantSchema = z.object({
 	name: z.string().min(1, "Variant name is required").optional(),
 	description: z.string().optional(),
+	width: z.coerce
+		.number()
+		.int()
+		.min(0, "Width must be a non-negative integer")
+		.optional(),
+	height: z.coerce
+		.number()
+		.int()
+		.min(0, "Height must be a non-negative integer")
+		.optional(),
 });
 
 export type UpdateProductVariantRequest = z.infer<
