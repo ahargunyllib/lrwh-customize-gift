@@ -36,7 +36,7 @@ export function useExportImage(ref: React.RefObject<HTMLElement>) {
 			toast.error("Invalid order ID format.");
 		}
 
-		if (!orderId || typeof orderId !== "number") {
+		if (!orderId || typeof orderId !== "string") {
 			toast.error("Invalid order ID. Please verify your order first.");
 			return;
 		}
