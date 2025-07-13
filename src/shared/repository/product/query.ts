@@ -24,14 +24,14 @@ import type {
 	UpdateProductVariantRequest,
 } from "./dto";
 
-export const useGetProducts = (query: GetProductsQuery) => {
+export const useGetProductsQuery = (query: GetProductsQuery) => {
 	return useQuery({
 		queryKey: ["products", query],
 		queryFn: () => getProducts(query),
 	});
 };
 
-export const useCreateProduct = () => {
+export const useCreateProductMutation = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (data: CreateProductRequest) => createProduct(data),
@@ -41,7 +41,7 @@ export const useCreateProduct = () => {
 	});
 };
 
-export const useUpdateProduct = (params: UpdateProductParams) => {
+export const useUpdateProductMutation = (params: UpdateProductParams) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (data: UpdateProductRequest) => updateProduct(params, data),
@@ -51,7 +51,7 @@ export const useUpdateProduct = (params: UpdateProductParams) => {
 	});
 };
 
-export const useDeleteProduct = (params: DeleteProductParams) => {
+export const useDeleteProductMutation = (params: DeleteProductParams) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: () => deleteProduct(params),
@@ -61,7 +61,9 @@ export const useDeleteProduct = (params: DeleteProductParams) => {
 	});
 };
 
-export const useCreateProductVariant = (params: CreateProductVariantParams) => {
+export const useCreateProductVariantMutation = (
+	params: CreateProductVariantParams,
+) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (data: CreateProductVariantRequest) =>
@@ -72,7 +74,9 @@ export const useCreateProductVariant = (params: CreateProductVariantParams) => {
 	});
 };
 
-export const useUpdateProductVariant = (params: UpdateProductVariantParams) => {
+export const useUpdateProductVariantMutation = (
+	params: UpdateProductVariantParams,
+) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (data: UpdateProductVariantRequest) =>
@@ -83,7 +87,9 @@ export const useUpdateProductVariant = (params: UpdateProductVariantParams) => {
 	});
 };
 
-export const useDeleteProductVariant = (params: DeleteProductVariantParams) => {
+export const useDeleteProductVariantMutation = (
+	params: DeleteProductVariantParams,
+) => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: () => deleteProductVariant(params),
