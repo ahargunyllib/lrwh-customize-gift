@@ -1,8 +1,7 @@
 "use client";
+import type { ImageElement } from "@/shared/types/template";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type React from "react";
-
-import type { ImageElement } from "@/shared/types/template";
 
 interface TemplateImageProps {
 	image: ImageElement;
@@ -48,7 +47,6 @@ export default function TemplateImage({
 	const [isDragOver, setIsDragOver] = useState(false);
 	const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const dropZoneRef = useRef<HTMLDivElement>(null);
-
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -113,7 +111,6 @@ export default function TemplateImage({
 			const canvas = document.querySelector('[data-canvas="true"]');
 			if (canvas) {
 				const canvasRect = canvas.getBoundingClientRect();
-				// Calculate the offset in unscaled coordinates
 				setDragOffset({
 					x: (e.clientX - canvasRect.left) / scale - image.position.x,
 					y: (e.clientY - canvasRect.top) / scale - image.position.y,
@@ -168,13 +165,10 @@ export default function TemplateImage({
 			}
 		};
 
-		const handleMouseUp = () => {
-			setIsDragging(false);
-		};
+		const handleMouseUp = () => setIsDragging(false);
 
 		document.addEventListener("mousemove", handleMouseMove);
 		document.addEventListener("mouseup", handleMouseUp);
-
 		return () => {
 			document.removeEventListener("mousemove", handleMouseMove);
 			document.removeEventListener("mouseup", handleMouseUp);
@@ -191,68 +185,9 @@ export default function TemplateImage({
 		image.height,
 	]);
 
-	const renderResizeHandles = () => {
-		if (!isActive || !isCustomizing) return null;
-
-		const handleSize = 8;
-		const handleStyle = {
-			width: handleSize,
-			height: handleSize,
-			backgroundColor: "#3b82f6",
-			position: "absolute" as const,
-			borderRadius: "50%",
-			zIndex: 10,
-		};
-
-		const directions = [
-			{
-				dir: "n",
-				style: {
-					top: -handleSize / 2,
-					left: "50%",
-					transform: "translateX(-50%)",
-				},
-			},
-			{
-				dir: "s",
-				style: {
-					bottom: -handleSize / 2,
-					left: "50%",
-					transform: "translateX(-50%)",
-				},
-			},
-			{
-				dir: "e",
-				style: {
-					right: -handleSize / 2,
-					top: "50%",
-					transform: "translateY(-50%)",
-				},
-			},
-			{
-				dir: "w",
-				style: {
-					left: -handleSize / 2,
-					top: "50%",
-					transform: "translateY(-50%)",
-				},
-			},
-			{ dir: "ne", style: { top: -handleSize / 2, right: -handleSize / 2 } },
-			{ dir: "nw", style: { top: -handleSize / 2, left: -handleSize / 2 } },
-			{ dir: "se", style: { bottom: -handleSize / 2, right: -handleSize / 2 } },
-			{ dir: "sw", style: { bottom: -handleSize / 2, left: -handleSize / 2 } },
-		];
-
-		return directions.map(({ dir, style }) => (
-			<div
-				key={dir}
-				style={{ ...handleStyle, ...style }}
-				onMouseDown={(e) =>
-					onResizeStart?.(e, image.id, dir, image.width, image.height)
-				}
-				className="cursor-pointer"
-			/>
-		));
+	const handleResizeMouseDown = (e: React.MouseEvent, direction: string) => {
+		e.stopPropagation();
+		onResizeStart?.(e, image.id, direction, image.width, image.height);
 	};
 
 	const getPositionStyle = () => {
@@ -264,11 +199,9 @@ export default function TemplateImage({
 		if (image.centerX && canvasWidth) {
 			positionStyle.left = ((canvasWidth - image.width) / 2) * scale;
 		}
-
 		if (image.centerY && canvasHeight) {
 			positionStyle.top = ((canvasHeight - image.height) / 2) * scale;
 		}
-
 		return positionStyle;
 	};
 
@@ -291,7 +224,6 @@ export default function TemplateImage({
 			onDrop={handleDrop}
 			onMouseDown={handleMouseDown}
 		>
-			{/* Image wrapper to clip border radius only on the image */}
 			<div
 				className="w-full h-full overflow-hidden"
 				style={{
@@ -309,6 +241,7 @@ export default function TemplateImage({
 				/>
 			</div>
 
+			{/* Drag drop overlay */}
 			{isDragOver && (
 				<div className="absolute inset-0 bg-green-500/20 flex items-center justify-center pointer-events-none">
 					<div className="bg-white/80 px-2 py-1 rounded text-xs font-medium">
@@ -316,7 +249,49 @@ export default function TemplateImage({
 					</div>
 				</div>
 			)}
-			{renderResizeHandles()}
+
+			{/* Resize Handles */}
+			{isActive && isCustomizing && (
+				<>
+					{/* Horizontal edges */}
+					<div
+						className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-w-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "w")}
+					/>
+					<div
+						className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-e-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "e")}
+					/>
+
+					{/* Vertical edges */}
+					<div
+						className="absolute left-1/2 -top-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-n-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "n")}
+					/>
+					<div
+						className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-s-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "s")}
+					/>
+
+					{/* Corners */}
+					<div
+						className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-nw-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+					/>
+					<div
+						className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-ne-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+					/>
+					<div
+						className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-sw-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+					/>
+					<div
+						className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-se-resize"
+						onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+					/>
+				</>
+			)}
 		</div>
 	);
 }
