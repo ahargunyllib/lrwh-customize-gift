@@ -67,12 +67,12 @@ export const updateProductVariantSchema = z.object({
 	width: z.coerce
 		.number()
 		.int()
-		.min(0, "Width must be a non-negative integer")
+		.min(1, "Width must be a non-negative integer")
 		.optional(),
 	height: z.coerce
 		.number()
 		.int()
-		.min(0, "Height must be a non-negative integer")
+		.min(1, "Height must be a non-negative integer")
 		.optional(),
 });
 
