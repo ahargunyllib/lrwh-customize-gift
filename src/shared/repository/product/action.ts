@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/server/db";
-import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import {
 	productVariantsTable,
 	productsTable,
@@ -70,8 +70,13 @@ export const getProducts = async (
 		};
 	}
 
+	const productIds = products.map((product) => product.id);
+
 	const { data: productVariants, error: fetchVariantsErr } = await tryCatch(
-		db.select().from(productVariantsTable),
+		db
+			.select()
+			.from(productVariantsTable)
+			.where(inArray(productVariantsTable.productId, productIds)),
 	);
 	if (fetchVariantsErr) {
 		return {
@@ -187,6 +192,8 @@ export const createProductVariant = async (
 			productId,
 			name: data.name,
 			description: data.description,
+			width: data.width,
+			height: data.height,
 		}),
 	);
 	if (createErr) {
@@ -214,6 +221,8 @@ export const updateProductVariant = async (
 			.set({
 				name: data.name,
 				description: data.description,
+				width: data.width,
+				height: data.height,
 			})
 			.where(
 				and(
