@@ -11,6 +11,8 @@ export type ProductVariant = {
 	id: string;
 	name: string;
 	description: string | null;
+	width: number;
+	height: number;
 	productId: string;
 	createdAt: Date;
 	updatedAt: Date;
