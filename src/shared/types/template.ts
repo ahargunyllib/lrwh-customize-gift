@@ -15,6 +15,7 @@ export interface ImageElement {
 	centerY?: boolean;
 	borderRadius?: number;
 	grayscale?: boolean;
+	zIndex?: number;
 }
 
 export interface TextElement {
@@ -25,6 +26,8 @@ export interface TextElement {
 	width: number;
 	height: number;
 	draggable?: boolean;
+	zIndex?: number;
+
 	style: {
 		fontFamily: string;
 		fontSize: string | number;
