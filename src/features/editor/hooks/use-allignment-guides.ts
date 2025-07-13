@@ -25,9 +25,55 @@ export type GuideType =
 export interface Guide {
 	type: GuideType;
 	position: number;
-	// For center-to-center guides, we need to know the start and end positions
 	startPosition?: number;
 	endPosition?: number;
+}
+
+// Helper function to get element dimensions
+function getElementDimensions(element: ImageElement | TextElement): {
+	width: number;
+	height: number;
+} {
+	if ("width" in element && "height" in element) {
+		// Image element
+		return { width: element.width, height: element.height };
+		// biome-ignore lint/style/noUselessElse: <explanation>
+	} else {
+		// Text element - calculate approximate dimensions
+		const textElement = element as TextElement;
+
+		// Get actual DOM element to calculate dimensions
+		const domElement = document.getElementById(textElement.id);
+		if (domElement) {
+			const rect = domElement.getBoundingClientRect();
+			return {
+				width: rect.width,
+				height: rect.height,
+			};
+		}
+
+		// Fallback: estimate based on font size and text length
+		let fontSize = 16;
+		if (textElement.style.fontSize) {
+			if (typeof textElement.style.fontSize === "string") {
+				const parsed = Number.parseFloat(textElement.style.fontSize);
+				if (!Number.isNaN(parsed)) fontSize = parsed;
+			} else {
+				fontSize = textElement.style.fontSize;
+			}
+		}
+		const lineHeight =
+			typeof textElement.style.lineHeight === "number"
+				? textElement.style.lineHeight
+				: Number.parseFloat(textElement.style.lineHeight as string) || 1.2;
+		const lines = textElement.content.split("\n");
+		const maxLineLength = Math.max(...lines.map((line) => line.length));
+
+		return {
+			width: maxLineLength * fontSize * 0.6, // Approximate character width
+			height: lines.length * fontSize * lineHeight,
+		};
+	}
 }
 
 export function useAlignmentGuides({
@@ -37,16 +83,14 @@ export function useAlignmentGuides({
 }: UseAlignmentGuidesProps) {
 	const [guides, setGuides] = useState<Guide[]>([]);
 	const [isSnapping, setIsSnapping] = useState(false);
-	const [snapThreshold] = useState(10); // Pixels within which to snap
+	const [snapThreshold] = useState(10);
 
-	// Calculate guides when active element moves
 	useEffect(() => {
 		if (!activeElement) {
 			setGuides([]);
 			return;
 		}
 
-		// Find the active element
 		const activeImage = template.images.find((img) => img.id === activeElement);
 		const activeText = template.texts.find((txt) => txt.id === activeElement);
 
@@ -60,9 +104,10 @@ export function useAlignmentGuides({
 
 		// Get active element position and dimensions
 		// biome-ignore lint/style/noNonNullAssertion: <explanation>
-		const activePos = activeImage ? activeImage.position : activeText!.position;
-		const activeWidth = activeImage ? activeImage.width : 0;
-		const activeHeight = activeImage ? activeImage.height : 0;
+		const activeElementData = activeImage || activeText!;
+		const activePos = activeElementData.position;
+		const { width: activeWidth, height: activeHeight } =
+			getElementDimensions(activeElementData);
 
 		// Canvas center guides
 		const canvasCenterX = template.width / 2;
@@ -93,8 +138,8 @@ export function useAlignmentGuides({
 		// biome-ignore lint/complexity/noForEach: <explanation>
 		otherElements.forEach((element) => {
 			const elementPos = element.position;
-			const elementWidth = "width" in element ? element.width : 0;
-			const elementHeight = "height" in element ? element.height : 0;
+			const { width: elementWidth, height: elementHeight } =
+				getElementDimensions(element);
 
 			// Calculate other element center
 			const otherElementCenterX = elementPos.x + elementWidth / 2;
@@ -142,10 +187,8 @@ export function useAlignmentGuides({
 
 			// Right alignment
 			if (
-				"width" in element &&
-				activeWidth &&
 				Math.abs(activePos.x + activeWidth - (elementPos.x + elementWidth)) <
-					snapThreshold / scale
+				snapThreshold / scale
 			) {
 				newGuides.push({
 					type: "alignRight",
@@ -162,10 +205,8 @@ export function useAlignmentGuides({
 
 			// Bottom alignment
 			if (
-				"height" in element &&
-				activeHeight &&
 				Math.abs(activePos.y + activeHeight - (elementPos.y + elementHeight)) <
-					snapThreshold / scale
+				snapThreshold / scale
 			) {
 				newGuides.push({
 					type: "alignBottom",
@@ -179,7 +220,6 @@ export function useAlignmentGuides({
 		setIsSnapping(shouldSnap);
 	}, [activeElement, template, scale, snapThreshold]);
 
-	// Function to center the active element
 	const centerElement = (axis: "x" | "y" | "both") => {
 		if (!activeElement) return;
 
@@ -199,7 +239,6 @@ export function useAlignmentGuides({
 		);
 	};
 
-	// Function to get snap position if snapping
 	const getSnapPosition = (
 		position: { x: number; y: number },
 		elementWidth: number,
@@ -208,10 +247,7 @@ export function useAlignmentGuides({
 		if (!isSnapping) return position;
 
 		const newPosition = { ...position };
-		const elementCenterX = position.x + elementWidth / 2;
-		const elementCenterY = position.y + elementHeight / 2;
 
-		// Calculate the distance from current position to potential snap positions
 		const horizontalGuide = guides.find(
 			(g) => g.type === "centerX" || g.type === "centerToCenterX",
 		);
@@ -223,14 +259,11 @@ export function useAlignmentGuides({
 		const topGuide = guides.find((g) => g.type === "alignTop");
 		const bottomGuide = guides.find((g) => g.type === "alignBottom");
 
-		// Define a breakaway threshold - if the element is moved more than this distance from
-		// the snap position, allow it to break free from snapping
 		const breakawayThreshold = (snapThreshold * 1.5) / scale;
 
 		// Check for horizontal center snapping
 		if (horizontalGuide) {
 			const snapX = horizontalGuide.position - elementWidth / 2;
-			// Only snap if we're within the threshold
 			if (Math.abs(position.x - snapX) < breakawayThreshold) {
 				newPosition.x = snapX;
 			}
@@ -239,7 +272,6 @@ export function useAlignmentGuides({
 		// Check for vertical center snapping
 		if (verticalGuide) {
 			const snapY = verticalGuide.position - elementHeight / 2;
-			// Only snap if we're within the threshold
 			if (Math.abs(position.y - snapY) < breakawayThreshold) {
 				newPosition.y = snapY;
 			}
@@ -247,7 +279,6 @@ export function useAlignmentGuides({
 
 		// Check for left edge alignment
 		if (leftGuide) {
-			// Only snap if we're within the threshold
 			if (Math.abs(position.x - leftGuide.position) < breakawayThreshold) {
 				newPosition.x = leftGuide.position;
 			}
@@ -256,7 +287,6 @@ export function useAlignmentGuides({
 		// Check for right edge alignment
 		if (rightGuide) {
 			const snapX = rightGuide.position - elementWidth;
-			// Only snap if we're within the threshold
 			if (Math.abs(position.x - snapX) < breakawayThreshold) {
 				newPosition.x = snapX;
 			}
@@ -264,7 +294,6 @@ export function useAlignmentGuides({
 
 		// Check for top edge alignment
 		if (topGuide) {
-			// Only snap if we're within the threshold
 			if (Math.abs(position.y - topGuide.position) < breakawayThreshold) {
 				newPosition.y = topGuide.position;
 			}
@@ -273,7 +302,6 @@ export function useAlignmentGuides({
 		// Check for bottom edge alignment
 		if (bottomGuide) {
 			const snapY = bottomGuide.position - elementHeight;
-			// Only snap if we're within the threshold
 			if (Math.abs(position.y - snapY) < breakawayThreshold) {
 				newPosition.y = snapY;
 			}
@@ -282,7 +310,6 @@ export function useAlignmentGuides({
 		return newPosition;
 	};
 
-	// Function to constrain element within canvas boundaries
 	const constrainToCanvas = (
 		position: { x: number; y: number },
 		elementWidth: number,
