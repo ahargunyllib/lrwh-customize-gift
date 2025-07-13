@@ -44,7 +44,7 @@ export type DeleteOrderParams = {
 
 export const submitOrderSchema = z.object({
 	file: z.instanceof(Blob).refine((file) => file.size > 0, "File is required"),
-	orderId: z.string().min(1, "Order ID is required"),
+	orderId: z.string().uuid("Invalid order ID format"),
 });
 
 export type SubmitOrderRequest = z.infer<typeof submitOrderSchema>;
