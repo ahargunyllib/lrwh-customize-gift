@@ -1,18 +1,22 @@
 "use client";
 
-import type React from "react";
-
 import { Button } from "@/shared/components/ui/button";
 import type { ImageElement } from "@/shared/types/template";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 
 interface ImageUploaderProps {
 	image: ImageElement;
 	onChange: (file: File) => void;
+	onDelete?: () => void;
 }
 
-export default function ImageUploader({ image, onChange }: ImageUploaderProps) {
+export default function ImageUploader({
+	image,
+	onChange,
+	onDelete,
+}: ImageUploaderProps) {
 	const [isDragging, setIsDragging] = useState(false);
 
 	const handleDragOver = (e: React.DragEvent) => {
@@ -60,14 +64,25 @@ export default function ImageUploader({ image, onChange }: ImageUploaderProps) {
 					alt="Template image"
 					className="w-full h-full object-cover"
 				/>
-				<div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+				<div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
 					<Button
 						variant="secondary"
 						size="sm"
 						onClick={() => document.getElementById(`file-${image.id}`)?.click()}
 					>
-						<Upload className="h-4 w-4 mr-1" /> Replace
+						<Upload className="h-4 w-4 mr-1" />
+						Replace
 					</Button>
+					{onDelete && (
+						<Button
+							variant="destructive"
+							size="sm"
+							onClick={onDelete}
+							className="px-2"
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					)}
 				</div>
 			</div>
 			<input

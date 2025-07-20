@@ -15,6 +15,8 @@ export interface ImageElement {
 	draggable?: boolean;
 	centerX?: boolean;
 	centerY?: boolean;
+	borderRadius?: number;
+	grayscale?: boolean;
 }
 
 export interface TextElement {
@@ -22,14 +24,17 @@ export interface TextElement {
 	type: "text";
 	content: string;
 	position: Position;
+	width: number;
+	height: number;
 	draggable?: boolean;
 	style: {
 		fontFamily: string;
-		fontSize: string;
+		fontSize: string | number;
 		fontWeight: string;
 		color: string;
 		textAlign: string;
 		lineHeight: string;
+		verticalAlign?: "top" | "middle" | "bottom";
 		curved?: boolean;
 		curveRadius?: number;
 		curveDirection?: "up" | "down";
@@ -39,7 +44,6 @@ export interface TextElement {
 		maxWidth?: number | string;
 		backgroundColor?: string;
 		borderRadius?: number;
-		height?: number;
 		padding?: string | number;
 		paddingTop?: string | number;
 		paddingRight?: string | number;

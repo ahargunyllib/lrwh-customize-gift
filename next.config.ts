@@ -16,6 +16,10 @@ const nextConfig = {
 				port: "",
 				pathname: "/**",
 			},
+			{
+				protocol: "https",
+				hostname: "is3.cloudhost.id",
+			},
 		],
 	},
 };

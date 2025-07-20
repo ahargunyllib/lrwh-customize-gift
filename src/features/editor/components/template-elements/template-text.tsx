@@ -1,9 +1,8 @@
 "use client";
+
+import type { TemplateData, TextElement } from "@/shared/types/template";
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-
-import { Input } from "@/shared/components/ui/input";
-import type { TextElement } from "@/shared/types/template";
 
 interface TemplateTextProps {
 	text: TextElement;
@@ -11,7 +10,7 @@ interface TemplateTextProps {
 	isEditing: boolean;
 	onClick: (e: React.MouseEvent) => void;
 	onDoubleClick: () => void;
-	onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+	onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 	onInputBlur: () => void;
 	onInputKeyDown: (e: React.KeyboardEvent) => void;
 	scale?: number;
@@ -28,6 +27,16 @@ interface TemplateTextProps {
 	isSnapping?: boolean;
 	canvasWidth?: number;
 	canvasHeight?: number;
+	onResizeStart?: (
+		e: React.MouseEvent,
+		textId: string,
+		direction: string,
+		width: number,
+		height: number,
+		posX: number,
+		posY: number,
+	) => void;
+	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 }
 
 export default function TemplateText({
@@ -45,120 +54,202 @@ export default function TemplateText({
 	isSnapping = false,
 	canvasWidth = 0,
 	canvasHeight = 0,
+	onResizeStart,
+	setTemplate,
 }: TemplateTextProps) {
 	const {
-		curved,
-		curveRadius = 100,
-		curveDirection = "up",
 		rotate = 0,
-		centerX = false,
-		centerY = false,
-		maxWidth,
-		height,
 		backgroundColor,
 		borderRadius,
-		padding,
-		paddingTop,
-		paddingRight,
-		paddingBottom,
-		paddingLeft,
-		paddingX,
-		paddingY,
-		paddingCenter,
+		padding = 8,
 		letterSpacing,
 	} = text.style;
 
 	const textRef = useRef<HTMLDivElement>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const hiddenTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-	const [textSize, setTextSize] = useState({
-		width: 0,
-		height: 0,
-	});
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		if (textRef.current) {
-			setTextSize({
-				width: textRef.current.clientWidth,
-				height: textRef.current.clientHeight,
-			});
-		}
-	}, [text]);
 
 	const fontSizeNum =
 		typeof text.style.fontSize === "string"
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
 
-	const sweepFlag = curveDirection === "up" ? 0 : 1;
+	const updateHeightFromTextarea = (content: string) => {
+		if (hiddenTextareaRef.current) {
+			const hiddenTextarea = hiddenTextareaRef.current;
+			hiddenTextarea.value = content;
+			hiddenTextarea.style.height = "auto";
+			const newHeight = hiddenTextarea.scrollHeight;
 
-	const computedPadding: React.CSSProperties = {
-		padding,
-		paddingTop: paddingTop ?? paddingY,
-		paddingBottom: paddingBottom ?? paddingY,
-		paddingLeft: paddingLeft ?? paddingX,
-		paddingRight: paddingRight ?? paddingX,
+			setTemplate((prev) => ({
+				...prev,
+				texts: prev.texts.map((t) =>
+					t.id === text.id ? { ...t, height: newHeight } : t,
+				),
+			}));
+		}
 	};
 
-	const getWrapperStyle = (): React.CSSProperties => {
-		const style: React.CSSProperties = {
-			position: "absolute",
-			transform: `scale(${scale}) rotate(${rotate}deg)`,
-			transformOrigin: "top left",
-			width: "max-content",
-		};
-
-		if (centerX) {
-			style.left = 0;
-			style.right = 0;
-			style.textAlign = "center";
-		} else {
-			style.left = text.position.x * scale;
+	// Update height when content changes (hanya saat tidak sedang resize)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		// Cek apakah sedang dalam proses resize
+		const isResizing = document.querySelector(`[data-resizing="${text.id}"]`);
+		if (!isResizing) {
+			updateHeightFromTextarea(text.content);
 		}
+	}, [
+		text.content,
+		text.width,
+		fontSizeNum,
+		text.style.lineHeight,
+		text.style.fontFamily,
+	]);
 
-		if (centerY && canvasHeight) {
-			style.top = canvasHeight / 2;
-		} else {
-			style.top = text.position.y * scale;
+	// Auto-resize textarea height when editing
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		if (isEditing && textareaRef.current) {
+			const textarea = textareaRef.current;
+			textarea.style.height = "auto";
+			const newHeight = textarea.scrollHeight;
+			textarea.style.height = `${newHeight}px`;
+
+			// Update template height to match textarea
+			setTemplate((prev) => ({
+				...prev,
+				texts: prev.texts.map((t) =>
+					t.id === text.id ? { ...t, height: newHeight } : t,
+				),
+			}));
 		}
+	}, [text.content, isEditing, text.id, setTemplate]);
 
-		return style;
-	};
+	const getContainerStyle = (): React.CSSProperties => ({
+		position: "absolute",
+		left: (text.position.x || 0) * scale,
+		top: (text.position.y || 0) * scale,
+		width: (text.width || 200) * scale,
+		height: (text.height || 100) * scale,
+		transform: `rotate(${rotate}deg)`,
+		transformOrigin: "center center",
+		backgroundColor: backgroundColor || "transparent",
+		borderRadius: borderRadius || 0,
+		border: isActive ? "2px solid #3b82f6" : "2px solid transparent",
+		cursor: text.draggable && !isEditing ? "move" : "default",
+		boxSizing: "border-box",
+	});
 
-	const contentWrapperStyle: React.CSSProperties = {
-		display: "inline-block",
+	const getTextStyle = (): React.CSSProperties => ({
+		width: "100%",
+		height: "100%",
 		fontFamily: text.style.fontFamily,
 		fontSize: fontSizeNum,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
-		backgroundColor,
-		borderRadius,
-		height,
-		maxWidth: maxWidth ?? undefined,
-		lineHeight: text.style.lineHeight,
-		textAlign: text.style.textAlign as React.CSSProperties["textAlign"],
+		lineHeight: text.style.lineHeight || "1.4",
+		textAlign: (text.style.textAlign ||
+			"left") as React.CSSProperties["textAlign"],
+		padding: padding || 8,
+		margin: 0,
+		border: "none",
+		outline: "none",
+		background: "transparent",
+		resize: "none",
+		overflow: "hidden",
+		wordWrap: "break-word",
 		whiteSpace: "pre-wrap",
-		overflowWrap: "break-word",
-		letterSpacing,
-		...computedPadding,
-	};
+		letterSpacing: letterSpacing || "normal",
+		boxSizing: "border-box",
+	});
+
+	const getDisplayStyle = (): React.CSSProperties => ({
+		width: "100%",
+		height: "100%",
+		fontFamily: text.style.fontFamily,
+		fontSize: fontSizeNum,
+		fontWeight: text.style.fontWeight,
+		color: text.style.color,
+		lineHeight: text.style.lineHeight || "1.4",
+		textAlign: (text.style.textAlign ||
+			"left") as React.CSSProperties["textAlign"],
+		padding: padding || 8,
+		margin: 0,
+		border: "none",
+		outline: "none",
+		background: "transparent",
+		wordWrap: "break-word",
+		whiteSpace: "pre-wrap",
+		letterSpacing: letterSpacing || "normal",
+		boxSizing: "border-box",
+		overflow: "hidden",
+	});
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		if (text.draggable && !isEditing) {
 			e.preventDefault();
+			e.stopPropagation();
+
 			const canvas = document.querySelector('[data-canvas="true"]');
 			if (canvas) {
 				const canvasRect = canvas.getBoundingClientRect();
+				const mouseX = (e.clientX - canvasRect.left) / scale;
+				const mouseY = (e.clientY - canvasRect.top) / scale;
+
 				setDragOffset({
-					x: (e.clientX - canvasRect.left) / scale - text.position.x,
-					y: (e.clientY - canvasRect.top) / scale - text.position.y,
+					x: mouseX - text.position.x,
+					y: mouseY - text.position.y,
 				});
 				setIsDragging(true);
 			}
 		}
 	};
 
+	const handleResizeMouseDown = (e: React.MouseEvent, direction: string) => {
+		if (onResizeStart) {
+			// Tambahkan marker untuk menandai sedang resize
+			e.currentTarget.setAttribute("data-resizing", text.id);
+
+			onResizeStart(
+				e,
+				text.id,
+				direction,
+				text.width || 200,
+				text.height || 100,
+				text.position.x || 0,
+				text.position.y || 0,
+			);
+		}
+	};
+
+	// Custom input change handler that preserves fontSize and updates height
+	const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const newContent = e.target.value;
+
+		// Update content while preserving all other properties
+		setTemplate((prev) => ({
+			...prev,
+			texts: prev.texts.map((t) =>
+				t.id === text.id
+					? {
+							...t,
+							content: newContent,
+							style: {
+								...t.style,
+								fontSize: t.style.fontSize, // Preserve fontSize
+							},
+						}
+					: t,
+			),
+		}));
+
+		// Call parent's onInputChange
+		onInputChange(e);
+	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		if (!isDragging) return;
 
@@ -167,26 +258,30 @@ export default function TemplateText({
 				const canvas = document.querySelector('[data-canvas="true"]');
 				if (canvas) {
 					const canvasRect = canvas.getBoundingClientRect();
-					const newX = (e.clientX - canvasRect.left) / scale - dragOffset.x;
-					const newY = (e.clientY - canvasRect.top) / scale - dragOffset.y;
+					const mouseX = (e.clientX - canvasRect.left) / scale;
+					const mouseY = (e.clientY - canvasRect.top) / scale;
+
+					const newX = mouseX - dragOffset.x;
+					const newY = mouseY - dragOffset.y;
 
 					let newPosition = { x: newX, y: newY };
 
 					const isMovingSlowly =
 						e.movementX * e.movementX + e.movementY * e.movementY < 25;
+
 					if (getSnapPosition && isSnapping && isMovingSlowly) {
 						newPosition = getSnapPosition(
 							newPosition,
-							textSize.width,
-							textSize.height,
+							text.width || 200,
+							text.height || 100,
 						);
 					}
 
 					if (constrainToCanvas) {
 						newPosition = constrainToCanvas(
 							newPosition,
-							textSize.width,
-							textSize.height,
+							text.width || 200,
+							text.height || 100,
 						);
 					}
 
@@ -205,6 +300,13 @@ export default function TemplateText({
 
 		const handleMouseUp = () => {
 			setIsDragging(false);
+			// Remove resize marker
+			const resizeMarker = document.querySelector(
+				`[data-resizing="${text.id}"]`,
+			);
+			if (resizeMarker) {
+				resizeMarker.removeAttribute("data-resizing");
+			}
 		};
 
 		document.addEventListener("mousemove", handleMouseMove);
@@ -218,83 +320,95 @@ export default function TemplateText({
 		isDragging,
 		dragOffset,
 		text.id,
+		text.width,
+		text.height,
+		text.position.x,
+		text.position.y,
 		scale,
 		getSnapPosition,
 		constrainToCanvas,
 		isSnapping,
-		textSize,
 	]);
 
 	return (
-		<div
-			ref={textRef}
-			className={isActive ? "ring-2 ring-blue-500 absolute" : "absolute"}
-			style={getWrapperStyle()}
-			onClick={(e) => {
-				e.stopPropagation();
-				onClick(e);
-			}}
-			onKeyDown={(e) => {
-				if (!isEditing && e.key === "Enter") {
-					e.preventDefault();
-					onClick(e as unknown as React.MouseEvent);
-				}
-			}}
-			onDoubleClick={(e) => {
-				e.stopPropagation();
-				onDoubleClick();
-			}}
-			onMouseDown={handleMouseDown}
-		>
-			{isEditing ? (
-				<Input
-					value={text.content}
-					onChange={onInputChange}
-					onBlur={onInputBlur}
-					onKeyDown={onInputKeyDown}
-					autoFocus
-					className="min-w-[200px]"
-					style={contentWrapperStyle}
-				/>
-			) : (
-				<div style={contentWrapperStyle}>
-					{curved ? (
-						// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-						<svg
-							// +2 ?
-							width={textSize.width + 2}
-							height={curveRadius + fontSizeNum}
-							viewBox={`0 -${curveRadius} ${textSize.width + 2} ${curveRadius + fontSizeNum}`}
-							style={{ overflow: "visible" }}
-							aria-label={text.content}
-						>
-							<defs>
-								<path
-									id={`curve-path-${text.id}`}
-									d={`M 0,0 A ${curveRadius},${curveRadius} 0 0,${sweepFlag} ${textSize.width},0`}
-								/>
-							</defs>
-							<text
-								fontFamily={text.style.fontFamily}
-								fontSize={fontSizeNum}
-								fontWeight={text.style.fontWeight}
-								fill={text.style.color}
-								style={{ letterSpacing }}
-							>
-								<textPath
-									href={`#curve-path-${text.id}`}
-									startOffset="50%"
-									textAnchor="middle"
-								>
-									{text.content}
-								</textPath>
-							</text>
-						</svg>
-					) : (
-						text.content
-					)}
-				</div>
-			)}
-		</div>
+		<>
+			{/* Hidden textarea for height calculation */}
+			<textarea
+				ref={hiddenTextareaRef}
+				style={{
+					...getTextStyle(),
+					position: "absolute",
+					top: "-9999px",
+					left: "-9999px",
+					visibility: "hidden",
+					pointerEvents: "none",
+					width: (text.width || 200) * scale,
+				}}
+				readOnly
+			/>
+
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+			<div
+				ref={textRef}
+				style={getContainerStyle()}
+				onClick={(e) => {
+					e.stopPropagation();
+					onClick(e);
+				}}
+				onDoubleClick={(e) => {
+					e.stopPropagation();
+					onDoubleClick();
+				}}
+				onMouseDown={handleMouseDown}
+			>
+				{isEditing ? (
+					<textarea
+						ref={textareaRef}
+						value={text.content}
+						onChange={handleInputChange}
+						onBlur={onInputBlur}
+						onKeyDown={onInputKeyDown}
+						// biome-ignore lint/a11y/noAutofocus: <explanation>
+						autoFocus
+						style={getTextStyle()}
+					/>
+				) : (
+					<div style={getDisplayStyle()}>{text.content}</div>
+				)}
+
+				{/* Resize Handles - Only horizontal resize handles for text */}
+				{isActive && !isEditing && (
+					<>
+						{/* Horizontal edge */}
+						<div
+							className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-w-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "w")}
+						/>
+						<div
+							className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-e-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "e")}
+						/>
+
+						{/* Corner */}
+						<div
+							className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-nw-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+						/>
+						<div
+							className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-ne-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+						/>
+						<div
+							className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-sw-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+						/>
+						<div
+							className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-se-resize"
+							onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+						/>
+					</>
+				)}
+			</div>
+		</>
 	);
 }

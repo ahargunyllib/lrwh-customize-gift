@@ -58,6 +58,8 @@ export function useTemplateEditor(initial?: TemplateData) {
 			type: "text",
 			content: "New Text",
 			position: { x: template.width / 2 - 100, y: template.height / 2 },
+			width: 200,
+			height: 50,
 			draggable: true,
 			style: {
 				fontFamily: "Arial, sans-serif",
