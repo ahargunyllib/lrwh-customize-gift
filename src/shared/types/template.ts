@@ -55,6 +55,7 @@ export interface TextElement {
 export interface TemplateData {
 	id: string;
 	name: string;
+	productVariantId: string | undefined;
 	width: number;
 	height: number;
 	backgroundColor: string;
@@ -75,5 +76,6 @@ export interface PrintSizeConfig {
 export type TemplateEntity = {
 	id: string;
 	name: string;
-	data: Omit<TemplateData, "id" | "name">;
+	productVariantId: string;
+	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
 };
