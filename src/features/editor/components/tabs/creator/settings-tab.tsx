@@ -14,6 +14,7 @@ import { triggerElementCenter } from "@/shared/lib/events";
 import { printSizes } from "@/shared/lib/template";
 import { Trash2 } from "lucide-react";
 import { Fragment } from "react";
+import ProductVariantSelectContainer from "../../../containers/product-variant-select-container";
 import ElementControls from "../../template-elements/element-controls";
 
 export default function SettingsTab() {
@@ -37,8 +38,18 @@ export default function SettingsTab() {
 				/>
 			</div>
 
-			{/* Print size */}
 			<div className="space-y-1.5">
+				<Label>Product Variant</Label>
+				<ProductVariantSelectContainer
+					value={template.productVariantId}
+					onValueChange={(value) => {
+						setTemplate((p) => ({ ...p, productVariantId: value }));
+					}}
+				/>
+			</div>
+
+			{/* Print size */}
+			{/* <div className="space-y-1.5">
 				<Label>Print Size</Label>
 				<Select
 					value={
@@ -59,7 +70,7 @@ export default function SettingsTab() {
 						))}
 					</SelectContent>
 				</Select>
-			</div>
+			</div> */}
 
 			{/* Background */}
 			<div className="space-y-1.5">
