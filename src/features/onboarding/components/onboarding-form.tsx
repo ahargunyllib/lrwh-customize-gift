@@ -1,0 +1,96 @@
+"use client";
+
+import { Button } from "@/shared/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import { InfoIcon, Loader } from "lucide-react";
+import { useOnboardingForm } from "../hooks/use-onboarding-form";
+
+export default function OnboardingForm() {
+	const form = useOnboardingForm();
+
+	return (
+		<Form {...form}>
+			<form onSubmit={form.onSubmitHandler} className="space-y-6">
+				<FormField
+					control={form.control}
+					name="orderNumber"
+					render={({ field }) => (
+						<FormItem>
+							<div className="flex flex-row items-center justify-between">
+								<FormLabel
+									htmlFor="orderID"
+									className="text-[#1D2939] font-medium text-base"
+								>
+									Order ID
+									<span className="text-red-500">*</span>
+								</FormLabel>
+								<InfoIcon className="text-[#2854AD] size-4" />
+							</div>
+							<FormControl>
+								<Input
+									{...field}
+									type="text"
+									placeholder="Masukkan order ID"
+									className="w-full"
+									id="orderID"
+									name="orderID"
+								/>
+							</FormControl>
+							<FormDescription className="text-[#344054] text-xs font-medium">
+								Salin kode No. Pesanan shopee pada bagian rincian
+							</FormDescription>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name="username"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel
+								htmlFor="username"
+								className="text-[#1D2939] font-medium text-base"
+							>
+								Username Shopee<span className="text-red-500">*</span>
+							</FormLabel>
+							<FormControl>
+								<Input
+									{...field}
+									type="text"
+									placeholder="Masukkan username"
+									className="w-full"
+									id="username"
+								/>
+							</FormControl>
+							<FormDescription className="text-[#344054] text-xs font-medium">
+								Masukan username sesuai dengan yang ada di shopee
+							</FormDescription>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<Button
+					type="submit"
+					disabled={form.isLoading}
+					className="w-full bg-[#2854AD] hover:bg-[#2854AD]/80 px-8 py-4 h-fit"
+				>
+					{form.isLoading ? (
+						<Loader className="animate-spin" />
+					) : (
+						"Mulai Desain"
+					)}
+				</Button>
+			</form>
+		</Form>
+	);
+}
