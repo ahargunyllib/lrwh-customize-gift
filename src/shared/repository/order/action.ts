@@ -137,7 +137,7 @@ export const createOrder = async ({
 		return {
 			success: false,
 			error: error.message,
-			message: "Failed to create product",
+			message: "Failed to create order",
 		};
 	}
 
