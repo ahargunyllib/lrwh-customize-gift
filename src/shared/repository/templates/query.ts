@@ -30,11 +30,8 @@ export const useCreateTemplateMutation = () => {
 		mutationFn: (data: CreateTemplateRequest) => createTemplate(data),
 		onSuccess: (res) => {
 			if (!res.success) {
-				toast.error(res.message);
 				return;
 			}
-
-			toast.success(res.message);
 
 			queryClient.invalidateQueries({ queryKey: ["templates"] });
 		},
@@ -48,11 +45,8 @@ export const useUpdateTemplateMutation = (id: TemplateEntity["id"]) => {
 		mutationFn: (data: CreateTemplateRequest) => updateTemplate(data, id),
 		onSuccess: (res) => {
 			if (!res.success) {
-				toast.error(res.message);
 				return;
 			}
-
-			toast.success(res.message);
 
 			queryClient.invalidateQueries({ queryKey: ["templates"] });
 		},

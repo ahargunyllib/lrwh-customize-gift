@@ -57,6 +57,7 @@ export interface TextElement {
 export interface TemplateData {
 	id: string;
 	name: string;
+	productVariantId?: string;
 	width: number;
 	height: number;
 	backgroundColor: string;
@@ -65,17 +66,18 @@ export interface TemplateData {
 	texts: TextElement[];
 }
 
-export type PrintSize = "10x20" | "15x20" | "20x30";
+// export type PrintSize = "10x20" | "15x20" | "20x30";
 
-export interface PrintSizeConfig {
-	name: PrintSize;
-	width: number;
-	height: number;
-	label: string;
-}
+// export interface PrintSizeConfig {
+// 	name: PrintSize;
+// 	width: number;
+// 	height: number;
+// 	label: string;
+// }
 
 export type TemplateEntity = {
 	id: string;
 	name: string;
-	data: Omit<TemplateData, "id" | "name">;
+	productVariantId: string;
+	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
 };

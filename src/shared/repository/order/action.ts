@@ -1,7 +1,10 @@
 "use server";
 
 import { db } from "@/server/db";
-import { ordersTable } from "@/server/db/schema/orders";
+import {
+	orderProductVariantsTable,
+	ordersTable,
+} from "@/server/db/schema/orders";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import { uploadFileToS3 } from "../../../server/s3";
 import { tryCatch } from "../../lib/try-catch";
@@ -94,15 +97,43 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 export const createOrder = async ({
 	orderNumber,
 	username,
+	productVariantIds,
 }: CreateOrderRequest) => {
 	const { error } = await tryCatch(
-		db.insert(ordersTable).values({
-			orderNumber,
-			username,
+		db.transaction(async (tx) => {
+			const { data: createdOrder, error } = await tryCatch(
+				tx
+					.insert(ordersTable)
+					.values({
+						orderNumber,
+						username,
+					})
+					.returning({
+						id: ordersTable.id,
+					}),
+			);
+			if (error) {
+				console.error(error);
+				tx.rollback();
+				return;
+			}
+
+			const { error: fetchError } = await tryCatch(
+				tx.insert(orderProductVariantsTable).values(
+					productVariantIds.map((productVariantId) => ({
+						orderId: createdOrder[0].id,
+						productVariantId,
+					})),
+				),
+			);
+			if (fetchError) {
+				console.error(fetchError);
+				tx.rollback();
+				return;
+			}
 		}),
 	);
 	if (error) {
-		console.error(error);
 		return {
 			success: false,
 			error: error.message,
@@ -119,19 +150,72 @@ export const createOrder = async ({
 
 export const updateOrder = async (
 	{ id }: UpdateOrderParams,
-	{ orderNumber, username }: UpdateOrderRequest,
+	{ orderNumber, username, productVariantIds }: UpdateOrderRequest,
 ) => {
+	const { data: existingOrder, error: fetchError } = await tryCatch(
+		db.select().from(ordersTable).where(eq(ordersTable.id, id)),
+	);
+	if (fetchError) {
+		console.error(fetchError);
+		return {
+			success: false,
+			error: fetchError.message,
+			message: "Failed to fetch existing order",
+		};
+	}
+
+	if (existingOrder.length === 0) {
+		return {
+			success: false,
+			error: "Order not found",
+			message: "Order not found",
+		};
+	}
+
 	const { error } = await tryCatch(
-		db
-			.update(ordersTable)
-			.set({
-				orderNumber,
-				username,
-			})
-			.where(eq(ordersTable.id, id)),
+		db.transaction(async (tx) => {
+			const { error: updateError } = await tryCatch(
+				tx
+					.update(ordersTable)
+					.set({
+						orderNumber,
+						username,
+					})
+					.where(eq(ordersTable.id, id)),
+			);
+			if (updateError) {
+				console.error(updateError);
+				tx.rollback();
+				return;
+			}
+
+			const { error: deleteError } = await tryCatch(
+				tx
+					.delete(orderProductVariantsTable)
+					.where(eq(orderProductVariantsTable.orderId, id)),
+			);
+			if (deleteError) {
+				console.error(deleteError);
+				tx.rollback();
+				return;
+			}
+
+			const { error: insertError } = await tryCatch(
+				tx.insert(orderProductVariantsTable).values(
+					productVariantIds.map((productVariantId) => ({
+						orderId: id,
+						productVariantId,
+					})),
+				),
+			);
+			if (insertError) {
+				console.error(insertError);
+				tx.rollback();
+				return;
+			}
+		}),
 	);
 	if (error) {
-		console.error(error);
 		return {
 			success: false,
 			error: error.message,
@@ -148,10 +232,28 @@ export const updateOrder = async (
 
 export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 	const { error } = await tryCatch(
-		db.delete(ordersTable).where(eq(ordersTable.id, id)),
+		db.transaction(async (tx) => {
+			const { error: deleteError } = await tryCatch(
+				tx
+					.delete(orderProductVariantsTable)
+					.where(eq(orderProductVariantsTable.orderId, id)),
+			);
+			if (deleteError) {
+				console.error(deleteError);
+				tx.rollback();
+				return;
+			}
+			const { error: orderDeleteError } = await tryCatch(
+				tx.delete(ordersTable).where(eq(ordersTable.id, id)),
+			);
+			if (orderDeleteError) {
+				console.error(orderDeleteError);
+				tx.rollback();
+				return;
+			}
+		}),
 	);
 	if (error) {
-		console.error(error);
 		return {
 			success: false,
 			error: error.message,
