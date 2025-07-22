@@ -84,8 +84,8 @@ export function scaleTemplate(
 
 	return {
 		...template,
-		width: width,
-		height: height,
+		width,
+		height,
 		images: template.images.map((img) => ({
 			...img,
 			position: {
