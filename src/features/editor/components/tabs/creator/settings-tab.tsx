@@ -3,15 +3,7 @@ import { useTemplateContext } from "@/features/editor/containers/template-creato
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/components/ui/select";
 import { triggerElementCenter } from "@/shared/lib/events";
-import { printSizes } from "@/shared/lib/template";
 import { Trash2 } from "lucide-react";
 import { Fragment } from "react";
 import ProductVariantSelectContainer from "../../../containers/product-variant-select-container";
@@ -42,8 +34,14 @@ export default function SettingsTab() {
 				<Label>Product Variant</Label>
 				<ProductVariantSelectContainer
 					value={template.productVariantId}
-					onValueChange={(value) => {
-						setTemplate((p) => ({ ...p, productVariantId: value }));
+					onValueChange={(value, width, height) => {
+						setTemplate((p) => ({
+							...p,
+							productVariantId: value,
+							width: width * 40,
+							height: height * 40,
+						}));
+						changePrintSize(width, height);
 					}}
 				/>
 			</div>
