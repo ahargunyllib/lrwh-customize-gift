@@ -13,21 +13,22 @@ export default function LineConfigurator({
 	return (
 		<div className="space-y-4">
 			<LinePositionControls
-				startX={line.startX}
-				startY={line.startY}
-				endX={line.endX}
-				endY={line.endY}
-				onChange={(position) => onUpdate({})}
+				startX={line.startPoint.x}
+				startY={line.startPoint.y}
+				endX={line.endPoint.x}
+				endY={line.endPoint.y}
+				onChange={(position) =>
+					onUpdate({
+						startPoint: { x: position.startX, y: position.startY },
+						endPoint: { x: position.endX, y: position.endY },
+					})
+				}
 			/>
 			<ColorPicker
 				label="Line Color"
 				value={line.strokeColor}
 				id={`line-color-${line.id}`}
 				onChange={(color) => onUpdate({ strokeColor: color })}
-			/>
-			<RotationControl
-				rotation={line.rotation}
-				onChange={(rotation) => onUpdate({ rotation })}
 			/>
 			<OpacityControl
 				opacity={line.opacity}
