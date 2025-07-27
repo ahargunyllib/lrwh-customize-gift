@@ -1,3 +1,4 @@
+import type { LineElement } from "./element/line";
 import type { ShapeElement } from "./element/shape";
 
 export interface Position {
@@ -67,6 +68,7 @@ export interface TemplateData {
 	images: ImageElement[];
 	texts: TextElement[];
 	shapes: ShapeElement[];
+	lines: LineElement[];
 }
 
 // export type PrintSize = "10x20" | "15x20" | "20x30";
