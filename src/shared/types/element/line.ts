@@ -8,21 +8,20 @@ export type TLineElement =
 	| "line-dotted"
 	| "line-arrow";
 
+export interface LineTip {
+	type: "none" | "arrow" | "circle" | "square";
+}
 export interface LineElement {
 	id: string;
 	type: TLineElement;
-	width: number;
-	height: number;
 	draggable?: boolean;
-	position: Position;
-	rotation: number;
 	strokeColor: string;
 	strokeWidth: number;
 	opacity: number;
 	startPoint: Position;
 	endPoint: Position;
-	startArrow?: boolean;
-	endArrow?: boolean;
-	startArrowSize?: number;
-	endArrowSize?: number;
+	startTip?: string;
+	endTip?: string;
+	// startTipSize?: number;
+	// endTipSize?: number;
 }
