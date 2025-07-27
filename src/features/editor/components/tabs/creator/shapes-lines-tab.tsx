@@ -1,5 +1,16 @@
 import { useTemplateContext } from "@/features/editor/containers/template-creator";
-import { Accordion } from "@/shared/components/ui/accordion";
+import LineConfigurator from "@/shared/components/shape-lines/configurator/LineConfigurator";
+import ShapeConfigurator from "@/shared/components/shape-lines/configurator/ShapeConfigurator";
+import LineSelector from "@/shared/components/shape-lines/selector/LineSelector";
+import ShapeSelector from "@/shared/components/shape-lines/selector/ShapeSelector";
+import { getShapeIcon } from "@/shared/components/shape-lines/variants";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/shared/components/ui/accordion";
+import { buttonVariants } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import {
 	Tabs,
@@ -7,12 +18,22 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@/shared/components/ui/tabs";
+import { cn } from "@/shared/lib/utils";
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
-import { Circle, Minus, Plus, Square } from "lucide-react";
+import { Minus, Square, Trash2 } from "lucide-react";
 
-export default function ShapesTab() {
-	const addLine = (type: LineElement["type"]) => {};
+export default function ShapesLinesTab() {
+	const tabsContentList = [
+		{
+			value: "shapes",
+			comp: ShapeTabContent,
+		},
+		{
+			value: "lines",
+			comp: LinesTabContent,
+		},
+	];
 
 	return (
 		<div className="mt-6">
@@ -28,176 +49,156 @@ export default function ShapesTab() {
 					</TabsTrigger>
 				</TabsList>
 
-				<ShapeTabsContent />
-				<TabsContent value="lines">
-					<div className="space-y-1.5">
-						{lineVariants.map((variant) => (
-							// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-							<div
-								key={variant.type}
-								className="rounded-md cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
-								onClick={() => addLine(variant.type)}
-							>
-								<div className="flex items-center gap-4 p-1">
-									<div className="flex-shrink-0 w-16 h-8 flex items-center justify-center bg-gray-50 rounded">
-										{variant.preview}
-									</div>
-									<div className="flex-1 min-w-0">
-										<h4 className="font-medium text-sm text-gray-900">
-											{variant.name}
-										</h4>
-										<p className="text-xs text-gray-500 mt-0.5">
-											{variant.description}
-										</p>
-									</div>
-									<Plus className="w-5 h-5 text-gray-400" />
-								</div>
-							</div>
-						))}
-					</div>
-				</TabsContent>
+				{tabsContentList.map((tab) => (
+					<TabsContent key={tab.value} value={tab.value}>
+						<tab.comp />
+					</TabsContent>
+				))}
 			</Tabs>
-
-			{/* Template Line and Shapes render */}
 		</div>
 	);
 }
 
-function ShapeTabsContent() {
-	const { template, addShape, activeElement, setActiveElement } =
-		useTemplateContext();
-
-	const shapesTemplate = template.shapes;
+function LinesTabContent() {
+	const { template, updateLine, deleteElement } = useTemplateContext();
+	const lines = template.lines;
 	return (
-		<TabsContent value="shapes">
-			<div className="space-y-1.5">
-				{shapeVariants.map((variant) => (
-					// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-					<div
-						key={variant.type}
-						className="rounded-md cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
-						onClick={() => addShape(variant.type)}
-					>
-						<div className="flex items-center gap-4 p-1">
-							<div className="flex-shrink-0 w-16 h-8 flex items-center justify-center bg-gray-200 rounded">
-								{variant.icon}
-							</div>
-							<div className="flex-1 min-w-0">
-								<h4 className="font-medium text-sm text-gray-900">
-									{variant.name}
-								</h4>
-								<p className="text-xs text-gray-500 mt-0.5">
-									{variant.description}
-								</p>
-							</div>
-							<Plus className="w-5 h-5 text-gray-400" />
-						</div>
+		<>
+			<LineSelector />
+			{lines?.length > 0 && (
+				<div className="space-y-3 pt-4 border-t">
+					<div className="flex items-center justify-between">
+						<Label className="text-sm font-medium">Added Lines</Label>
+						<span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+							{lines.length} {lines.length === 1 ? "item" : "items"}
+						</span>
 					</div>
-				))}
-			</div>
-			{shapesTemplate?.length > 0 && (
+
+					<Accordion type="single" className="space-y-2">
+						{lines.map((line, idx) => (
+							<AccordionItem
+								key={line.id}
+								value={line.id}
+								className="border rounded-md"
+							>
+								<div>
+									<AccordionTrigger className="p-2 gap-1">
+										<ElementAccordionTrigger
+											element={line}
+											index={idx}
+											type="Line"
+											onDelete={() => deleteElement(line.id)}
+										/>
+									</AccordionTrigger>
+									<AccordionContent className="px-4 pb-4">
+										<LineConfigurator
+											line={line}
+											onUpdate={(updates) => updateLine(line.id, updates)}
+										/>
+									</AccordionContent>
+								</div>
+							</AccordionItem>
+						))}
+					</Accordion>
+				</div>
+			)}
+		</>
+	);
+}
+
+function ShapeTabContent() {
+	const { template, deleteElement, updateShape } = useTemplateContext();
+	const shapes = template.shapes;
+
+	return (
+		<>
+			<ShapeSelector />
+			{shapes?.length > 0 && (
 				<div className="space-y-3 pt-4 border-t">
 					<div className="flex items-center justify-between">
 						<Label className="text-sm font-medium">Added Elements</Label>
 						<span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-							{shapesTemplate.length}{" "}
-							{shapesTemplate.length === 1 ? "item" : "items"}
+							{shapes.length} {shapes.length === 1 ? "item" : "items"}
 						</span>
 					</div>
 
-					<Accordion
-						type="single"
-						collapsible
-						className="space-y-2"
-					></Accordion>
+					<Accordion type="single" collapsible className="space-y-2">
+						{shapes.map((shape, idx) => (
+							<AccordionItem
+								key={shape.id}
+								value={shape.id}
+								className="border rounded-md"
+							>
+								<div>
+									<AccordionTrigger className="p-2 gap-1">
+										<ElementAccordionTrigger
+											element={shape}
+											index={idx}
+											type="Shape"
+											onDelete={() => deleteElement(shape.id)}
+										/>
+									</AccordionTrigger>
+									<AccordionContent className="px-4 pb-4">
+										<ShapeConfigurator
+											shape={shape}
+											onUpdate={(updates) => updateShape(shape.id, updates)}
+										/>
+									</AccordionContent>
+								</div>
+							</AccordionItem>
+						))}
+					</Accordion>
 				</div>
 			)}
-		</TabsContent>
+		</>
 	);
 }
 
-interface LineVariant {
-	type: LineElement["type"];
-	name: string;
-	description: string;
-	preview: React.ReactNode;
-}
-const lineVariants: LineVariant[] = [
-	{
-		type: "line-thin",
-		name: "Thin Line",
-		description: "1px solid line",
-		preview: <div className="w-12 h-0.5 bg-gray-700" />,
-	},
-	{
-		type: "line-medium",
-		name: "Medium Line",
-		description: "2px solid line",
-		preview: <div className="w-12 h-1 bg-gray-700" />,
-	},
-	{
-		type: "line-thick",
-		name: "Thick Line",
-		description: "4px solid line",
-		preview: <div className="w-12 h-1.5 bg-gray-700" />,
-	},
-	{
-		type: "line-dashed",
-		name: "Dashed Line",
-		description: "2px dashed line",
-		preview: (
-			<div className="w-12 h-0.5 border-t-2 border-dashed border-gray-700" />
-		),
-	},
-	{
-		type: "line-dotted",
-		name: "Dotted Line",
-		description: "2px dotted line",
-		preview: (
-			<div className="flex gap-1 items-center">
-				{[...Array(6)].map((_, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-					<div key={i} className="w-1 h-1 bg-gray-700 rounded-full" />
-				))}
-			</div>
-		),
-	},
-	{
-		type: "line-arrow",
-		name: "Arrow Line",
-		description: "Line with arrow",
-		preview: (
-			<div className="flex items-center">
-				<div className="w-10 h-0.5 bg-gray-700" />
-				<div className="w-0 h-0 border-l-[6px] border-l-gray-700 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent" />
-			</div>
-		),
-	},
-];
+type ElementAccordionTriggerProps = {
+	element: LineElement | ShapeElement;
+	index: number;
+	type: string;
+	onDelete: () => void;
+};
 
-interface ShapeVariant {
-	type: ShapeElement["type"];
-	name: string;
-	description: string;
-	icon: React.ReactNode;
+function ElementAccordionTrigger({
+	element,
+	index,
+	type,
+	onDelete,
+}: ElementAccordionTriggerProps) {
+	return (
+		<div className="flex items-center gap-3 flex-1">
+			<div className="flex-shrink-0 w-8 h-6 flex items-center justify-center">
+				{getShapeIcon(element.type)}
+			</div>
+			<div className="flex-1 text-left">
+				<span className="font-medium text-sm">
+					{type} {index + 1}
+				</span>
+			</div>
+			<div className="flex items-center gap-2 mr-2">
+				<div
+					className="w-4 h-4 rounded border"
+					style={{
+						backgroundColor:
+							"strokeColor" in element ? element.strokeColor : element.fill,
+					}}
+				/>
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+				<span
+					className={cn(
+						buttonVariants({ variant: "ghost", size: "sm" }),
+						"p-1 h-6 w-6 text-red-500 hover:text-red-700",
+					)}
+					onClick={(e) => {
+						e.stopPropagation();
+						onDelete();
+					}}
+				>
+					<Trash2 className="w-3 h-3" />
+				</span>
+			</div>
+		</div>
+	);
 }
-const shapeVariants: ShapeVariant[] = [
-	{
-		type: "circle",
-		name: "Circle",
-		description: "",
-		icon: <Circle className="w-5 h-5 text-gray-700" />,
-	},
-	{
-		type: "rectangle",
-		name: "Rectangle",
-		description: "",
-		icon: <Square className="w-5 h-5 text-gray-700" />,
-	},
-	// {
-	//   type: "triangle",
-	//   name: "Triangle",
-	//   description: "",
-	//   icon: <Triangle className="w-5 h-5 text-gray-700" />,
-	// },
-];
