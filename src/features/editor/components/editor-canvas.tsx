@@ -17,6 +17,7 @@ import { useResizeImage } from "../hooks/use-resize-image";
 import { useResizeText } from "../hooks/use-resize-text";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
+import TemplateLine from "./template-elements/template-line";
 import TemplateShape from "./template-elements/template-shape";
 import TemplateText from "./template-elements/template-text";
 
@@ -219,7 +220,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						/>
 					))}
 
-					{/* Shapes & Lines */}
+					{/* Shapes */}
 					{template.shapes.map((shape) => (
 						<TemplateShape
 							key={shape.id}
@@ -238,6 +239,31 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							}}
 							getSnapPosition={getSnapPosition}
 							constrainToCanvas={constrainToCanvas}
+						/>
+					))}
+
+					{/* Lines */}
+					{template.lines.map((line) => (
+						<TemplateLine
+							key={line.id}
+							element={line}
+							isElementActive={activeElement === line.id}
+							toggleActive={(e) => {
+								e.stopPropagation();
+								setActiveElement(line.id);
+							}}
+							scale={scale}
+							isCustomizing={isCustomizing}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+							onUpdate={(updates) =>
+								setTemplate((prev) => ({
+									...prev,
+									lines: prev.lines.map((l) =>
+										l.id === line.id ? { ...l, ...updates } : l,
+									),
+								}))
+							}
 						/>
 					))}
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
