@@ -9,6 +9,7 @@ import type {
 } from "@/shared/types/template";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { getLineConfig } from "../utils/line-config";
 
 export function useTemplateEditor(initial?: TemplateData) {
 	// const [template, setTemplate] = useState<TemplateData>(
@@ -26,8 +27,8 @@ export function useTemplateEditor(initial?: TemplateData) {
 	const [template, setTemplate] = useState<TemplateData>({
 		id: uuidv4(),
 		name: "Custom Template",
-		width: 10 * 40, // 10 cm in pixels (assuming 1cm = 40px)
-		height: 20 * 40, // 10 cm in pixels (assuming 1cm = 40px)
+		width: 10 * 40, // default width in pixels (10cm * 40px/cm)
+		height: 20 * 40, // default height in pixels (20cm * 40px/cm)
 		backgroundColor: "#ffffff",
 		images: [],
 		texts: [],
@@ -245,112 +246,3 @@ export function useTemplateEditor(initial?: TemplateData) {
 		sendToBack,
 	};
 }
-
-const getLineConfig = (type: LineElement["type"]): LineElement => {
-	switch (type) {
-		case "line-thin":
-			return {
-				id: uuidv4(),
-				type,
-				width: 2,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 1,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-			};
-		case "line-medium":
-			return {
-				id: uuidv4(),
-				type,
-				width: 4,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 2,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-			};
-		case "line-thick":
-			return {
-				id: uuidv4(),
-				type,
-				width: 6,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 3,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-			};
-		case "line-dashed":
-			return {
-				id: uuidv4(),
-				type,
-				width: 2,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 1,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-				startArrow: false,
-				endArrow: false,
-				startArrowSize: 10,
-				endArrowSize: 10,
-			};
-		case "line-dotted":
-			return {
-				id: uuidv4(),
-				type,
-				width: 2,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 1,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-				startArrow: false,
-				endArrow: false,
-				startArrowSize: 10,
-				endArrowSize: 10,
-			};
-		case "line-arrow":
-			return {
-				id: uuidv4(),
-				type,
-				width: 2,
-				height: 0,
-				draggable: true,
-				position: { x: 0, y: 0 },
-				rotation: 0,
-				strokeColor: "#000000",
-				strokeWidth: 1,
-				opacity: 1,
-				startPoint: { x: -50, y: 0 },
-				endPoint: { x: 50, y: 0 },
-				startArrow: true,
-				endArrow: true,
-				startArrowSize: 10,
-				endArrowSize: 10,
-			};
-		default:
-			throw new Error(`Unknown line type: ${type}`);
-	}
-};
