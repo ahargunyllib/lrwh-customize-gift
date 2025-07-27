@@ -1,5 +1,5 @@
 "use client";
-import { printSizes, scaleTemplate } from "@/shared/lib/template";
+import { scaleTemplate } from "@/shared/lib/template";
 import type {
 	ImageElement,
 	TemplateData,
@@ -13,8 +13,8 @@ export function useTemplateEditor(initial?: TemplateData) {
 		initial ?? {
 			id: uuidv4(),
 			name: "Custom Template",
-			width: printSizes[1].width,
-			height: printSizes[1].height,
+			width: 10 * 40, // default width in pixels (10cm * 40px/cm)
+			height: 20 * 40, // default height in pixels (20cm * 40px/cm)
 			backgroundColor: "#ffffff",
 			images: [],
 			texts: [],
@@ -83,9 +83,16 @@ export function useTemplateEditor(initial?: TemplateData) {
 			texts: p.texts.map((t) => (t.id === id ? { ...t, ...payload } : t)),
 		}));
 
-	const changePrintSize = (sizeName: string) => {
-		const size = printSizes.find((s) => s.name === sizeName);
-		if (size) setTemplate((p) => scaleTemplate(p, size));
+	/**
+	 * Changes the print size of the template by scaling it to the specified dimensions.
+	 *
+	 * @param width - The width of the print size in centimeters (cm).
+	 * @param height - The height of the print size in centimeters (cm).
+	 */
+	const changePrintSize = (width: number, height: number) => {
+		// const size = printSizes.find((s) => s.name === sizeName);
+		// if (size) setTemplate((p) => scaleTemplate(p, size));
+		scaleTemplate(template, width * 40, height * 40); // assuming size is in cm, convert to pixels (1cm = 40px)
 	};
 
 	const getAllElements = (template: TemplateData) => [

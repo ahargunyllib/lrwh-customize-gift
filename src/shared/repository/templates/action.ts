@@ -34,6 +34,7 @@ export const getTemplates = async () => {
 		return {
 			id: template.id,
 			name: template.name,
+			productVariantId: template.productVariantId,
 			...template.data,
 		};
 	});
@@ -79,6 +80,7 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 	const template: TemplateData = {
 		id: templates[0].id,
 		name: templates[0].name,
+		productVariantId: templates[0].productVariantId,
 		...templates[0].data,
 	};
 
@@ -102,8 +104,8 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 	};
 
 	const queryBuilder = sql`
-    insert into templates (id, name, data)
-    values (${req.id}, ${req.name}, ${data})
+    insert into templates (id, name, product_variant_id, data)
+    values (${req.id}, ${req.name}, ${req.productVariantId}, ${data})
   `;
 
 	console.log(queryBuilder, "queryBuilder");
@@ -140,7 +142,7 @@ export const updateTemplate = async (
 
 	const queryBuilder = sql`
     update templates
-    set name = ${req.name}, data = ${data}
+    set name = ${req.name}, data = ${data}, product_variant_id = ${req.productVariantId}
     where id = ${id}
   `;
 

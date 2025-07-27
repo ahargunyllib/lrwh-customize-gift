@@ -11,15 +11,6 @@ import {
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/shared/components/ui/form";
-import { Input } from "@/shared/components/ui/input";
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -40,7 +31,7 @@ import { EyeIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { tryCatch } from "../../../shared/lib/try-catch";
-import { useCreateOrderForm } from "../hooks/use-create-order-form";
+import AddOrderDialogContainer from "../container/add-order-dialog-container";
 import { DataTablePagination } from "./order-table-pagination";
 import SearchFilter from "./search-filter";
 
@@ -171,7 +162,6 @@ export function DataTable<TData, TValue>({
 		getPaginationRowModel: getPaginationRowModel(),
 	});
 
-	const form = useCreateOrderForm();
 	const { openDialog } = useDialogStore();
 
 	return (
@@ -183,59 +173,7 @@ export function DataTable<TData, TValue>({
 					variant="outline"
 					onClick={() => {
 						openDialog({
-							children: (
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>Add Order</DialogTitle>
-										<DialogDescription>
-											Add a new order to the system.
-										</DialogDescription>
-									</DialogHeader>
-									<Form {...form}>
-										<form onSubmit={form.onSubmitHandler} className="space-y-4">
-											<FormField
-												control={form.control}
-												name="orderNumber"
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>Order Number</FormLabel>
-															<FormControl>
-																<Input
-																	{...field}
-																	placeholder="Enter order number"
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<FormField
-												control={form.control}
-												name="username"
-												render={({ field }) => {
-													return (
-														<FormItem>
-															<FormLabel>Username</FormLabel>
-															<FormControl>
-																<Input
-																	{...field}
-																	placeholder="Enter username"
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
-											<Button type="submit">
-												{form.isLoading ? "Creating..." : "Create Order"}
-											</Button>
-										</form>
-									</Form>
-								</DialogContent>
-							),
+							children: <AddOrderDialogContainer />,
 						});
 					}}
 				>
