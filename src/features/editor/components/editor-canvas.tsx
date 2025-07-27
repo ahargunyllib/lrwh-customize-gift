@@ -17,6 +17,7 @@ import { useResizeImage } from "../hooks/use-resize-image";
 import { useResizeText } from "../hooks/use-resize-text";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
+import TemplateShape from "./template-elements/template-shape";
 import TemplateText from "./template-elements/template-text";
 
 interface EditorCanvasProps {
@@ -113,6 +114,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				backgroundColor: "#ffffff",
 				images: [],
 				texts: [],
+				shapes: [],
+				lines: [],
 			});
 		}, [
 			initialTemplate,
@@ -216,6 +219,27 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						/>
 					))}
 
+					{/* Shapes & Lines */}
+					{template.shapes.map((shape) => (
+						<TemplateShape
+							key={shape.id}
+							element={shape}
+							isElementActive={activeElement === shape.id}
+							toggleActive={(e) => {
+								e.stopPropagation();
+								setActiveElement(shape.id);
+							}}
+							scale={scale}
+							isCustomizing={isCustomizing}
+							isSnapping={isSnapping}
+							canvasSize={{
+								width: template.width,
+								height: template.height,
+							}}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+						/>
+					))}
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
 						<Printer className="inline h-3 w-3 mr-1" />
 						{template.width}×{template.height}px&nbsp;(scale&nbsp;
