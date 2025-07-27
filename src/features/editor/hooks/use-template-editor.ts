@@ -32,6 +32,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 		images: [],
 		texts: [],
 		shapes: [],
+		lines: [],
 	});
 	const [activeElement, setActiveElement] = useState<string | null>(null);
 
@@ -86,8 +87,10 @@ export function useTemplateEditor(initial?: TemplateData) {
 			position: { x: template.width / 2 - 50, y: template.height / 2 - 50 },
 			rotation: 0,
 			fill: "#000000",
-			stroke: "#ffffff",
-			strokeWidth: 1,
+			borderColor: "#ffffff",
+			borderWidth: 0,
+			borderRadius: 0,
+			opacity: 100,
 			draggable: true,
 		};
 
@@ -104,6 +107,23 @@ export function useTemplateEditor(initial?: TemplateData) {
 			shapes: p.shapes.map((s) => (s.id === id ? { ...s, ...payload } : s)),
 		}));
 	/* End Shape Element */
+	/* Start Line Element */
+	const addLine = (type: LineElement["type"]) => {
+		const id = uuidv4();
+		const line: LineElement = getLineConfig(type);
+		setTemplate((p) => ({
+			...p,
+			lines: [...p.lines, line],
+		}));
+		setActiveElement(id);
+		return id;
+	};
+	const updateLine = (id: string, payload: Partial<LineElement>) =>
+		setTemplate((p) => ({
+			...p,
+			lines: p.lines.map((l) => (l.id === id ? { ...l, ...payload } : l)),
+		}));
+	/* End Line Element */
 
 	const deleteElement = (id: string) =>
 		setTemplate((p) => ({
@@ -111,6 +131,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			images: p.images.filter((i) => i.id !== id),
 			texts: p.texts.filter((t) => t.id !== id),
 			shapes: p.shapes.filter((s) => s.id !== id),
+			lines: p.lines.filter((l) => l.id !== id),
 		}));
 
 	const updateImage = (id: string, payload: Partial<ImageElement>) =>
@@ -145,10 +166,121 @@ export function useTemplateEditor(initial?: TemplateData) {
 		addImage,
 		addText,
 		addShape,
+		addLine,
 		updateShape,
+		updateLine,
 		deleteElement,
 		updateImage,
 		updateText,
 		changePrintSize,
 	};
 }
+
+const getLineConfig = (type: LineElement["type"]): LineElement => {
+	switch (type) {
+		case "line-thin":
+			return {
+				id: uuidv4(),
+				type,
+				width: 2,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 1,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+			};
+		case "line-medium":
+			return {
+				id: uuidv4(),
+				type,
+				width: 4,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 2,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+			};
+		case "line-thick":
+			return {
+				id: uuidv4(),
+				type,
+				width: 6,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 3,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+			};
+		case "line-dashed":
+			return {
+				id: uuidv4(),
+				type,
+				width: 2,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 1,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+				startArrow: false,
+				endArrow: false,
+				startArrowSize: 10,
+				endArrowSize: 10,
+			};
+		case "line-dotted":
+			return {
+				id: uuidv4(),
+				type,
+				width: 2,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 1,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+				startArrow: false,
+				endArrow: false,
+				startArrowSize: 10,
+				endArrowSize: 10,
+			};
+		case "line-arrow":
+			return {
+				id: uuidv4(),
+				type,
+				width: 2,
+				height: 0,
+				draggable: true,
+				position: { x: 0, y: 0 },
+				rotation: 0,
+				strokeColor: "#000000",
+				strokeWidth: 1,
+				opacity: 1,
+				startPoint: { x: -50, y: 0 },
+				endPoint: { x: 50, y: 0 },
+				startArrow: true,
+				endArrow: true,
+				startArrowSize: 10,
+				endArrowSize: 10,
+			};
+		default:
+			throw new Error(`Unknown line type: ${type}`);
+	}
+};
