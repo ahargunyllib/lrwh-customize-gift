@@ -65,6 +65,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 				{/* Font family & size */}
 				<div className="grid grid-cols-2 gap-2 col-span-2">
 					{/* Font */}
+
 					<div className="space-y-0.5 col-span-2 w-full">
 						<Label className="text-xs">Font</Label>
 						<Select
@@ -80,7 +81,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							</SelectTrigger>
 							<SelectContent>
 								{fontArray.map((font) => (
-									<SelectItem key={font.fontname} value={font.fontname}>
+									<SelectItem key={font.fontname} value={font.fontfamily}>
 										{font.fontname}
 									</SelectItem>
 								))}
