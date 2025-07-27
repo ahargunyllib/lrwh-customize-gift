@@ -82,7 +82,14 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							<SelectContent>
 								{fontArray.map((font) => (
 									<SelectItem key={font.fontname} value={font.fontfamily}>
-										{font.fontname}
+										<span
+											className="text-xl"
+											style={{
+												fontFamily: font.fontfamily,
+											}}
+										>
+											{font.fontname}
+										</span>{" "}
 									</SelectItem>
 								))}
 							</SelectContent>
