@@ -7,6 +7,13 @@ import { Switch } from "@/shared/components/ui/switch";
 import type { ImageElement } from "@/shared/types/template";
 import { useTemplateContext } from "../../containers/template-creator";
 
+import {
+	ArrowDown,
+	ArrowDownToLine,
+	ArrowUp,
+	ArrowUpToLine,
+} from "lucide-react";
+
 interface Props {
 	img: ImageElement;
 	selected: boolean;
@@ -14,7 +21,15 @@ interface Props {
 }
 
 export default function ImageCard({ img, selected, onSelect }: Props) {
-	const { updateImage, deleteElement } = useTemplateContext();
+	const {
+		updateImage,
+		deleteElement,
+		bringForward,
+		sendBackward,
+		bringToFront,
+		sendToBack,
+	} = useTemplateContext();
+
 	const inputId = `file-${img.id}`;
 
 	return (
@@ -59,6 +74,7 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 							}}
 						/>
 
+						{/* Replace/Delete */}
 						<div className="flex gap-2 mt-2">
 							<Button
 								variant="ghost"
@@ -84,6 +100,59 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 							</Button>
 						</div>
 
+						{/* Layer Z-Index Control */}
+						<div className="flex flex-wrap gap-2 mt-2">
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-7 text-xs"
+								onClick={(e) => {
+									e.stopPropagation();
+									bringForward(img.id);
+								}}
+							>
+								<ArrowUp className="w-4 h-4 mr-1" />
+								Forward
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-7 text-xs"
+								onClick={(e) => {
+									e.stopPropagation();
+									sendBackward(img.id);
+								}}
+							>
+								<ArrowDown className="w-4 h-4 mr-1" />
+								Backward
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-7 text-xs"
+								onClick={(e) => {
+									e.stopPropagation();
+									bringToFront(img.id);
+								}}
+							>
+								<ArrowUpToLine className="w-4 h-4 mr-1" />
+								To Front
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-7 text-xs"
+								onClick={(e) => {
+									e.stopPropagation();
+									sendToBack(img.id);
+								}}
+							>
+								<ArrowDownToLine className="w-4 h-4 mr-1" />
+								To Back
+							</Button>
+						</div>
+
+						{/* Control Panel */}
 						<div className="mt-2 space-y-1">
 							<div className="flex gap-1 items-center">
 								<Label className="text-xs w-20">Width</Label>

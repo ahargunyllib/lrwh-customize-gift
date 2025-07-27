@@ -42,6 +42,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			id,
 			type: "image",
 			src: "/placeholder.png",
+			zIndex: 1,
 			position: { x: template.width / 2 - 100, y: template.height / 2 - 100 },
 			width: 200,
 			height: 200,
@@ -62,6 +63,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			width: 200,
 			height: 50,
 			draggable: true,
+			zIndex: 1,
 			style: {
 				fontFamily: "Arial, sans-serif",
 				fontSize: "24px",
@@ -146,9 +148,80 @@ export function useTemplateEditor(initial?: TemplateData) {
 			texts: p.texts.map((t) => (t.id === id ? { ...t, ...payload } : t)),
 		}));
 
-	const changePrintSize = (sizeName: string) => {
-		const size = printSizes.find((s) => s.name === sizeName);
-		if (size) setTemplate((p) => scaleTemplate(p, size));
+	/**
+	 * Changes the print size of the template by scaling it to the specified dimensions.
+	 *
+	 * @param width - The width of the print size in centimeters (cm).
+	 * @param height - The height of the print size in centimeters (cm).
+	 */
+	const changePrintSize = (width: number, height: number) => {
+		// const size = printSizes.find((s) => s.name === sizeName);
+		// if (size) setTemplate((p) => scaleTemplate(p, size));
+		scaleTemplate(template, width * 40, height * 40); // assuming size is in cm, convert to pixels (1cm = 40px)
+	};
+
+	const getAllElements = (template: TemplateData) => [
+		...template.images,
+		...template.texts,
+	];
+
+	const splitElements = (
+		elements: (ImageElement | TextElement)[],
+	): { images: ImageElement[]; texts: TextElement[] } => ({
+		images: elements.filter((el): el is ImageElement => el.type === "image"),
+		texts: elements.filter((el): el is TextElement => el.type === "text"),
+	});
+
+	const bringForward = (id: string) => {
+		setTemplate((prev) => {
+			const all = getAllElements(prev);
+			const index = all.findIndex((el) => el.id === id);
+			if (index === -1 || index === all.length - 1) return prev;
+			const reordered = [...all];
+			[reordered[index], reordered[index + 1]] = [
+				reordered[index + 1],
+				reordered[index],
+			];
+			return { ...prev, ...splitElements(reordered) };
+		});
+	};
+
+	const sendBackward = (id: string) => {
+		setTemplate((prev) => {
+			const all = getAllElements(prev);
+			const index = all.findIndex((el) => el.id === id);
+			if (index <= 0) return prev;
+			const reordered = [...all];
+			[reordered[index], reordered[index - 1]] = [
+				reordered[index - 1],
+				reordered[index],
+			];
+			return { ...prev, ...splitElements(reordered) };
+		});
+	};
+
+	const bringToFront = (id: string) => {
+		setTemplate((prev) => {
+			const all = getAllElements(prev);
+			const index = all.findIndex((el) => el.id === id);
+			if (index === -1 || index === all.length - 1) return prev;
+			const reordered = [...all];
+			const [target] = reordered.splice(index, 1);
+			reordered.push(target);
+			return { ...prev, ...splitElements(reordered) };
+		});
+	};
+
+	const sendToBack = (id: string) => {
+		setTemplate((prev) => {
+			const all = getAllElements(prev);
+			const index = all.findIndex((el) => el.id === id);
+			if (index <= 0) return prev;
+			const reordered = [...all];
+			const [target] = reordered.splice(index, 1);
+			reordered.unshift(target);
+			return { ...prev, ...splitElements(reordered) };
+		});
 	};
 
 	return {
@@ -166,6 +239,10 @@ export function useTemplateEditor(initial?: TemplateData) {
 		updateImage,
 		updateText,
 		changePrintSize,
+		bringForward,
+		sendBackward,
+		bringToFront,
+		sendToBack,
 	};
 }
 

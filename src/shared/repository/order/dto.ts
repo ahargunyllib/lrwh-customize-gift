@@ -23,6 +23,9 @@ export type VerifyOrderByUsernameAndOrderNumberResponse = {
 export const createOrderSchema = z.object({
 	orderNumber: z.string().min(1, "Order number is required"),
 	username: z.string().min(1, "Username is required"),
+	productVariantIds: z
+		.array(z.string().uuid("Invalid product variant ID format"))
+		.min(1, "At least one product variant ID is required"),
 });
 
 export type CreateOrderRequest = z.infer<typeof createOrderSchema>;
@@ -30,6 +33,9 @@ export type CreateOrderRequest = z.infer<typeof createOrderSchema>;
 export const updateOrderSchema = z.object({
 	orderNumber: z.string().min(1, "Order number is required"),
 	username: z.string().min(1, "Username is required"),
+	productVariantIds: z
+		.array(z.string().uuid("Invalid product variant ID format"))
+		.min(1, "At least one product variant ID is required"),
 });
 
 export type UpdateOrderRequest = z.infer<typeof updateOrderSchema>;

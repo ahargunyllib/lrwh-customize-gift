@@ -18,6 +18,7 @@ export interface ImageElement {
 	centerY?: boolean;
 	borderRadius?: number;
 	grayscale?: boolean;
+	zIndex?: number;
 }
 
 export interface TextElement {
@@ -28,6 +29,8 @@ export interface TextElement {
 	width: number;
 	height: number;
 	draggable?: boolean;
+	zIndex?: number;
+
 	style: {
 		fontFamily: string;
 		fontSize: string | number;
@@ -60,6 +63,7 @@ export interface TextElement {
 export interface TemplateData {
 	id: string;
 	name: string;
+	productVariantId?: string;
 	width: number;
 	height: number;
 	backgroundColor: string;
@@ -70,17 +74,18 @@ export interface TemplateData {
 	lines: LineElement[];
 }
 
-export type PrintSize = "10x20" | "15x20" | "20x30";
+// export type PrintSize = "10x20" | "15x20" | "20x30";
 
-export interface PrintSizeConfig {
-	name: PrintSize;
-	width: number;
-	height: number;
-	label: string;
-}
+// export interface PrintSizeConfig {
+// 	name: PrintSize;
+// 	width: number;
+// 	height: number;
+// 	label: string;
+// }
 
 export type TemplateEntity = {
 	id: string;
 	name: string;
-	data: Omit<TemplateData, "id" | "name">;
+	productVariantId: string;
+	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
 };

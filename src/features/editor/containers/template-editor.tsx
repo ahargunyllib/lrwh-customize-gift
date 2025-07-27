@@ -7,7 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/components/ui/select";
-import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { getTemplateForSize } from "@/shared/lib/template";
 import { useSessionQuery } from "@/shared/repository/session-manager/query";
 import type { TemplateData } from "@/shared/types/template";
 import { useRouter } from "next/navigation";
@@ -20,9 +20,15 @@ import { useCanvasScale } from "../hooks/use-canvas-scale";
 import { useExportImage } from "../hooks/use-export-image";
 import { useTemplateEditor } from "../hooks/use-template-editor";
 
-interface Ctx extends ReturnType<typeof useTemplateEditor> {
-	selectedSize: (typeof printSizes)[number];
-}
+// interface Ctx extends ReturnType<typeof useTemplateEditor> {
+// 	selectedSize: (typeof printSizes)[number];
+// }
+type Ctx = ReturnType<typeof useTemplateEditor> & {
+	selectedSize: {
+		width: number;
+		height: number;
+	};
+};
 const TemplateCtx = createContext<Ctx | null>(null);
 export const useTemplateContext = () => {
 	const ctx = useContext(TemplateCtx);
@@ -36,7 +42,10 @@ export default function TemplateEditor({
 	// const isMobile = useIsMobile();
 	// const router = useRouter();
 
-	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
+	const [selectedSize, setSelectedSize] = useState({
+		width: original.width,
+		height: original.height,
+	});
 	const editor = useTemplateEditor(getTemplateForSize(original, selectedSize));
 
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -67,7 +76,7 @@ export default function TemplateEditor({
 			<div className="flex h-screen flex-col">
 				<div className="border-b bg-white">
 					<div className="px-4 md:px-8 lg:px-12 py-2 flex items-center gap-4">
-						<h1>Print Size:</h1>
+						{/* <h1>Print Size:</h1>
 						<Select
 							value={selectedSize.name}
 							onValueChange={(v) => {
@@ -87,7 +96,7 @@ export default function TemplateEditor({
 									</SelectItem>
 								))}
 							</SelectContent>
-						</Select>
+						</Select> */}
 
 						{!!orderIdJson && (
 							<Button

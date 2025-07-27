@@ -17,43 +17,35 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/components/ui/select";
-import { getTemplateForSize, printSizes } from "@/shared/lib/template";
+import { getTemplateForSize } from "@/shared/lib/template";
 import { useLogoutMutation } from "@/shared/repository/auth/query";
 import { useSessionQuery } from "@/shared/repository/session-manager/query";
 import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
-import type { PrintSizeConfig, TemplateData } from "@/shared/types/template";
+import type { TemplateData } from "@/shared/types/template";
 import { PlusCircle, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function TemplateSelector() {
 	const router = useRouter();
-	const [selectedSize, setSelectedSize] = useState(printSizes[1]);
+	// const [selectedSize, setSelectedSize] = useState(printSizes[1]);
 	const { data: res, isLoading, error } = useGetTemplatesQuery();
 	const session = useSessionQuery();
 	const { mutate: logout } = useLogoutMutation();
 
 	const customTemplates = res?.data?.templates || [];
 
-	const handleSizeChange = (size: string) => {
-		const newSize = printSizes.find((s) => s.name === size);
-		if (newSize) {
-			setSelectedSize(newSize);
-			document.dispatchEvent(
-				new CustomEvent("printSizeChange", {
-					detail: { size: newSize.name },
-				}),
-			);
-		}
-	};
+	// const handleSizeChange = (size: string) => {
+	// 	const newSize = printSizes.find((s) => s.name === size);
+	// 	if (newSize) {
+	// 		setSelectedSize(newSize);
+	// 		document.dispatchEvent(
+	// 			new CustomEvent("printSizeChange", {
+	// 				detail: { size: newSize.name },
+	// 			}),
+	// 		);
+	// 	}
+	// };
 
 	const handleTemplateSelect = (templateId: string) => {
 		router.push(`/editor/${templateId}`);
@@ -61,7 +53,10 @@ export default function TemplateSelector() {
 
 	const renderTemplatePreview = (
 		template: TemplateData,
-		size: PrintSizeConfig,
+		size: {
+			width: number;
+			height: number;
+		},
 	) => {
 		const scaledTemplate = getTemplateForSize(template, size);
 		const scale = 0.2; // Preview scale
@@ -129,7 +124,7 @@ export default function TemplateSelector() {
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-2xl font-bold">Select a Template</h1>
 				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-2">
+					{/* <div className="flex items-center gap-2">
 						<span className="text-sm font-medium">Size:</span>
 						<Select value={selectedSize.name} onValueChange={handleSizeChange}>
 							<SelectTrigger className="w-32">
@@ -143,7 +138,7 @@ export default function TemplateSelector() {
 								))}
 							</SelectContent>
 						</Select>
-					</div>
+					</div> */}
 					{session.data?.isLoggedIn && (
 						<>
 							<Link href="/editor/create">
@@ -189,7 +184,10 @@ export default function TemplateSelector() {
 						<CardContent className="p-4">
 							<div className="flex flex-col items-center gap-4">
 								<div className="h-40 flex items-center justify-center">
-									{renderTemplatePreview(template, selectedSize)}
+									{renderTemplatePreview(template, {
+										width: template.width,
+										height: template.height,
+									})}
 								</div>
 								<div className="w-full">
 									<h3 className="text-lg font-medium mb-2">

@@ -8,6 +8,7 @@ import {
 import type { TemplateData } from "@/shared/types/template";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export function useTemplatePersistence(
 	loadId: string | undefined,
@@ -62,19 +63,27 @@ export function useTemplatePersistence(
 		if (!res.success)
 			createTemplate(tpl, {
 				onSuccess: (r) => {
-					if (r.success) {
-						router.replace("/");
+					if (!r.success) {
+						toast.error(r.message || "Failed to create template");
 						return;
 					}
+
+					toast.success("Template created successfully");
+					router.replace("/");
+					return;
 				},
 			});
 		else
 			updateTemplate(tpl, {
 				onSuccess: (r) => {
-					if (r.success) {
-						router.replace("/");
+					if (!r.success) {
+						toast.error(r.message || "Failed to update template");
 						return;
 					}
+
+					toast.success("Template updated successfully");
+					router.replace("/");
+					return;
 				},
 			});
 	};
