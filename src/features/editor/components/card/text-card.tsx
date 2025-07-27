@@ -19,7 +19,16 @@ import {
 import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
+import {
+	AlignCenter,
+	AlignJustify,
+	AlignLeft,
+	AlignRight,
+	ArrowDown,
+	ArrowDownToLine,
+	ArrowUp,
+	ArrowUpToLine,
+} from "lucide-react";
 import { useTemplateContext } from "../../containers/template-creator";
 
 interface Props {
@@ -29,7 +38,14 @@ interface Props {
 }
 
 export default function TextCard({ txt, selected, onSelect }: Props) {
-	const { updateText, deleteElement } = useTemplateContext();
+	const {
+		updateText,
+		deleteElement,
+		bringForward,
+		bringToFront,
+		sendBackward,
+		sendToBack,
+	} = useTemplateContext();
 
 	return (
 		<Card
@@ -260,6 +276,58 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							<AlignJustify className="w-4 h-4" />
 						</ToggleGroupItem>
 					</ToggleGroup>
+				</div>
+
+				{/* Layer Z-Index Control */}
+				<div className="flex flex-wrap gap-2 mt-2">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7 text-xs"
+						onClick={(e) => {
+							e.stopPropagation();
+							bringForward(txt.id);
+						}}
+					>
+						<ArrowUp className="w-4 h-4 mr-1" />
+						Forward
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7 text-xs"
+						onClick={(e) => {
+							e.stopPropagation();
+							sendBackward(txt.id);
+						}}
+					>
+						<ArrowDown className="w-4 h-4 mr-1" />
+						Backward
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7 text-xs"
+						onClick={(e) => {
+							e.stopPropagation();
+							bringToFront(txt.id);
+						}}
+					>
+						<ArrowUpToLine className="w-4 h-4 mr-1" />
+						To Front
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-7 text-xs"
+						onClick={(e) => {
+							e.stopPropagation();
+							sendToBack(txt.id);
+						}}
+					>
+						<ArrowDownToLine className="w-4 h-4 mr-1" />
+						To Back
+					</Button>
 				</div>
 
 				<Button

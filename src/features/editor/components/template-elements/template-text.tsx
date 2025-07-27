@@ -76,6 +76,45 @@ export default function TemplateText({
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
 
+	// Get clip-path to crop the parts outside canvas
+	const getClipPath = () => {
+		if (!canvasWidth || !canvasHeight) return undefined;
+
+		const textX = text.position.x || 0;
+		const textY = text.position.y || 0;
+		const textW = text.width || 200;
+		const textH = text.height || 100;
+
+		// Calculate the visible rectangle relative to the text element
+		const clipLeft = Math.max(0, -textX);
+		const clipTop = Math.max(0, -textY);
+		const clipRight = Math.min(textW, canvasWidth - textX);
+		const clipBottom = Math.min(textH, canvasHeight - textY);
+
+		// If text is completely outside canvas
+		if (clipRight <= clipLeft || clipBottom <= clipTop) {
+			return "inset(100% 100% 100% 100%)"; // Hide completely
+		}
+
+		// Convert to percentages for clip-path
+		const leftPercent = (clipLeft / textW) * 100;
+		const topPercent = (clipTop / textH) * 100;
+		const rightPercent = ((textW - clipRight) / textW) * 100;
+		const bottomPercent = ((textH - clipBottom) / textH) * 100;
+
+		// Only apply clip-path if there's actual cropping needed
+		if (
+			clipLeft > 0 ||
+			clipTop > 0 ||
+			clipRight < textW ||
+			clipBottom < textH
+		) {
+			return `inset(${topPercent}% ${rightPercent}% ${bottomPercent}% ${leftPercent}%)`;
+		}
+
+		return undefined;
+	};
+
 	const updateHeightFromTextarea = (content: string) => {
 		if (hiddenTextareaRef.current) {
 			const hiddenTextarea = hiddenTextareaRef.current;
@@ -140,6 +179,8 @@ export default function TemplateText({
 		border: isActive ? "2px solid #3b82f6" : "2px solid transparent",
 		cursor: text.draggable && !isEditing ? "move" : "default",
 		boxSizing: "border-box",
+		clipPath: getClipPath(), // Apply cropping
+		overflow: "hidden", // Ensure content doesn't overflow
 	});
 
 	const getTextStyle = (): React.CSSProperties => ({
@@ -277,13 +318,8 @@ export default function TemplateText({
 						);
 					}
 
-					if (constrainToCanvas) {
-						newPosition = constrainToCanvas(
-							newPosition,
-							text.width || 200,
-							text.height || 100,
-						);
-					}
+					// Don't use constrainToCanvas since we want to allow partial visibility
+					// The cropping will handle the visual clipping
 
 					document.dispatchEvent(
 						new CustomEvent("elementMove", {
@@ -326,7 +362,6 @@ export default function TemplateText({
 		text.position.y,
 		scale,
 		getSnapPosition,
-		constrainToCanvas,
 		isSnapping,
 	]);
 
@@ -376,7 +411,7 @@ export default function TemplateText({
 					<div style={getDisplayStyle()}>{text.content}</div>
 				)}
 
-				{/* Resize Handles - Only horizontal resize handles for text */}
+				{/* Resize Handles - Only show when element is visible enough */}
 				{isActive && !isEditing && (
 					<>
 						{/* Horizontal edge */}

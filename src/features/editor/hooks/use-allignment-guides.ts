@@ -1,4 +1,5 @@
 "use client";
+
 import type {
 	ImageElement,
 	TemplateData,
@@ -36,6 +37,7 @@ function getElementDimensions(element: ImageElement | TextElement): {
 	if ("width" in element && "height" in element) {
 		return { width: element.width, height: element.height };
 	}
+
 	const textElement = element as TextElement;
 	const domElement = document.getElementById(textElement.id);
 	if (domElement) {
@@ -55,10 +57,12 @@ function getElementDimensions(element: ImageElement | TextElement): {
 			fontSize = textElement.style.fontSize;
 		}
 	}
+
 	const lineHeight =
 		typeof textElement.style.lineHeight === "number"
 			? textElement.style.lineHeight
 			: Number.parseFloat(textElement.style.lineHeight as string) || 1.2;
+
 	const lines = textElement.content.split("\n");
 	const maxLineLength = Math.max(...lines.map((line) => line.length));
 
@@ -85,6 +89,7 @@ export function useAlignmentGuides({
 
 		const activeImage = template.images.find((img) => img.id === activeElement);
 		const activeText = template.texts.find((txt) => txt.id === activeElement);
+
 		if (!activeImage && !activeText) {
 			setGuides([]);
 			return;
@@ -202,6 +207,7 @@ export function useAlignmentGuides({
 
 		const activeImage = template.images.find((img) => img.id === activeElement);
 		const activeText = template.texts.find((txt) => txt.id === activeElement);
+
 		if (!activeImage && !activeText) return;
 
 		document.dispatchEvent(
@@ -236,6 +242,7 @@ export function useAlignmentGuides({
 		// biome-ignore lint/complexity/noForEach: <explanation>
 		horizontalGuides.forEach((g) => {
 			let snapX: number | null = null;
+
 			if (g.type === "centerX" || g.type === "centerToCenterX") {
 				snapX = g.position - elementWidth / 2;
 			} else if (g.type === "alignLeft") {
@@ -260,6 +267,7 @@ export function useAlignmentGuides({
 		// biome-ignore lint/complexity/noForEach: <explanation>
 		verticalGuides.forEach((g) => {
 			let snapY: number | null = null;
+
 			if (g.type === "centerY" || g.type === "centerToCenterY") {
 				snapY = g.position - elementHeight / 2;
 			} else if (g.type === "alignTop") {
@@ -276,14 +284,25 @@ export function useAlignmentGuides({
 		return newPosition;
 	};
 
+	// Modified constrainToCanvas to allow partial overlap
 	const constrainToCanvas = (
 		position: { x: number; y: number },
 		elementWidth: number,
 		elementHeight: number,
 	) => {
+		// Minimum visible area (in pixels) that should remain within canvas
+		const minVisibleArea = 50;
+
 		return {
-			x: Math.max(0, Math.min(template.width - elementWidth, position.x)),
-			y: Math.max(0, Math.min(template.height - elementHeight, position.y)),
+			// Allow element to go outside canvas but keep at least minVisibleArea pixels visible
+			x: Math.max(
+				-elementWidth + minVisibleArea, // Allow element to go left but keep some part visible
+				Math.min(template.width - minVisibleArea, position.x), // Allow element to go right but keep some part visible
+			),
+			y: Math.max(
+				-elementHeight + minVisibleArea, // Allow element to go up but keep some part visible
+				Math.min(template.height - minVisibleArea, position.y), // Allow element to go down but keep some part visible
+			),
 		};
 	};
 
