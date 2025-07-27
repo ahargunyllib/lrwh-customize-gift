@@ -1,6 +1,6 @@
 import type { Position } from "../template";
 
-export type TShapeElement = "rectangle" | "circle";
+export type TShapeElement = "rectangle" | "circle" | "triangle";
 
 export interface ShapeElement {
 	id: string;
@@ -11,7 +11,8 @@ export interface ShapeElement {
 	position: Position;
 	rotation: number;
 	fill: string;
-	stroke: string;
-	strokeWidth: number;
-	borderRadius?: number;
+	borderColor: string;
+	borderWidth: number;
+	borderRadius: number;
+	opacity: number;
 }
