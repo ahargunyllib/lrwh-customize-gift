@@ -59,6 +59,99 @@ export default function TemplateImage({
 
 	useEffect(() => () => clearDragTimeout(), [clearDragTimeout]);
 
+	// Function to calculate crop area when image is outside canvas
+	const getCropArea = () => {
+		const imgX = image.position.x;
+		const imgY = image.position.y;
+		const imgW = image.width;
+		const imgH = image.height;
+
+		// Calculate intersection with canvas bounds
+		const cropLeft = Math.max(0, -imgX);
+		const cropTop = Math.max(0, -imgY);
+		const cropRight = Math.max(0, imgX + imgW - canvasWidth);
+		const cropBottom = Math.max(0, imgY + imgH - canvasHeight);
+
+		// Calculate visible dimensions
+		const visibleWidth = imgW - cropLeft - cropRight;
+		const visibleHeight = imgH - cropTop - cropBottom;
+
+		return {
+			cropLeft,
+			cropTop,
+			cropRight,
+			cropBottom,
+			visibleWidth,
+			visibleHeight,
+			needsCrop: cropLeft > 0 || cropTop > 0 || cropRight > 0 || cropBottom > 0,
+		};
+	};
+
+	// Get the style for cropping - positioning the image correctly within the visible container
+	const getImageStyle = () => {
+		const clipPath = getClipPath();
+
+		return {
+			clipPath,
+			filter: image.grayscale ? "grayscale(1)" : "none",
+		};
+	};
+
+	// Get the container style - this should always show the full image size and position
+	const getContainerStyle = () => {
+		const positionStyle: React.CSSProperties = {
+			left: image.position.x * scale,
+			top: image.position.y * scale,
+			width: image.width * scale,
+			height: image.height * scale,
+		};
+
+		// Handle centering
+		if (image.centerX && canvasWidth) {
+			positionStyle.left = ((canvasWidth - image.width) / 2) * scale;
+		}
+
+		if (image.centerY && canvasHeight) {
+			positionStyle.top = ((canvasHeight - image.height) / 2) * scale;
+		}
+
+		return positionStyle;
+	};
+
+	// Get clip-path to crop the parts outside canvas
+	const getClipPath = () => {
+		if (!canvasWidth || !canvasHeight) return undefined;
+
+		const imgX = image.position.x;
+		const imgY = image.position.y;
+		const imgW = image.width;
+		const imgH = image.height;
+
+		// Calculate the visible rectangle relative to the image
+		const clipLeft = Math.max(0, -imgX);
+		const clipTop = Math.max(0, -imgY);
+		const clipRight = Math.min(imgW, canvasWidth - imgX);
+		const clipBottom = Math.min(imgH, canvasHeight - imgY);
+
+		// If image is completely outside canvas
+		if (clipRight <= clipLeft || clipBottom <= clipTop) {
+			return "inset(100% 100% 100% 100%)"; // Hide completely
+		}
+
+		// Convert to percentages for clip-path
+		const leftPercent = (clipLeft / imgW) * 100;
+		const topPercent = (clipTop / imgH) * 100;
+		const rightPercent = ((imgW - clipRight) / imgW) * 100;
+		const bottomPercent = ((imgH - clipBottom) / imgH) * 100;
+
+		// Only apply clip-path if there's actual cropping needed
+		if (clipLeft > 0 || clipTop > 0 || clipRight < imgW || clipBottom < imgH) {
+			return `inset(${topPercent}% ${rightPercent}% ${bottomPercent}% ${leftPercent}%)`;
+		}
+
+		return undefined;
+	};
+
 	const handleDragEnter = (e: React.DragEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -144,13 +237,8 @@ export default function TemplateImage({
 						);
 					}
 
-					if (constrainToCanvas) {
-						newPosition = constrainToCanvas(
-							newPosition,
-							image.width,
-							image.height,
-						);
-					}
+					// Don't use constrainToCanvas since we want to allow partial visibility
+					// The cropping will handle the visual clipping
 
 					document.dispatchEvent(
 						new CustomEvent("elementMove", {
@@ -179,7 +267,6 @@ export default function TemplateImage({
 		image.id,
 		scale,
 		getSnapPosition,
-		constrainToCanvas,
 		isSnapping,
 		image.width,
 		image.height,
@@ -190,33 +277,16 @@ export default function TemplateImage({
 		onResizeStart?.(e, image.id, direction, image.width, image.height);
 	};
 
-	const getPositionStyle = () => {
-		const positionStyle: React.CSSProperties = {
-			left: image.position.x * scale,
-			top: image.position.y * scale,
-		};
-
-		if (image.centerX && canvasWidth) {
-			positionStyle.left = ((canvasWidth - image.width) / 2) * scale;
-		}
-		if (image.centerY && canvasHeight) {
-			positionStyle.top = ((canvasHeight - image.height) / 2) * scale;
-		}
-		return positionStyle;
-	};
+	const containerStyle = getContainerStyle();
 
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
 			ref={dropZoneRef}
-			className={`absolute ${isActive ? "ring-2 ring-blue-500" : ""} ${
+			className={`absolute overflow-hidden ${isActive ? "ring-2 ring-blue-500" : ""} ${
 				isDragOver ? "ring-2 ring-green-500" : ""
 			}`}
-			style={{
-				...getPositionStyle(),
-				width: image.width * scale,
-				height: image.height * scale,
-			}}
+			style={containerStyle}
 			onClick={onClick}
 			onDragEnter={handleDragEnter}
 			onDragOver={handleDragOver}
@@ -235,9 +305,7 @@ export default function TemplateImage({
 					alt="Template element"
 					className="w-full h-full object-cover pointer-events-none"
 					draggable={false}
-					style={{
-						filter: image.grayscale ? "grayscale(1)" : "none",
-					}}
+					style={getImageStyle()}
 				/>
 			</div>
 
@@ -250,7 +318,7 @@ export default function TemplateImage({
 				</div>
 			)}
 
-			{/* Resize Handles */}
+			{/* Resize Handles - Only show when fully or mostly visible */}
 			{isActive && isCustomizing && (
 				<>
 					{/* Horizontal edges */}
