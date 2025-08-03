@@ -80,8 +80,15 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							</SelectTrigger>
 							<SelectContent>
 								{fontArray.map((font) => (
-									<SelectItem key={font.fontname} value={font.fontname}>
-										{font.fontname}
+									<SelectItem key={font.fontname} value={font.fontfamily}>
+										<span
+											className="text-xl"
+											style={{
+												fontFamily: font.fontfamily,
+											}}
+										>
+											{font.fontname}
+										</span>{" "}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -144,6 +151,110 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					</div>
 				</div>
 
+				{/* Text Outline Settings */}
+				<div className="space-y-2 col-span-2 border-t pt-2">
+					<Label className="text-sm font-medium">Text Outline</Label>
+
+					{/* Enable Outline */}
+					<div className="flex items-center justify-between">
+						<Label className="text-xs">Enable Outline</Label>
+						<Switch
+							checked={
+								txt.style.textStroke !== undefined &&
+								txt.style.textStroke !== "none"
+							}
+							onCheckedChange={(checked) =>
+								updateText(txt.id, {
+									style: {
+										...txt.style,
+										textStroke: checked
+											? `${txt.style.outlineWidth || 1}px ${txt.style.outlineColor || "#000000"}`
+											: "none",
+										WebkitTextStroke: checked
+											? `${txt.style.outlineWidth || 1}px ${txt.style.outlineColor || "#000000"}`
+											: "none",
+									},
+								})
+							}
+						/>
+					</div>
+
+					{/* Outline Width */}
+					{txt.style.textStroke !== "none" && txt.style.textStroke && (
+						<>
+							<div className="space-y-0.5">
+								<Label className="text-xs">Outline Width</Label>
+								<Input
+									type="number"
+									min={0}
+									max={10}
+									step={0.5}
+									value={txt.style.outlineWidth || 1}
+									onChange={(e) => {
+										const width = Math.max(
+											0,
+											Number.parseFloat(e.target.value),
+										);
+										const color = txt.style.outlineColor || "#000000";
+										updateText(txt.id, {
+											style: {
+												...txt.style,
+												outlineWidth: width,
+												textStroke: `${width}px ${color}`,
+												WebkitTextStroke: `${width}px ${color}`,
+											},
+										});
+									}}
+									className="h-8"
+									onClick={(e) => e.stopPropagation()}
+								/>
+							</div>
+
+							{/* Outline Color */}
+							<div className="space-y-0.5">
+								<Label className="text-xs">Outline Color</Label>
+								<div className="flex items-center gap-2">
+									<input
+										type="color"
+										value={txt.style.outlineColor || "#000000"}
+										className="w-8 h-8 border rounded"
+										onChange={(e) => {
+											const color = e.target.value;
+											const width = txt.style.outlineWidth || 1;
+											updateText(txt.id, {
+												style: {
+													...txt.style,
+													outlineColor: color,
+													textStroke: `${width}px ${color}`,
+													WebkitTextStroke: `${width}px ${color}`,
+												},
+											});
+										}}
+										onClick={(e) => e.stopPropagation()}
+									/>
+									<Input
+										value={txt.style.outlineColor || "#000000"}
+										onChange={(e) => {
+											const color = e.target.value;
+											const width = txt.style.outlineWidth || 1;
+											updateText(txt.id, {
+												style: {
+													...txt.style,
+													outlineColor: color,
+													textStroke: `${width}px ${color}`,
+													WebkitTextStroke: `${width}px ${color}`,
+												},
+											});
+										}}
+										className="h-8"
+										onClick={(e) => e.stopPropagation()}
+									/>
+								</div>
+							</div>
+						</>
+					)}
+				</div>
+
 				{/* Letter Spacing */}
 				<div className="space-y-0.5 col-span-2">
 					<Label className="text-xs">Letter Spacing</Label>
@@ -166,47 +277,99 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 				</div>
 
 				{/* Curve Settings */}
-				<div className="space-y-0.5 col-span-2">
-					<Label className="text-xs">Curve Radius</Label>
-					<Input
-						type="number"
-						min={1}
-						value={txt.style.curveRadius ?? 100}
-						onChange={(e) =>
-							updateText(txt.id, {
-								style: {
-									...txt.style,
-									curved: true,
-									curveRadius: Math.max(1, Number.parseInt(e.target.value)),
-								},
-							})
-						}
-						onClick={(e) => e.stopPropagation()}
-						className="h-8"
-					/>
-				</div>
+				<div className="space-y-2 col-span-2 border-t pt-2">
+					<Label className="text-sm font-medium">Curve Text</Label>
 
-				<div className="space-y-0.5 col-span-2">
-					<Label className="text-xs">Curve Direction</Label>
-					<Select
-						value={txt.style.curveDirection ?? "up"}
-						onValueChange={(value) =>
-							updateText(txt.id, {
-								style: {
-									...txt.style,
-									curveDirection: value as "up" | "down",
-								},
-							})
-						}
-					>
-						<SelectTrigger className="h-8 w-full">
-							<SelectValue placeholder="Curve Direction" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="up">Up</SelectItem>
-							<SelectItem value="down">Down</SelectItem>
-						</SelectContent>
-					</Select>
+					{/* Enable Curve */}
+					<div className="flex items-center justify-between">
+						<Label className="text-xs">Enable Curve</Label>
+						<Switch
+							checked={txt.style.curved || false}
+							onCheckedChange={(checked) =>
+								updateText(txt.id, {
+									style: {
+										...txt.style,
+										curved: checked,
+									},
+								})
+							}
+						/>
+					</div>
+
+					{/* Curve Settings - only show when curve is enabled */}
+					{txt.style.curved && (
+						<>
+							<div className="space-y-0.5">
+								<Label className="text-xs">Curve Radius</Label>
+								<Input
+									type="number"
+									min={50}
+									max={1000}
+									value={txt.style.curveRadius ?? 200}
+									onChange={(e) =>
+										updateText(txt.id, {
+											style: {
+												...txt.style,
+												curveRadius: Math.max(
+													50,
+													Number.parseInt(e.target.value),
+												),
+											},
+										})
+									}
+									onClick={(e) => e.stopPropagation()}
+									className="h-8"
+								/>
+							</div>
+
+							<div className="space-y-0.5">
+								<Label className="text-xs">Curve Direction</Label>
+								<Select
+									value={txt.style.curveDirection ?? "up"}
+									onValueChange={(value) =>
+										updateText(txt.id, {
+											style: {
+												...txt.style,
+												curveDirection: value as "up" | "down",
+											},
+										})
+									}
+								>
+									<SelectTrigger className="h-8 w-full">
+										<SelectValue placeholder="Curve Direction" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="up">Curve Up</SelectItem>
+										<SelectItem value="down">Curve Down</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-0.5">
+								<Label className="text-xs">Curve Intensity</Label>
+								<Input
+									type="number"
+									min={0.1}
+									max={2}
+									step={0.1}
+									value={txt.style.curveIntensity ?? 1}
+									onChange={(e) =>
+										updateText(txt.id, {
+											style: {
+												...txt.style,
+												curveIntensity: Math.max(
+													0.1,
+													Number.parseFloat(e.target.value),
+												),
+											},
+										})
+									}
+									onClick={(e) => e.stopPropagation()}
+									className="h-8"
+								/>
+							</div>
+						</>
+					)}
 				</div>
 
 				{/* Centering */}
@@ -234,6 +397,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						/>
 					</div>
 				</div>
+
 				{/* Editable (Draggable false) */}
 				<div className="flex items-center justify-between pt-1">
 					<Label className="text-xs">Fix Position</Label>
@@ -246,6 +410,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						}
 					/>
 				</div>
+
 				{/* Text Align */}
 				<div className="space-y-0.5 col-span-2">
 					<Label className="text-xs">Text Align</Label>
