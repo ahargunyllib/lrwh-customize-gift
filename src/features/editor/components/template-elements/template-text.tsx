@@ -63,11 +63,18 @@ export default function TemplateText({
 		borderRadius,
 		padding = 8,
 		letterSpacing,
+		curved = false,
+		curveRadius = 200,
+		curveDirection = "up",
+		curveIntensity = 1,
+		textStroke,
+		WebkitTextStroke,
 	} = text.style;
 
 	const textRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const hiddenTextareaRef = useRef<HTMLTextAreaElement>(null);
+	const svgRef = useRef<SVGSVGElement>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -75,6 +82,61 @@ export default function TemplateText({
 		typeof text.style.fontSize === "string"
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
+
+	// Create curved text path with consistent positioning
+	const createCurvedTextPath = (
+		textContent: string,
+		radius: number,
+		direction: "up" | "down" = "up",
+	) => {
+		const textLength = textContent.length;
+		const circumference = 2 * Math.PI * radius;
+		const anglePerChar =
+			(((textLength * fontSizeNum * 0.6) / circumference) * 2 * Math.PI) /
+			textLength;
+
+		let path = "";
+		const centerX = (text.width || 200) / 2;
+		const centerY = (text.height || 100) / 2;
+
+		// Adjust radius based on intensity but keep consistent baseline
+		const adjustedRadius = radius * curveIntensity;
+
+		// Keep the same baseline position for both directions
+		// Only change the curve direction, not the overall position
+		const baselineY = centerY;
+		const arcRadius = adjustedRadius;
+
+		// Create arc path with consistent positioning
+		const startAngle = (-anglePerChar * (textLength - 1)) / 2;
+
+		let startX: number;
+		let startY: number;
+		let endX: number;
+		let endY: number;
+
+		if (direction === "up") {
+			// Curve upward - arc center is below the baseline
+			const arcCenterY = baselineY + arcRadius;
+			startX = centerX + arcRadius * Math.sin(startAngle);
+			startY = arcCenterY - arcRadius * Math.cos(startAngle);
+			endX = centerX + arcRadius * Math.sin(-startAngle);
+			endY = arcCenterY - arcRadius * Math.cos(-startAngle);
+		} else {
+			// Curve downward - arc center is above the baseline
+			const arcCenterY = baselineY - arcRadius;
+			startX = centerX + arcRadius * Math.sin(startAngle);
+			startY = arcCenterY + arcRadius * Math.cos(startAngle);
+			endX = centerX + arcRadius * Math.sin(-startAngle);
+			endY = arcCenterY + arcRadius * Math.cos(-startAngle);
+		}
+
+		const largeArcFlag = Math.abs(startAngle * 2) > Math.PI ? 1 : 0;
+		const sweepFlag = direction === "up" ? 1 : 0;
+
+		path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} ${sweepFlag} ${endX} ${endY}`;
+		return path;
+	};
 
 	// Get clip-path to crop the parts outside canvas
 	const getClipPath = () => {
@@ -116,7 +178,7 @@ export default function TemplateText({
 	};
 
 	const updateHeightFromTextarea = (content: string) => {
-		if (hiddenTextareaRef.current) {
+		if (hiddenTextareaRef.current && !curved) {
 			const hiddenTextarea = hiddenTextareaRef.current;
 			hiddenTextarea.value = content;
 			hiddenTextarea.style.height = "auto";
@@ -125,7 +187,18 @@ export default function TemplateText({
 			setTemplate((prev) => ({
 				...prev,
 				texts: prev.texts.map((t) =>
-					t.id === text.id ? { ...t, height: newHeight } : t,
+					t.id === text.id
+						? { ...t, height: Math.max(newHeight, fontSizeNum * 1.5) }
+						: t,
+				),
+			}));
+		} else if (curved) {
+			// For curved text, set a minimum height based on font size and curve
+			const minHeight = fontSizeNum * 2 + curveRadius * curveIntensity * 0.3;
+			setTemplate((prev) => ({
+				...prev,
+				texts: prev.texts.map((t) =>
+					t.id === text.id ? { ...t, height: Math.max(minHeight, 100) } : t,
 				),
 			}));
 		}
@@ -145,12 +218,15 @@ export default function TemplateText({
 		fontSizeNum,
 		text.style.lineHeight,
 		text.style.fontFamily,
+		curved,
+		curveRadius,
+		curveIntensity,
 	]);
 
 	// Auto-resize textarea height when editing
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		if (isEditing && textareaRef.current) {
+		if (isEditing && textareaRef.current && !curved) {
 			const textarea = textareaRef.current;
 			textarea.style.height = "auto";
 			const newHeight = textarea.scrollHeight;
@@ -164,7 +240,7 @@ export default function TemplateText({
 				),
 			}));
 		}
-	}, [text.content, isEditing, text.id, setTemplate]);
+	}, [text.content, isEditing, text.id, setTemplate, curved]);
 
 	const getContainerStyle = (): React.CSSProperties => ({
 		position: "absolute",
@@ -204,6 +280,8 @@ export default function TemplateText({
 		whiteSpace: "pre-wrap",
 		letterSpacing: letterSpacing || "normal",
 		boxSizing: "border-box",
+		textStroke: textStroke || WebkitTextStroke || undefined,
+		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 	});
 
 	const getDisplayStyle = (): React.CSSProperties => ({
@@ -216,16 +294,18 @@ export default function TemplateText({
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: padding || 8,
+		padding: curved ? 0 : padding || 8,
 		margin: 0,
 		border: "none",
 		outline: "none",
 		background: "transparent",
 		wordWrap: "break-word",
-		whiteSpace: "pre-wrap",
+		whiteSpace: curved ? "nowrap" : "pre-wrap",
 		letterSpacing: letterSpacing || "normal",
 		boxSizing: "border-box",
 		overflow: "hidden",
+		textStroke: textStroke || WebkitTextStroke || undefined,
+		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 	});
 
 	const handleMouseDown = (e: React.MouseEvent) => {
@@ -252,7 +332,6 @@ export default function TemplateText({
 		if (onResizeStart) {
 			// Tambahkan marker untuk menandai sedang resize
 			e.currentTarget.setAttribute("data-resizing", text.id);
-
 			onResizeStart(
 				e,
 				text.id,
@@ -320,7 +399,6 @@ export default function TemplateText({
 
 					// Don't use constrainToCanvas since we want to allow partial visibility
 					// The cropping will handle the visual clipping
-
 					document.dispatchEvent(
 						new CustomEvent("elementMove", {
 							detail: {
@@ -365,6 +443,63 @@ export default function TemplateText({
 		isSnapping,
 	]);
 
+	// Render curved text using SVG
+	const renderCurvedText = () => {
+		if (!curved || !text.content.trim()) return null;
+
+		const pathId = `curve-path-${text.id}`;
+		const textPath = createCurvedTextPath(
+			text.content,
+			curveRadius,
+			curveDirection,
+		);
+
+		return (
+			<svg
+				ref={svgRef}
+				width="100%"
+				height="100%"
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					overflow: "visible",
+				}}
+			>
+				<title>Curved text: {text.content}</title>
+				<defs>
+					<path id={pathId} d={textPath} />
+				</defs>
+				<text
+					style={
+						{
+							fontFamily: text.style.fontFamily,
+							fontSize: fontSizeNum,
+							fontWeight: text.style.fontWeight,
+							fill: text.style.color,
+							letterSpacing: letterSpacing || "normal",
+							stroke:
+								textStroke || WebkitTextStroke
+									? text.style.outlineColor || "#000000"
+									: "none",
+							strokeWidth:
+								textStroke || WebkitTextStroke
+									? text.style.outlineWidth || 1
+									: 0,
+							paintOrder: "stroke fill",
+						} as React.CSSProperties
+					}
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					<textPath href={`#${pathId}`} startOffset="50%">
+						{text.content}
+					</textPath>
+				</text>
+			</svg>
+		);
+	};
+
 	return (
 		<>
 			{/* Hidden textarea for height calculation */}
@@ -405,10 +540,19 @@ export default function TemplateText({
 						onKeyDown={onInputKeyDown}
 						// biome-ignore lint/a11y/noAutofocus: <explanation>
 						autoFocus
-						style={getTextStyle()}
+						style={{
+							...getTextStyle(),
+							display: curved ? "none" : "block", // Hide textarea when curved
+						}}
 					/>
 				) : (
-					<div style={getDisplayStyle()}>{text.content}</div>
+					<>
+						{curved ? (
+							renderCurvedText()
+						) : (
+							<div style={getDisplayStyle()}>{text.content}</div>
+						)}
+					</>
 				)}
 
 				{/* Resize Handles - Only show when element is visible enough */}
