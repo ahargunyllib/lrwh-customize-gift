@@ -25,6 +25,7 @@ import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { getTemplateForSize } from "@/shared/lib/template";
 import type { OrderProductVariant } from "@/shared/types";
 import type { TemplateData } from "@/shared/types/template";
+import { ImageUpscale } from "lucide-react";
 import html2canvas from "html2canvas-pro";
 import { useRouter } from "next/navigation";
 import {
@@ -37,6 +38,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import EditorCanvas from "../components/editor-canvas";
+import ImageMobileEditor from "../components/mobile-editor/image-mobile-editor";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
 import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
@@ -141,6 +143,8 @@ export default function TemplateEditor({
 								allowDelete={false}
 							/>
 						</div>
+
+						<ImageMobileEditor />
 
 						<ZoomControl
 							zoomIn={zoomIn}
