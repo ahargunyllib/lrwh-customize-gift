@@ -17,7 +17,7 @@ export default function Page() {
 				</div>
 			</div>
 			<div className="absolute top-0 left-0 min-h-dvh bg-white w-screen z-[-1] overflow-hidden">
-				<div className="absolute size-[29rem] left-[-7rem] top-[-8.5rem]">
+				<div className="absolute size-[29rem] left-[-18.5rem] top-[-11rem] md:left-[-7rem] md:top-[-8.5rem]">
 					<Image
 						src="/imgs/product-image-1.png"
 						alt="Product Image 1"
@@ -26,7 +26,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[6rem] left-[16rem] top-[4rem]">
+				<div className="absolute size-[6rem] left-[4.5rem] top-[1.5rem] md:left-[16rem] md:top-[4rem]">
 					<Image
 						src="/svgs/vector-6.svg"
 						alt="Vector 6"
@@ -35,7 +35,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-6 left-[16rem] top-[24rem]">
+				<div className="absolute size-6 left-[16rem] top-[24rem] md:visible invisible">
 					<Image
 						src="/svgs/vector-2.svg"
 						alt="Vector 2"
@@ -44,7 +44,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[15rem] left-[0rem] bottom-[8rem]">
+				<div className="absolute size-[9rem] md:size-[15rem] left-[-1.25rem] bottom-[-1rem] md:left-[0rem] md:bottom-[8rem]">
 					<Image
 						src="/imgs/product-image-3.png"
 						alt="Product Image 3"
@@ -53,7 +53,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[6rem] left-[-2rem] bottom-[16rem]">
+				<div className="absolute size-[4rem] md:size-[6rem] left-[-3rem] bottom-[4rem] md:left-[-2rem] md:bottom-[16rem]">
 					<Image
 						src="/svgs/vector-1.svg"
 						alt="Vector 1"
@@ -62,7 +62,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[5rem] left-1/2 bottom-[-1rem]">
+				<div className="absolute size-[5rem] right-[-1rem] bottom-[-1rem] md:left-1/2 md:bottom-[-1rem]">
 					<Image
 						src="/svgs/vector-3.svg"
 						alt="Vector 3"
@@ -71,7 +71,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[12rem] right-[-3rem] top-[5rem]">
+				<div className="absolute size-[12rem] right-[-3rem] top-[5rem] md:visible invisible">
 					<Image
 						src="/svgs/vector-5.svg"
 						alt="Vector 5"
@@ -80,7 +80,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[6rem] right-[14rem] top-[20rem]">
+				<div className="absolute size-[4rem] md:size-[6rem] top-[28rem] right-[1rem] md:right-[14rem] md:top-[20rem]">
 					<Image
 						src="/svgs/vector-7.svg"
 						alt="Vector 7"
@@ -89,7 +89,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[12rem] right-[6rem] top-[15rem]">
+				<div className="absolute size-[8rem] md:size-[12rem] md:right-[6rem] right-[-4rem] top-[24rem] md:top-[15rem]">
 					<Image
 						src="/imgs/product-image-2.png"
 						alt="Product Image 2"
@@ -98,7 +98,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[1.5rem] right-[6rem] bottom-[20rem]">
+				<div className="absolute size-[1.5rem] right-[6rem] bottom-[20rem] md:visible invisible">
 					<Image
 						src="/svgs/vector-4.svg"
 						alt="Vector 4"
@@ -107,7 +107,7 @@ export default function Page() {
 					/>
 				</div>
 
-				<div className="absolute size-[23rem] right-[2rem] bottom-[-7rem]">
+				<div className="absolute size-[23rem] right-[2rem] bottom-[-7rem] md:visible invisible">
 					<Image
 						src="/imgs/product-image-4.png"
 						alt="Product Image 4"
