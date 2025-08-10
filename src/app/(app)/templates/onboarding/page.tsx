@@ -1,4 +1,4 @@
-import OnboardingForm from "@/features/onboarding/components/onboarding-form";
+import OnboardingForm from "@/features/templates/components/onboarding-form";
 import Image from "next/image";
 
 export default function Page() {
