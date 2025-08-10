@@ -2,6 +2,14 @@
 
 import { Button } from "@/shared/components/ui/button";
 import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/shared/components/ui/dialog";
+import {
 	Form,
 	FormControl,
 	FormDescription,
@@ -11,18 +19,10 @@ import {
 	FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
+import { cn } from "@/shared/lib/utils";
 import { ArrowLeftIcon, InfoIcon, Loader } from "lucide-react";
 import Image from "next/image";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "../../../shared/components/ui/dialog";
-import { useIsMobile } from "../../../shared/hooks/use-mobile";
-import { cn } from "../../../shared/lib/utils";
 import { useOnboardingForm } from "../hooks/use-onboarding-form";
 
 export default function OnboardingForm() {
