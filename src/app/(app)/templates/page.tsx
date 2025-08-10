@@ -45,7 +45,7 @@ export default function Page() {
 	const isMobile = useIsMobile();
 
 	return (
-		<section className="">
+		<section className="relative">
 			<header className="bg-white px-6 md:px-14 py-4 space-y-1 border-b border-[#F2F4F7]">
 				<h1 className="text-xl font-medium">Hai (username)</h1>
 				<p className="text-xs text-[#98A2B3]">Order ID : #250720KVFJ741R</p>
@@ -65,6 +65,7 @@ export default function Page() {
 						defaultValue="account"
 						value={selectedTab}
 						onValueChange={setSelectedTab}
+						className="overflow-auto"
 					>
 						<TabsList className="bg-white text-[#98A2B3] rounded-md p-1 h-fit space-x-2">
 							{tabs.map((tab) => (
@@ -268,7 +269,7 @@ export default function Page() {
 				</div>
 			</main>
 
-			<div className="absolute top-0 left-0 min-h-dvh bg-[#F2F4F7] w-screen z-[-1] overflow-hidden">
+			<div className="absolute top-0 left-0 inset-0 min-h-screen bg-[#F2F4F7] w-screen z-[-1] overflow-hidden">
 				<div className="absolute size-28 md:size-30 left-[18.5rem] top-[10.5rem]">
 					<Image
 						src="/svgs/peach-flower.svg"
