@@ -196,6 +196,19 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 									}
 								/>
 							</div>
+							<div className="flex gap-1 items-center">
+								<Label className="text-xs w-20">Rotate</Label>
+								<Input
+									type="number"
+									className="h-7 px-2 text-xs"
+									value={img.rotate ?? 0}
+									onChange={(e) =>
+										updateImage(img.id, {
+											rotate: Number(e.target.value),
+										})
+									}
+								/>
+							</div>
 							<div className="flex items-center gap-2 mt-1">
 								<Switch
 									checked={img.grayscale ?? false}
