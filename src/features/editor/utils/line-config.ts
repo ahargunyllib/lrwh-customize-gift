@@ -34,6 +34,15 @@ export const getLineConfig = (type: LineElement["type"]): LineElement => {
 				startTip: "arrow",
 				endTip: "arrow",
 			};
+		case "line-rounded":
+			return {
+				...baseLine,
+				id: uuidv4(),
+				type,
+				strokeWidth: 2,
+				startTip: "rounded",
+				endTip: "rounded",
+			};
 		default:
 			throw new Error(`Unknown line type: ${type}`);
 	}

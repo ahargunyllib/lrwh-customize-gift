@@ -6,10 +6,11 @@ export type TLineElement =
 	| "line-thick"
 	| "line-dashed"
 	| "line-dotted"
-	| "line-arrow";
+	| "line-arrow"
+	| "line-rounded";
 
 export interface LineTip {
-	type: "none" | "arrow" | "circle" | "square";
+	type: "none" | "arrow" | "circle" | "square" | "rounded";
 }
 export interface LineElement {
 	id: string;
