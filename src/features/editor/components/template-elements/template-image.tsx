@@ -98,12 +98,14 @@ export default function TemplateImage({
 	};
 
 	// Get the container style - this should always show the full image size and position
-	const getContainerStyle = () => {
+	const getContainerStyle = (): React.CSSProperties => {
 		const positionStyle: React.CSSProperties = {
 			left: image.position.x * scale,
 			top: image.position.y * scale,
 			width: image.width * scale,
 			height: image.height * scale,
+			transform: `rotate(${image.rotate ?? 0}deg)`, // 🔹 Tambahan rotasi
+			transformOrigin: "center center", // 🔹 Rotasi dari tengah
 		};
 
 		// Handle centering
