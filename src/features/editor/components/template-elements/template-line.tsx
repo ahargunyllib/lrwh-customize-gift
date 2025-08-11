@@ -1,8 +1,6 @@
 "use client";
 
 import type { LineElement } from "@/shared/types/element/line";
-import { toast } from "sonner";
-import { useElementTransform } from "../../hooks/use-element-transform";
 import { useLineTransform } from "../../hooks/use-line-transform";
 import type { TemplateElementBaseProps } from "./template-shape";
 
@@ -28,6 +26,7 @@ function renderLineTip(
 	angle: number,
 	stroke: string,
 	strokeWidth: number,
+	scale: number,
 ) {
 	if (tip === "none") return null;
 
@@ -36,7 +35,7 @@ function renderLineTip(
 		return (
 			<polygon
 				points={`-${size},-${size / 2} 0,0 -${size},${size / 2}`}
-				transform={`translate(${x}, ${y}) rotate(${angle})`}
+				transform={`translate(${x}, ${y}) rotate(${isStart ? angle + 180 : angle})`}
 				fill={stroke}
 			/>
 		);
@@ -56,6 +55,11 @@ function renderLineTip(
 		);
 	}
 
+	if (tip === "rounded") {
+		const radius = Math.max(strokeWidth / 4, 1) * scale;
+		return <circle cx={x} cy={y} r={radius} fill={stroke} />;
+	}
+
 	return (
 		<polygon
 			points="-5,-5 5,0 -5,5"
@@ -65,11 +69,31 @@ function renderLineTip(
 	);
 }
 
+// Helper function to calculate tip size for trimming (unscaled)
+function getTipSize(tip: string, strokeWidth: number): number {
+	if (tip === "none") return 0;
+
+	if (tip === "arrow") {
+		return Math.max(strokeWidth * 2, 8);
+	}
+
+	if (tip === "circle") {
+		return Math.max(strokeWidth, 4);
+	}
+
+	if (tip === "rounded") {
+		return Math.max(strokeWidth / 8, 0.5);
+	}
+
+	// Default tip size
+	return 5;
+}
+
 export default function TemplateLine(props: Props) {
 	const { startLineDrag, startEndpointDrag } = useLineTransform({
 		start: props.element.startPoint,
 		end: props.element.endPoint,
-		scale: props.scale,
+		scale: props.scale, // Pass scale to the hook
 		onChange: (points) => {
 			props.onUpdate({
 				startPoint: points.start,
@@ -88,6 +112,7 @@ export default function TemplateLine(props: Props) {
 
 	const dx = endX - startX;
 	const dy = endY - startY;
+	const length = Math.sqrt(dx * dx + dy * dy);
 	const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
 	const strokeColor = element.strokeColor || "#000000";
@@ -100,6 +125,20 @@ export default function TemplateLine(props: Props) {
 
 	// Scale
 	const scale = props.scale ?? 1;
+
+	// Calculate trimming distances using scaled strokeWidth to match rendered tips
+	const startTipSize = getTipSize(startTip, strokeWidth * scale);
+	const endTipSize = getTipSize(endTip, strokeWidth * scale);
+
+	// Calculate unit vector for the line direction
+	const unitX = length > 0 ? dx / length : 0;
+	const unitY = length > 0 ? dy / length : 0;
+
+	// Calculate trimmed line coordinates (in scaled space)
+	const trimmedStartX = startTipSize * unitX;
+	const trimmedStartY = startTipSize * unitY;
+	const trimmedEndX = dx * scale - endTipSize * unitX;
+	const trimmedEndY = dy * scale - endTipSize * unitY;
 
 	return (
 		// Container for the line element
@@ -120,7 +159,7 @@ export default function TemplateLine(props: Props) {
 			>
 				<title>{"Line Element"}</title>
 				<g>
-					{/* Base line */}
+					{/* Base line (invisible, for clicking) */}
 					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 					<line
 						x1={0}
@@ -136,52 +175,55 @@ export default function TemplateLine(props: Props) {
 						}}
 						onMouseDown={(e) => {
 							e.stopPropagation();
-							toast.success("Line element clicked");
 							startLineDrag(e);
 						}}
 					/>
-					<line
-						x1={0}
-						y1={0}
-						x2={dx * scale}
-						y2={dy * scale}
-						stroke={strokeColor}
-						strokeWidth={strokeWidth * scale}
-						strokeDasharray={styleInfo.dashArray}
-						style={{ cursor: "pointer", pointerEvents: "stroke" }}
-					/>
 
-					{/* Tips */}
-					{renderLineTip(startTip, true, 0, 0, angle, strokeColor, strokeWidth)}
-					{renderLineTip(
-						endTip,
-						false,
-						dx,
-						dy,
-						angle,
-						strokeColor,
-						strokeWidth,
-					)}
+					<g>
+						{/* Visible line (trimmed if tips are present) */}
+						<line
+							x1={trimmedStartX}
+							y1={trimmedStartY}
+							x2={trimmedEndX}
+							y2={trimmedEndY}
+							stroke={strokeColor}
+							strokeWidth={strokeWidth * scale}
+							strokeDasharray={styleInfo.dashArray}
+							style={{ pointerEvents: "none" }}
+						/>
 
-					{/* Active Selection */}
+						{/* Tips */}
+						{renderLineTip(
+							startTip,
+							true,
+							0,
+							0,
+							angle,
+							strokeColor,
+							strokeWidth * scale,
+							scale,
+						)}
+						{renderLineTip(
+							endTip,
+							false,
+							dx * scale,
+							dy * scale,
+							angle,
+							strokeColor,
+							strokeWidth * scale,
+							scale,
+						)}
+					</g>
+
+					{/* Active Selection - Keep handles outside clipping */}
 					{props.isElementActive && (
 						<>
-							<line
-								x1={0}
-								y1={0}
-								x2={dx * scale}
-								y2={dy * scale}
-								stroke="#1E88E5"
-								strokeWidth={1}
-								strokeDasharray="4 4"
-								pointerEvents="none"
-							/>
 							<circle
 								cx={0}
 								cy={0}
 								r={4}
-								fill="#1E88E5"
-								stroke="#ffffff"
+								stroke="#1E88E5"
+								fill="#ffffff"
 								strokeWidth={1}
 								style={{ cursor: "nw-resize" }}
 								onMouseDown={(e) => {
@@ -193,8 +235,8 @@ export default function TemplateLine(props: Props) {
 								cx={dx * scale}
 								cy={dy * scale}
 								r={4}
-								fill="#1E88E5"
-								stroke="#ffffff"
+								fill="#ffffff"
+								stroke="#1E88E5"
 								strokeWidth={1}
 								style={{ cursor: "se-resize" }}
 								onMouseDown={(e) => {
