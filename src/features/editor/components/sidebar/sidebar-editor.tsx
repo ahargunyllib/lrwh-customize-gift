@@ -34,7 +34,7 @@ export default function EditorSidebar() {
 			</div>
 
 			<Tabs defaultValue="images" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
+				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="images">
 						<ImageIcon className="h-4 w-4 mr-1" />
 						Images
@@ -42,10 +42,6 @@ export default function EditorSidebar() {
 					<TabsTrigger value="text">
 						<Type className="h-4 w-4 mr-1" />
 						Text
-					</TabsTrigger>
-					<TabsTrigger value="layout">
-						<Layout className="h-4 w-4 mr-1" />
-						Layout
 					</TabsTrigger>
 				</TabsList>
 
