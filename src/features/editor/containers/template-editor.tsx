@@ -45,9 +45,6 @@ import { useCanvasGesture } from "../hooks/use-canvas-gesture";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
 import { useTemplateEditor } from "../hooks/use-template-editor";
 
-// interface Ctx extends ReturnType<typeof useTemplateEditor> {
-// 	selectedSize: (typeof printSizes)[number];
-// }
 type Ctx = ReturnType<typeof useTemplateEditor> & {
 	selectedSize: {
 		width: number;
@@ -78,11 +75,14 @@ export default function TemplateEditor({
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
 	const canvasRef = useRef<HTMLDivElement>(null!);
-	const { scale, zoomIn, zoomOut, resetZoom } = useCanvasScale(
+
+	const { scale, zoomIn, zoomOut, resetZoom, handleZoom } = useCanvasScale(
 		canvasContainerRef as React.RefObject<HTMLDivElement>,
 		editor.template.width,
 	);
-	const { canvasOffset, bindGesture } = useCanvasGesture();
+
+	// Pass handleZoom to useCanvasGesture
+	const { canvasOffset, bindGesture } = useCanvasGesture(handleZoom);
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -116,21 +116,25 @@ export default function TemplateEditor({
 
 				{/* Body */}
 				<div className="flex flex-1 overflow-hidden relative">
-					<EditorSidebar
-						open={sidebarOpen}
-						onClose={() => setSidebarOpen(false)}
-					/>
+					<EditorSidebar />
 
 					{/* Canvas */}
 					<div
 						ref={canvasContainerRef}
-						className="flex-1 overflow-auto bg-gray-100 p-8 flex items-center justify-center"
+						className="flex-1 overflow-hidden bg-gray-100 p-8 flex items-center justify-center relative"
 						{...bindGesture}
+						style={{
+							touchAction: "pan-x pan-y", // Allow panning but prevent zoom
+							userSelect: "none",
+							WebkitUserSelect: "none",
+						}}
 					>
 						<div
 							className="relative"
 							style={{
-								transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+								transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px) scale(${scale})`,
+								transformOrigin: "center center",
+								transition: "transform 0.1s ease-out",
 							}}
 						>
 							<EditorCanvas
@@ -139,7 +143,7 @@ export default function TemplateEditor({
 								setTemplate={editor.setTemplate}
 								activeElement={editor.activeElement}
 								setActiveElement={editor.setActiveElement}
-								scale={scale}
+								scale={1} // Always pass 1, scale is handled by CSS transform
 								allowDelete={false}
 							/>
 						</div>
