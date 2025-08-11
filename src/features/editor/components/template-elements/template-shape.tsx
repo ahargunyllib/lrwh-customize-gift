@@ -26,6 +26,8 @@ export interface TemplateElementBaseProps {
 		width: number,
 		height: number,
 	) => { x: number; y: number };
+	canvasWidth: number;
+	canvasHeight: number;
 }
 
 export default function TemplateShape(props: Props) {
@@ -35,6 +37,9 @@ export default function TemplateShape(props: Props) {
 		handleResizeMouseDown,
 		handleRotateMouseDown,
 	} = useElementTransform({
+		enableRotationSnap: true,
+		enableResizeSnap: true,
+		enableGridSnap: true,
 		id: props.element.id,
 		initialPosition: props.element.position,
 		width: props.element.width,
@@ -58,6 +63,28 @@ export default function TemplateShape(props: Props) {
 	const scaledWidth = props.element.width * props.scale;
 	const scaledHeight = props.element.height * props.scale;
 
+	// Calculate clipping boundaries based on canvas size and current position
+	const getClipPath = () => {
+		const canvasWidth = props.canvasWidth * props.scale;
+		const canvasHeight = props.canvasHeight * props.scale;
+		const elementX = position.x * props.scale;
+		const elementY = position.y * props.scale;
+
+		// Calculate how much of the element is visible within canvas bounds
+		const leftClip = Math.max(0, -elementX);
+		const topClip = Math.max(0, -elementY);
+		const rightClip = Math.max(0, elementX + scaledWidth - canvasWidth);
+		const bottomClip = Math.max(0, elementY + scaledHeight - canvasHeight);
+
+		// Convert to percentages for clip-path
+		const leftPercent = (leftClip / scaledWidth) * 100;
+		const topPercent = (topClip / scaledHeight) * 100;
+		const rightPercent = ((scaledWidth - rightClip) / scaledWidth) * 100;
+		const bottomPercent = ((scaledHeight - bottomClip) / scaledHeight) * 100;
+
+		return `inset(${topPercent}% ${100 - rightPercent}% ${100 - bottomPercent}% ${leftPercent}%)`;
+	};
+
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
@@ -78,43 +105,50 @@ export default function TemplateShape(props: Props) {
 				height: scaledHeight,
 			}}
 		>
-			{/* Shape Preview */}
-			{/* Rectangle */}
-			{props.element.type === "rectangle" && (
-				<div
-					className="w-full h-full"
-					style={{
-						backgroundColor: props.element.fill,
-						border: `${props.element.borderWidth}px solid ${props.element.borderColor}`,
-						borderRadius: `${props.element.borderRadius}px`,
-						opacity: props.element.opacity / 100,
-					}}
-				/>
-			)}
-			{/* Circle */}
-			{props.element.type === "circle" && (
-				<div
-					className="w-full h-full rounded-full"
-					style={{
-						backgroundColor: props.element.fill,
-						border: `${props.element.borderWidth}px solid ${props.element.borderColor}`,
-						opacity: props.element.opacity / 100,
-					}}
-				/>
-			)}
-			{/* Triangle */}
-			{props.element.type === "triangle" && (
-				<div
-					className="w-0 h-0"
-					style={{
-						borderLeft: `${scaledWidth / 2}px solid transparent`,
-						borderRight: `${scaledWidth / 2}px solid transparent`,
-						borderBottom: `${scaledHeight}px solid ${props.element.fill}`,
-						opacity: props.element.opacity / 100,
-						transform: `translateY(${scaledHeight / -2}px)`,
-					}}
-				/>
-			)}
+			{/* Shape Preview - Only clip the shape content, not the handles */}
+			<div
+				className="w-full h-full"
+				// style={{
+				// 	clipPath: getClipPath(),
+				// }}
+			>
+				{/* Rectangle */}
+				{props.element.type === "rectangle" && (
+					<div
+						className="w-full h-full"
+						style={{
+							backgroundColor: props.element.fill,
+							border: `${props.element.borderWidth}px solid ${props.element.borderColor}`,
+							borderRadius: `${props.element.borderRadius}px`,
+							opacity: props.element.opacity / 100,
+						}}
+					/>
+				)}
+				{/* Circle */}
+				{props.element.type === "circle" && (
+					<div
+						className="w-full h-full rounded-full"
+						style={{
+							backgroundColor: props.element.fill,
+							border: `${props.element.borderWidth}px solid ${props.element.borderColor}`,
+							opacity: props.element.opacity / 100,
+						}}
+					/>
+				)}
+				{/* Triangle */}
+				{props.element.type === "triangle" && (
+					<div
+						className="w-0 h-0"
+						style={{
+							borderLeft: `${scaledWidth / 2}px solid transparent`,
+							borderRight: `${scaledWidth / 2}px solid transparent`,
+							borderBottom: `${scaledHeight}px solid ${props.element.fill}`,
+							opacity: props.element.opacity / 100,
+							transform: `translateY(${scaledHeight / -2}px)`,
+						}}
+					/>
+				)}
+			</div>
 
 			{props.isElementActive && (
 				<>
