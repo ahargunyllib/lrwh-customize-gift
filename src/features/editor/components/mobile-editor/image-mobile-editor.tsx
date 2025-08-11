@@ -1,4 +1,4 @@
-import { ImageUpscale } from "lucide-react";
+import { ImageUpscale, SquareRoundCorner } from "lucide-react";
 import { useRef } from "react";
 import { useTemplateContext } from "../../containers/template-editor";
 
@@ -27,18 +27,27 @@ export default function ImageMobileEditor() {
 			className="fixed left-1/2 bottom-4 z-10 flex flex-row gap-2 bg-white rounded-lg shadow-lg p-2"
 			style={{ transform: "translateX(-50%)" }}
 		>
-			<input
-				type="file"
-				accept="image/*"
-				ref={inputRef}
-				className="hidden"
-				onChange={onFileChange}
-			/>
-			{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-			<button onClick={() => inputRef.current?.click()}>
-				<ImageUpscale className="h-5 w-5" />
-				<span className="sr-only">Ganti Gambar</span>
-			</button>
+			<div>
+				<input
+					type="file"
+					accept="image/*"
+					ref={inputRef}
+					className="hidden"
+					onChange={onFileChange}
+				/>
+				{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+				<button
+					onClick={() => inputRef.current?.click()}
+					className="flex items-center flex-col"
+				>
+					<ImageUpscale className="h-5 w-5" />
+					<span className="text-[10px] text-center">
+						Ganti
+						<br />
+						Gambar
+					</span>
+				</button>
+			</div>
 		</div>
 	);
 }

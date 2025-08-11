@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useCanvasScale(
 	ref: React.RefObject<HTMLDivElement>,
@@ -13,7 +13,7 @@ export function useCanvasScale(
 			const deviceWidth = window.innerWidth;
 
 			if (deviceWidth < 640) {
-				setScale(Math.min(1, deviceWidth / templateWidth));
+				setScale(0.6);
 				return;
 			}
 			const containerWidth = ref.current.clientWidth - 32; // padding
@@ -24,15 +24,31 @@ export function useCanvasScale(
 		return () => window.removeEventListener("resize", calc);
 	}, [ref, templateWidth]);
 
-	function zoomIn() {
-		setScale((prev) => Math.min(2, prev + 0.1));
-	}
-	function zoomOut() {
-		setScale((prev) => Math.max(0.1, prev - 0.1));
-	}
-	function resetZoom() {
-		setScale(1);
-	}
+	const zoomIn = useCallback(() => {
+		setScale((prev) => Math.min(3, prev + 0.05));
+	}, []);
 
-	return { scale, zoomIn, zoomOut, resetZoom, setScale };
+	const zoomOut = useCallback(() => {
+		setScale((prev) => Math.max(0.1, prev - 0.05));
+	}, []);
+
+	const resetZoom = useCallback(() => {
+		setScale(1);
+	}, []);
+
+	const handleZoom = useCallback((delta: number) => {
+		setScale((prev) => {
+			const newScale = prev + delta;
+			return Math.max(0.1, Math.min(3, newScale));
+		});
+	}, []);
+
+	return {
+		scale,
+		zoomIn,
+		zoomOut,
+		resetZoom,
+		setScale,
+		handleZoom,
+	};
 }
