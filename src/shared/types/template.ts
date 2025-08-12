@@ -42,6 +42,7 @@ export interface TextElement {
 		curved?: boolean;
 		curveRadius?: number;
 		curveDirection?: "up" | "down";
+		curveIntensity?: number;
 		rotate?: number;
 		centerX?: boolean;
 		centerY?: boolean;
@@ -57,6 +58,12 @@ export interface TextElement {
 		paddingY?: string | number;
 		paddingCenter?: boolean;
 		letterSpacing?: string | number;
+
+		// Outline/Stroke properties
+		textStroke?: string;
+		WebkitTextStroke?: string;
+		outlineWidth?: number;
+		outlineColor?: string;
 	};
 }
 
@@ -89,3 +96,11 @@ export type TemplateEntity = {
 	productVariantId: string;
 	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
 };
+
+declare module "react" {
+	interface CSSProperties {
+		textStroke?: string;
+		WebkitTextStroke?: string;
+		paintOrder?: string;
+	}
+}

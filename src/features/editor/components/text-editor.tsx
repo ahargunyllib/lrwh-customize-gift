@@ -55,8 +55,21 @@ export default function TextEditor({
 								Font
 							</Label>
 							<Select
-								value={text.style.fontFamily}
-								onValueChange={(value) => onStyleChange("fontFamily", value)}
+								value={
+									fontArray.find(
+										(f) =>
+											f.fontfamily.replace(/['"]/g, "") ===
+											text.style.fontFamily.replace(/['"]/g, ""),
+									)?.fontname || ""
+								}
+								onValueChange={(value) => {
+									const selectedFont = fontArray.find(
+										(f) => f.fontname === value,
+									)?.fontfamily;
+									if (selectedFont) {
+										onStyleChange("fontFamily", selectedFont);
+									}
+								}}
 							>
 								<SelectTrigger id={`font-${text.id}`} className="h-8">
 									<SelectValue placeholder="Font" />
@@ -68,7 +81,6 @@ export default function TextEditor({
 												className="text-sm"
 												style={{
 													fontFamily: font.fontfamily,
-													font: font.fontname,
 												}}
 											>
 												{font.fontname}
