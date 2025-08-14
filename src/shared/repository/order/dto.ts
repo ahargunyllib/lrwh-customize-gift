@@ -1,5 +1,6 @@
+import type { OrderProductVariant } from "@/shared/types";
 import { z } from "zod";
-import type { Order } from "../../types";
+import type { Order, Product, ProductVariant } from "../../types";
 
 export type GetOrdersQuery = {
 	search?: string;
@@ -17,7 +18,24 @@ export type VerifyOrderByUsernameAndOrderNumberRequest = z.infer<
 >;
 
 export type VerifyOrderByUsernameAndOrderNumberResponse = {
-	order: Order;
+	order: {
+		id: Order["id"];
+		username: Order["username"];
+		orderNumber: Order["orderNumber"];
+
+		productVariants: {
+			id: ProductVariant["id"];
+			name: ProductVariant["name"];
+			product: {
+				id: Product["id"];
+				name: Product["name"];
+			};
+			templates: {
+				id: OrderProductVariant["id"];
+				dataURL: string | null;
+			}[];
+		}[];
+	};
 };
 
 export const createOrderSchema = z.object({

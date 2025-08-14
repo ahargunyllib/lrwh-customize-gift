@@ -5,8 +5,12 @@ import {
 	orderProductVariantsTable,
 	ordersTable,
 } from "@/server/db/schema/orders";
-import { and, desc, eq, ilike, or } from "drizzle-orm";
-import { uploadFileToS3 } from "../../../server/s3";
+import {
+	productVariantsTable,
+	productsTable,
+} from "@/server/db/schema/products";
+import { uploadFileToS3 } from "@/server/s3";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
 import type {
@@ -58,7 +62,11 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 ): Promise<ApiResponse<VerifyOrderByUsernameAndOrderNumberResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
-			.select()
+			.select({
+				id: ordersTable.id,
+				username: ordersTable.username,
+				orderNumber: ordersTable.orderNumber,
+			})
 			.from(ordersTable)
 			.where(
 				and(
@@ -85,10 +93,68 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 
 	const order = orders[0];
 
+	const { data: orderProductVariants, error: fetchOrderProductVariantsErr } =
+		await tryCatch(
+			db
+				.select()
+				.from(orderProductVariantsTable)
+				.where(eq(orderProductVariantsTable.orderId, order.id)),
+		);
+	if (fetchOrderProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchOrderProductVariantsErr.message,
+			message: "Failed to fetch order product variants",
+		};
+	}
+
+	const productVariantIds = orderProductVariants.map(
+		(variant) => variant.productVariantId,
+	);
+
+	const { data: productVariants, error: fetchProductVariantsErr } =
+		await tryCatch(
+			db
+				.select({
+					id: productVariantsTable.id,
+					name: productVariantsTable.name,
+					product: {
+						id: productsTable.id,
+						name: productsTable.name,
+					},
+				})
+				.from(productVariantsTable)
+				.innerJoin(
+					productsTable,
+					eq(productVariantsTable.productId, productsTable.id),
+				)
+				.where(inArray(productVariantsTable.id, productVariantIds)),
+		);
+	if (fetchProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchProductVariantsErr.message,
+			message: "Failed to fetch product variants",
+		};
+	}
+
+	const orderRes: VerifyOrderByUsernameAndOrderNumberResponse["order"] = {
+		...order,
+		productVariants: productVariants.map((variant) => ({
+			...variant,
+			templates: orderProductVariants
+				.filter((opv) => opv.productVariantId === variant.id)
+				.map((opv) => ({
+					id: opv.id,
+					dataURL: null, // Assuming dataURL is not needed here, adjust if necessary
+				})),
+		})),
+	};
+
 	return {
 		success: true,
 		data: {
-			order,
+			order: orderRes,
 		},
 		message: "Order fetched successfully",
 	};
