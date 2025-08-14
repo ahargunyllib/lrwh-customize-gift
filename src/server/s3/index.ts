@@ -1,5 +1,9 @@
 import { tryCatch } from "@/shared/lib/try-catch";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+	GetObjectCommand,
+	PutObjectCommand,
+	S3Client,
+} from "@aws-sdk/client-s3";
 import { env } from "../../env.mjs";
 
 const s3 = new S3Client({
@@ -133,5 +137,44 @@ export const uploadBufferToS3 = async (
 			fileUrl,
 		},
 		message: "Buffer uploaded successfully",
+	};
+};
+
+export const getObjectStream = async (
+	key: string,
+): Promise<{
+	success: boolean;
+	data?: { stream: ReadableStream };
+	error?: string;
+	message: string;
+}> => {
+	const command = new GetObjectCommand({
+		Bucket: env.AWS_S3_BUCKET_NAME,
+		Key: key,
+	});
+
+	const { data, error } = await tryCatch(s3.send(command));
+	if (error) {
+		return {
+			success: false,
+			error: error.message,
+			message: "Failed to get object stream",
+		};
+	}
+
+	if (!data.Body) {
+		return {
+			success: false,
+			error: "No data found",
+			message: "No data found in the object",
+		};
+	}
+
+	return {
+		success: true,
+		data: {
+			stream: data.Body as ReadableStream,
+		},
+		message: "Object stream retrieved successfully",
 	};
 };
