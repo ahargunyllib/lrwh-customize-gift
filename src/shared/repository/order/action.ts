@@ -22,6 +22,7 @@ import type { ApiResponse } from "../../types";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
+	GetOrdersResponse,
 	SubmitOrderRequest,
 	UpdateOrderParams,
 	UpdateOrderRequest,
@@ -54,10 +55,96 @@ export const getOrders = async (query: GetOrdersQuery) => {
 		};
 	}
 
+	const orderIds = orders.map((order) => order.id);
+	const { data: orderProductVariants, error: fetchOrderProductVariantsErr } =
+		await tryCatch(
+			db
+				.select()
+				.from(orderProductVariantsTable)
+				.where(inArray(orderProductVariantsTable.orderId, orderIds)),
+		);
+	if (fetchOrderProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchOrderProductVariantsErr.message,
+			message: "Failed to fetch order product variants",
+		};
+	}
+	const productVariantIds = orderProductVariants.map(
+		(variant) => variant.productVariantId,
+	);
+	const { data: productVariants, error: fetchProductVariantsErr } =
+		await tryCatch(
+			db
+				.select({
+					id: productVariantsTable.id,
+					name: productVariantsTable.name,
+					product: {
+						id: productsTable.id,
+						name: productsTable.name,
+					},
+					width: productVariantsTable.width,
+					height: productVariantsTable.height,
+				})
+				.from(productVariantsTable)
+				.innerJoin(
+					productsTable,
+					eq(productVariantsTable.productId, productsTable.id),
+				)
+				.where(inArray(productVariantsTable.id, productVariantIds)),
+		);
+	if (fetchProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchProductVariantsErr.message,
+			message: "Failed to fetch product variants",
+		};
+	}
+
+	const orderRes: GetOrdersResponse["orders"] = orders.map((order) => {
+		const variants = orderProductVariants
+			.filter((opv) => opv.orderId === order.id)
+			.map((opv) => {
+				const variant = productVariants.find(
+					(pv) => pv.id === opv.productVariantId,
+				);
+
+				return {
+					id: variant?.id ?? "",
+					name: variant?.name ?? "",
+					width: variant?.width ?? 0,
+					height: variant?.height ?? 0,
+					product: {
+						id: variant?.product.id ?? "",
+						name: variant?.product.name ?? "",
+					},
+					imageUrl: opv.imageUrl || null,
+				};
+			});
+
+		return {
+			id: order.id,
+			orderNumber: order.orderNumber,
+			username: order.username,
+			createdAt: order.createdAt,
+			products: variants.map((variant) => ({
+				id: variant.id,
+				name: variant.name,
+				productVariant: {
+					id: variant.id,
+					name: variant.name,
+					width: variant.width,
+					height: variant.height,
+				},
+				imageUrl: variant.imageUrl,
+			})),
+		};
+	});
+
 	return {
 		success: true,
 		data: {
-			orders,
+			orders: orderRes,
 		},
 		message: "Orders fetched successfully",
 	};

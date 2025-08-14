@@ -8,6 +8,26 @@ export type GetOrdersQuery = {
 	limit?: number;
 };
 
+export type GetOrdersResponse = {
+	orders: {
+		id: Order["id"];
+		orderNumber: Order["orderNumber"];
+		username: Order["username"];
+		createdAt: Order["createdAt"];
+		products: {
+			id: Product["id"];
+			name: Product["name"];
+			productVariant: {
+				id: ProductVariant["id"];
+				name: ProductVariant["name"];
+				width: ProductVariant["width"];
+				height: ProductVariant["height"];
+			};
+			imageUrl: OrderProductVariant["imageUrl"];
+		}[];
+	}[];
+};
+
 export const VerifyOrderByUsernameAndOrderNumberSchema = z.object({
 	username: z.string().min(1, "Username is required"),
 	orderNumber: z.string().min(1, "Order number is required"),
