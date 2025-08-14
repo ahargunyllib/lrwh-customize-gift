@@ -2,15 +2,6 @@
 
 import { Button } from "@/shared/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/shared/components/ui/dialog";
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -27,10 +18,6 @@ import {
 	getPaginationRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { EyeIcon } from "lucide-react";
-import Image from "next/image";
-import { toast } from "sonner";
-import { tryCatch } from "../../../shared/lib/try-catch";
 import AddOrderDialogContainer from "../container/add-order-dialog-container";
 import { DataTablePagination } from "./order-table-pagination";
 import SearchFilter from "./search-filter";
@@ -49,82 +36,6 @@ export const columns: ColumnDef<OrderColumn>[] = [
 	{
 		accessorKey: "username",
 		header: "Username",
-	},
-	{
-		accessorKey: "imageUrl",
-		header: "Image URL",
-		cell(props) {
-			const { imageUrl, username } = props.row.original;
-
-			const downloadImage = async () => {
-				if (!imageUrl) {
-					toast.error("No image URL available for download.");
-					return;
-				}
-
-				const { data: response, error: fetchErr } = await tryCatch(
-					fetch(imageUrl),
-				);
-				if (fetchErr) {
-					toast.error("Failed to fetch the image URL.", {
-						description: fetchErr.message,
-					});
-					return;
-				}
-
-				if (!response.ok) {
-					toast.error("Failed to download the image.");
-					return;
-				}
-
-				const { data: blob, error: blobErr } = await tryCatch(response.blob());
-				if (blobErr) {
-					toast.error("Failed to convert response to blob.");
-					return;
-				}
-
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = `order-image-${username}.jpg`;
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
-			};
-
-			return imageUrl ? (
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button variant="outline" size="icon">
-							<EyeIcon />
-						</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle>Image Preview</DialogTitle>
-							<DialogDescription>
-								View the image associated with this order.
-							</DialogDescription>
-						</DialogHeader>
-						<Image
-							src={imageUrl}
-							alt="Order Image"
-							width={500}
-							height={500}
-							className="object-cover border"
-						/>
-						<DialogFooter>
-							<Button onClick={downloadImage} variant="outline">
-								Download Image
-							</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
-			) : (
-				<span>No Image</span>
-			);
-		},
 	},
 	{
 		accessorKey: "createdAt",
