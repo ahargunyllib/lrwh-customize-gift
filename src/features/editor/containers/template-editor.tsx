@@ -87,8 +87,15 @@ export default function TemplateEditor({
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
 	const {
-		order: { username, orderNumber },
+		order: { username, orderNumber, productVariants },
 	} = useTemplatesStore();
+
+	const hasMultipleProducts = useMemo(() => {
+		return (
+			productVariants.length > 1 ||
+			(productVariants.length === 1 && productVariants[0].templates.length > 1)
+		);
+	}, [productVariants]);
 
 	return (
 		<TemplateCtx.Provider
