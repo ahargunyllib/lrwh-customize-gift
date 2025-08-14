@@ -67,8 +67,17 @@ export type DeleteOrderParams = {
 };
 
 export const submitOrderSchema = z.object({
-	file: z.instanceof(Blob).refine((file) => file.size > 0, "File is required"),
 	orderId: z.string().uuid("Invalid order ID format"),
+	templates: z
+		.array(
+			z.object({
+				orderProductVariantId: z
+					.string()
+					.uuid("Invalid order product variant ID format"),
+				dataURL: z.string().url("Invalid data URL format"),
+			}),
+		)
+		.min(1, "At least one template is required"),
 });
 
 export type SubmitOrderRequest = z.infer<typeof submitOrderSchema>;

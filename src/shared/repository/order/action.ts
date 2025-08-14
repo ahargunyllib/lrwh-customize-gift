@@ -9,8 +9,14 @@ import {
 	productVariantsTable,
 	productsTable,
 } from "@/server/db/schema/products";
-import { uploadFileToS3 } from "@/server/s3";
+import { uploadBufferToS3 } from "@/server/s3";
 import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import {
+	MAX_BYTES,
+	looksLikePng,
+	parseDataUrl,
+	sha256,
+} from "../../lib/data-url";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
 import type {
@@ -335,48 +341,175 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 };
 
 export const submitOrder = async (req: SubmitOrderRequest) => {
-	const file = new File([req.file], `order-${req.orderId}-${Date.now()}.png`, {
-		type: req.file.type,
-	});
+	const { orderId, templates } = req;
 
-	const { data: uploadResult, error: uploadError } = await tryCatch(
-		uploadFileToS3(file),
+	// 1) Decode & validate all templates
+	const decoded = await Promise.all(
+		templates.map(async (t) => {
+			const { data: parsed, error: parseErr } = await tryCatch(
+				Promise.resolve(parseDataUrl(t.dataURL)),
+			);
+			if (parseErr || !parsed) {
+				console.error(
+					`Failed to parse Data URL for variant ${t.orderProductVariantId}: ${parseErr?.message}`,
+				);
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: parseErr?.message ?? "Invalid Data URL",
+					message: "Failed to parse Data URL",
+				};
+			}
+
+			const { mime, base64 } = parsed;
+			console.log(
+				`Processing Data URL for variant ${t.orderProductVariantId}: mime=${mime}, base64 length=${base64.length}`,
+			);
+			const approxDecodedBytes = Buffer.byteLength(base64, "base64");
+			if (approxDecodedBytes > MAX_BYTES) {
+				console.error(
+					`Data URL for variant ${t.orderProductVariantId} exceeds ${MAX_BYTES} bytes`,
+				);
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: `Data URL exceeds ${MAX_BYTES} bytes`,
+					message: "Data URL too large",
+				};
+			}
+
+			const buf = Buffer.from(base64, "base64");
+			if (mime !== "image/png" || !looksLikePng(buf)) {
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: "Expected PNG format",
+					message: "Invalid file format",
+				};
+			}
+
+			const hash = sha256(buf);
+			const key = `orders_${orderId}_${t.orderProductVariantId}_${hash}.png`;
+
+			return {
+				success: true as const,
+				data: {
+					orderProductVariantId: t.orderProductVariantId,
+					mime,
+					buf,
+					key,
+					hash,
+				},
+			};
+		}),
 	);
-	if (uploadError) {
+
+	// Early exit if any decode failed
+	const decodeErrors = decoded.filter((d) => !d.success);
+	if (decodeErrors.length > 0) {
 		return {
 			success: false,
-			error: uploadError.message,
-			message: "Failed to upload file",
+			error: "Some images failed validation",
+			message: decodeErrors
+				.map((e) => `${e.orderProductVariantId}: ${e.error}`)
+				.join("; "),
 		};
 	}
 
-	if (!uploadResult.success) {
+	const validItems = decoded.filter((d) => d.success).map((d) => d.data);
+
+	// 2) Upload in parallel
+	const uploadResults = await Promise.all(
+		validItems.map(async ({ buf, key, mime }) => {
+			const { data: uploadRes, error: uploadErr } = await tryCatch(
+				uploadBufferToS3(buf, key, mime),
+			);
+
+			if (uploadErr) {
+				console.error(
+					`Failed to upload file for key ${key}: ${uploadErr.message}`,
+				);
+				return {
+					success: false as const,
+					key,
+					error: uploadErr.message,
+					message: "Failed to upload file",
+				};
+			}
+			if (!uploadRes.success) {
+				console.error(`Upload failed for key ${key}: ${uploadRes.error}`);
+				return {
+					success: false as const,
+					key,
+					error: uploadRes.error ?? "Unknown upload error",
+					message: uploadRes.message ?? "Upload failed",
+				};
+			}
+			return {
+				success: true as const,
+				key,
+				fileUrl: uploadRes.data?.fileUrl,
+			};
+		}),
+	);
+
+	const failedUploads = uploadResults.filter((u) => !u.success);
+	if (failedUploads.length > 0) {
 		return {
 			success: false,
-			error: uploadResult.error,
-			message: "Failed to upload file",
+			error: "Some uploads failed",
+			message: failedUploads.map((u) => `${u.key}: ${u.error}`).join("; "),
 		};
 	}
 
-	const { error: orderError } = await tryCatch(
-		db
-			.update(ordersTable)
-			.set({
-				imageUrl: uploadResult.data?.fileUrl,
-			})
-			.where(eq(ordersTable.id, req.orderId)),
+	const keyToUrl = new Map<string, string>();
+	for (const u of uploadResults) {
+		if (u.success && u.fileUrl) keyToUrl.set(u.key, u.fileUrl);
+	}
+
+	// 3) DB updates in a transaction
+	const { error: txErr } = await tryCatch(
+		db.transaction(async (tx) => {
+			for (const item of validItems) {
+				const fileUrl = keyToUrl.get(item.key);
+				if (!fileUrl) {
+					console.error(`Missing URL for key ${item.key}`);
+					tx.rollback();
+					return;
+				}
+
+				const { error: updateErr } = await tryCatch(
+					tx
+						.update(orderProductVariantsTable)
+						.set({ imageUrl: fileUrl })
+						.where(
+							and(
+								eq(orderProductVariantsTable.orderId, orderId),
+								eq(orderProductVariantsTable.id, item.orderProductVariantId),
+							),
+						),
+				);
+				if (updateErr) {
+					console.error(
+						`DB update failed for variant ${item.orderProductVariantId}: ${updateErr.message}`,
+					);
+					tx.rollback();
+					return;
+				}
+			}
+		}),
 	);
 
-	if (orderError) {
+	if (txErr) {
 		return {
 			success: false,
-			error: orderError.message,
-			message: "Failed to update order with image URL",
+			error: txErr.message,
+			message: "Failed to update order with uploaded files",
 		};
 	}
 
 	return {
 		success: true,
-		message: "File uploaded and order updated successfully",
+		message: "Files uploaded and order updated successfully",
 	};
 };

@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { getTemplateForSize } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
+import { useSubmitOrderMutation } from "@/shared/repository/order/query";
 import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
 import type {
 	OrderProductVariant,
@@ -19,16 +20,23 @@ import type {
 	ProductVariant,
 	TemplateData,
 } from "@/shared/types";
-import { ChevronLeftIcon, ChevronRightIcon, SendIcon } from "lucide-react";
+import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	LoaderIcon,
+	SendIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
 	const {
-		order: { productVariants },
+		order: { id, productVariants },
 		deleteDataURLTemplate,
+		deleteOrder,
 	} = useTemplatesStore();
 
 	const [selectedProductVariant, setSelectedProductVariant] = useState(
@@ -40,6 +48,9 @@ export default function Page() {
 			productVariant.templates.every((template) => template.dataURL),
 		);
 	}, [productVariants]);
+
+	const { mutate: submitOrder, isPending } = useSubmitOrderMutation();
+	const router = useRouter();
 
 	return (
 		<section className="relative">
@@ -123,8 +134,55 @@ export default function Page() {
 							</div>
 
 							{hasFillAllTemplates && (
-								<Button className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit">
-									Kirim Template <SendIcon />
+								<Button
+									onClick={() => {
+										const templates = [];
+										for (const productVariant of productVariants) {
+											for (const template of productVariant.templates) {
+												if (template.dataURL) {
+													templates.push({
+														orderProductVariantId: template.id,
+														dataURL: template.dataURL,
+													});
+												}
+											}
+										}
+										submitOrder(
+											{
+												orderId: id,
+												templates,
+											},
+											{
+												onSuccess: (res) => {
+													if (!res.success) {
+														toast.error(
+															"Gagal mengirim template, silakan coba lagi.",
+															{
+																description: res.message || "Terjadi kesalahan",
+															},
+														);
+														return;
+													}
+
+													toast.success("Template berhasil dikirim!");
+													deleteOrder();
+													router.replace("/templates/onboarding");
+												},
+											},
+										);
+									}}
+									className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit"
+								>
+									{isPending ? (
+										<>
+											<LoaderIcon className="animate-spin" />
+											Mengirim...
+										</>
+									) : (
+										<>
+											Kirim Template <SendIcon />
+										</>
+									)}
 								</Button>
 							)}
 						</div>
