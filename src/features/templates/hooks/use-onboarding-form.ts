@@ -6,9 +6,10 @@ import {
 } from "@/shared/repository/order/dto";
 import { useVerifyOrderByUsernameAndOrderNumberMutation } from "@/shared/repository/order/query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useTemplatesStore } from "../stores/use-templates-store";
 
 export const useOnboardingForm = () => {
 	const { mutate: verifyOrderByUsernameAndOrderNumber, isPending } =
@@ -22,6 +23,10 @@ export const useOnboardingForm = () => {
 		},
 	});
 
+	const { updateOrder } = useTemplatesStore();
+
+	const router = useRouter();
+
 	const onSubmitHandler = form.handleSubmit((data) => {
 		verifyOrderByUsernameAndOrderNumber(data, {
 			onSuccess: (res) => {
@@ -33,7 +38,11 @@ export const useOnboardingForm = () => {
 				toast.success("Order verified successfully!");
 				form.reset();
 
-				redirect("/");
+				const { order } = res.data;
+				console.log("res.data", res.data);
+				updateOrder(order);
+
+				router.push("/templates");
 			},
 		});
 	});
