@@ -87,15 +87,8 @@ export default function TemplateEditor({
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
 	const {
-		order: { username, orderNumber, productVariants },
+		order: { username, orderNumber },
 	} = useTemplatesStore();
-
-	const hasMultipleProducts = useMemo(() => {
-		return (
-			productVariants.length > 1 ||
-			(productVariants.length === 1 && productVariants[0].templates.length > 1)
-		);
-	}, [productVariants]);
 
 	return (
 		<TemplateCtx.Provider
@@ -181,6 +174,17 @@ function ConfirmationDialog({
 	const { saveTemplate } = useTemplatesStore();
 	const router = useRouter();
 	const isMobile = useIsMobile();
+
+	const {
+		order: { productVariants },
+	} = useTemplatesStore();
+
+	const hasMultipleProducts = useMemo(() => {
+		return (
+			productVariants.length > 1 ||
+			(productVariants.length === 1 && productVariants[0].templates.length > 1)
+		);
+	}, [productVariants]);
 
 	const {
 		order: { productVariants },
