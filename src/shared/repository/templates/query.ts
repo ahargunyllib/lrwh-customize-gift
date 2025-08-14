@@ -1,6 +1,6 @@
 import type { TemplateEntity } from "@/shared/types/template";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import type { ProductVariant } from "../../types";
 import {
 	createTemplate,
 	getTemplateById,
@@ -9,10 +9,13 @@ import {
 } from "./action";
 import type { CreateTemplateRequest } from "./dto";
 
-export const useGetTemplatesQuery = () => {
+export const useGetTemplatesQuery = (query?: {
+	productVariantId?: ProductVariant["id"];
+	page?: number;
+}) => {
 	return useQuery({
-		queryKey: ["templates"],
-		queryFn: () => getTemplates(),
+		queryKey: ["templates", query],
+		queryFn: () => getTemplates(query),
 	});
 };
 

@@ -1,19 +1,31 @@
 "use server";
 
 import { db } from "@/server/db";
+import { templatesTable } from "@/server/db/schema/templates";
 import { tryCatch } from "@/shared/lib/try-catch";
 import type { TemplateData, TemplateEntity } from "@/shared/types/template";
-import { sql } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
+import type { Pagination, ProductVariant } from "../../types";
 import type { CreateTemplateRequest, UpdateTemplateRequest } from "./dto";
 
-export const getTemplates = async () => {
-	const queryBuilder = `
-    select *
-    from templates
-  `;
+export const getTemplates = async (query?: {
+	productVariantId?: ProductVariant["id"];
+	page?: number;
+}) => {
+	const LIMIT = 10;
+	const page = query?.page || 1;
 
-	const { data, error } = await tryCatch(
-		db.execute<TemplateEntity>(queryBuilder),
+	const { data: templates, error } = await tryCatch(
+		db
+			.select()
+			.from(templatesTable)
+			.where(
+				query?.productVariantId
+					? eq(templatesTable.productVariantId, query.productVariantId)
+					: undefined,
+			)
+			.limit(LIMIT)
+			.offset((page - 1) * LIMIT),
 	);
 	if (error) {
 		console.error(error);
@@ -24,9 +36,26 @@ export const getTemplates = async () => {
 		};
 	}
 
-	const { rows: templates } = data;
-
-	console.log(templates);
+	const { data: meta, error: countError } = await tryCatch(
+		db
+			.select({
+				count: count(templatesTable.id),
+			})
+			.from(templatesTable)
+			.where(
+				query?.productVariantId
+					? eq(templatesTable.productVariantId, query.productVariantId)
+					: undefined,
+			),
+	);
+	if (countError) {
+		console.error(countError);
+		return {
+			success: false,
+			error: countError.message,
+			message: "Failed to fetch templates count",
+		};
+	}
 
 	let parsedTemplates: TemplateData[] = [];
 
@@ -39,10 +68,18 @@ export const getTemplates = async () => {
 		};
 	});
 
+	const pagination: Pagination = {
+		total_data: meta[0].count,
+		total_page: Math.ceil(meta[0].count / (LIMIT || 10)),
+		page: page || 1,
+		limit: LIMIT || 10,
+	};
+
 	return {
 		success: true,
 		data: {
 			templates: parsedTemplates,
+			pagination,
 		},
 		message: "Templates fetched successfully",
 	};
