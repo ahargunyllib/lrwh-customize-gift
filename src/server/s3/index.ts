@@ -79,3 +79,59 @@ export const uploadFileToS3 = async (
 		message: "File uploaded successfully",
 	};
 };
+
+/**
+ * Uploads a buffer to an S3 bucket.
+ *
+ * @param {Buffer} buffer - The buffer to be uploaded. Must be a valid Buffer object.
+ * @param {string} fileName - The name of the file to be uploaded.
+ * @param {string} [contentType="application/octet-stream"] - The content type of the file.
+ * @returns {Promise<{
+ *   success: boolean,
+ *   data?: { fileUrl: string },
+ *   error?: string,
+ *   message: string
+ * }>} - A promise resolving to an object indicating the result of the upload.
+ *   - On success: { success: true, data: { fileUrl: string }, message: string }
+ *   - On failure: { success: false, error: string, message: string }
+ */
+export const uploadBufferToS3 = async (
+	buffer: Buffer,
+	fileName: string,
+	contentType = "application/octet-stream",
+): Promise<{
+	success: boolean;
+	data?: { fileUrl: string };
+	error?: string;
+	message: string;
+}> => {
+	const command = new PutObjectCommand({
+		Bucket: env.AWS_S3_BUCKET_NAME,
+		Key: fileName,
+		Body: buffer,
+		ACL: "public-read",
+		ContentType: contentType,
+	});
+
+	const { error } = await tryCatch(s3.send(command));
+	if (error) {
+		return {
+			success: false,
+			error: error.message,
+			message: "Failed to upload buffer",
+		};
+	}
+
+	const fileUrl = new URL(
+		`${env.AWS_S3_BUCKET_NAME}/${fileName}`,
+		env.AWS_S3_URL,
+	).toString();
+
+	return {
+		success: true,
+		data: {
+			fileUrl,
+		},
+		message: "Buffer uploaded successfully",
+	};
+};
