@@ -27,6 +27,7 @@ type TemplateStore = {
 		}[];
 	};
 } & {
+	deleteOrder: () => void;
 	updateOrder: (order: TemplateStore["order"]) => void;
 	saveTemplate: (
 		orderProductVariantId: OrderProductVariant["id"],
@@ -47,6 +48,17 @@ export const useTemplatesStore = create<TemplateStore>()(
 				productVariants: [],
 			},
 
+			deleteOrder: () => {
+				console.log("[useTemplatesStore] Deleting order");
+				set({
+					order: {
+						id: "",
+						username: "",
+						orderNumber: "",
+						productVariants: [],
+					},
+				});
+			},
 			updateOrder: (order: TemplateStore["order"]) => {
 				set({
 					order,
