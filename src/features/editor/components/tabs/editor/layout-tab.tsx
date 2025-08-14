@@ -10,7 +10,9 @@ export default function LayoutTab() {
 			<div className="space-y-2">
 				<div className="flex justify-between text-sm">
 					<span>Current Size:</span>
-					<span className="font-medium">{selectedSize.label}</span>
+					<span className="font-medium">
+						{selectedSize.width} x {selectedSize.height}
+					</span>
 				</div>
 				<div className="flex justify-between text-sm">
 					<span>Dimensions:</span>

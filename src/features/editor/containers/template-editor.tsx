@@ -53,7 +53,7 @@ export default function TemplateEditor({
 	orderProductVariantId,
 }: {
 	original: TemplateData;
-	orderProductVariantId: OrderProductVariant["id"];
+	orderProductVariantId?: OrderProductVariant["id"];
 }) {
 	const editor = useTemplateEditor(
 		getTemplateForSize(original, {
@@ -74,15 +74,8 @@ export default function TemplateEditor({
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
 	const {
-		order: { username, orderNumber, productVariants },
+		order: { username, orderNumber },
 	} = useTemplatesStore();
-
-	const hasMultipleProducts = useMemo(() => {
-		return (
-			productVariants.length > 1 ||
-			(productVariants.length === 1 && productVariants[0].templates.length > 1)
-		);
-	}, [productVariants]);
 
 	return (
 		<TemplateCtx.Provider
@@ -93,16 +86,19 @@ export default function TemplateEditor({
 		>
 			<div className="flex h-screen flex-col">
 				<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
-					<div className="space-y-1">
-						<h1 className="text-xl font-medium">Hai, {username}!</h1>
-						<p className="text-xs text-[#98A2B3]">Order ID : {orderNumber}</p>
-					</div>
+					{username && orderNumber && (
+						<div className="space-y-1">
+							<h1 className="text-xl font-medium">Hai, {username}!</h1>
+							<p className="text-xs text-[#98A2B3]">Order ID : {orderNumber}</p>
+						</div>
+					)}
 
-					<ConfirmationDialog
-						hasMultipleProducts={hasMultipleProducts}
-						canvasRef={canvasRef}
-						orderProductVariantId={orderProductVariantId}
-					/>
+					{orderProductVariantId && (
+						<ConfirmationDialog
+							canvasRef={canvasRef}
+							orderProductVariantId={orderProductVariantId}
+						/>
+					)}
 				</header>
 
 				{/* Body */}
@@ -148,11 +144,9 @@ export default function TemplateEditor({
 }
 
 function ConfirmationDialog({
-	hasMultipleProducts,
 	canvasRef,
 	orderProductVariantId,
 }: {
-	hasMultipleProducts: boolean;
 	canvasRef: React.RefObject<HTMLDivElement>;
 	orderProductVariantId: string;
 }) {
@@ -160,6 +154,17 @@ function ConfirmationDialog({
 
 	const { saveTemplate } = useTemplatesStore();
 	const router = useRouter();
+
+	const {
+		order: { productVariants },
+	} = useTemplatesStore();
+
+	const hasMultipleProducts = useMemo(() => {
+		return (
+			productVariants.length > 1 ||
+			(productVariants.length === 1 && productVariants[0].templates.length > 1)
+		);
+	}, [productVariants]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const onSaveHandler = useCallback(async () => {
