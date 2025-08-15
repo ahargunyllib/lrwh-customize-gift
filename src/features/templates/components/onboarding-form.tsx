@@ -143,8 +143,8 @@ function OnboardingTipsDialog() {
 				{isMobile ? (
 					<div className="relative bg-muted w-full h-[14rem]">
 						<Image
-							src="/mobile-tip.png"
-							alt="Mobile Tips"
+							src="/imgs/order-number-mobile-tip.png"
+							alt="Order Number Mobile Tips"
 							fill
 							className="object-contain"
 						/>
@@ -152,8 +152,8 @@ function OnboardingTipsDialog() {
 				) : (
 					<div className="relative bg-muted w-[36rem] h-[8rem]">
 						<Image
-							src="/website-tip.png"
-							alt="Website Tips"
+							src="/imgs/order-number-website-tip.png"
+							alt="Order Number Website Tips"
 							fill
 							className="object-contain"
 						/>
