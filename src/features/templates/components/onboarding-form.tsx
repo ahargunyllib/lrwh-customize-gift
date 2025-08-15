@@ -44,7 +44,7 @@ export default function OnboardingForm() {
 									Order ID
 									<span className="text-red-500">*</span>
 								</FormLabel>
-								<OnboardingTipsDialog />
+								<OrderNumberDialogTip />
 							</div>
 							<FormControl>
 								<Input
@@ -68,12 +68,15 @@ export default function OnboardingForm() {
 					name="username"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel
-								htmlFor="username"
-								className="text-[#1D2939] font-medium text-base"
-							>
-								Username Shopee<span className="text-red-500">*</span>
-							</FormLabel>
+							<div className="flex flex-row items-center justify-between">
+								<FormLabel
+									htmlFor="username"
+									className="text-[#1D2939] font-medium text-base"
+								>
+									Username Shopee<span className="text-red-500">*</span>
+								</FormLabel>
+								<UsernameDialogTip />
+							</div>
 							<FormControl>
 								<Input
 									{...field}
@@ -106,7 +109,7 @@ export default function OnboardingForm() {
 	);
 }
 
-function OnboardingTipsDialog() {
+function OrderNumberDialogTip() {
 	const isMobile = useIsMobile();
 	const tab = isMobile ? "aplikasi" : "website";
 
@@ -132,7 +135,7 @@ function OnboardingTipsDialog() {
 					<ul className="list-disc pl-4 text-[#737373] text-sm">
 						<li>Pilih dulu pesanan yang mau kamu lihat</li>
 						<li>
-							Terus scroll ke bawah sampai ketemu bagian "Rincian Pesanan".
+							Terus scroll ke bawah sampai ketemu bagian "Rincian Pesanan"
 						</li>
 						<li>
 							Nah, di situ kamu bisa lihat detail, termasuk Nomor Pesanan atau
@@ -154,6 +157,63 @@ function OnboardingTipsDialog() {
 						<Image
 							src="/imgs/order-number-website-tip.png"
 							alt="Order Number Website Tips"
+							fill
+							className="object-contain"
+						/>
+					</div>
+				)}
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function UsernameDialogTip() {
+	const isMobile = useIsMobile();
+	const tab = isMobile ? "aplikasi" : "website";
+
+	return (
+		<Dialog>
+			<DialogTrigger asChild>
+				<InfoIcon className="text-[#2854AD] size-4" />
+			</DialogTrigger>
+			<DialogContent
+				showCloseButton={false}
+				className={cn(
+					tab === "website" && "sm:max-w-[39rem]",
+					tab === "aplikasi" && "sm:max-w-[27rem]",
+				)}
+			>
+				<DialogHeader className="text-left">
+					<DialogClose asChild>
+						<ArrowLeftIcon className="absolute top-6 left-4 size-6 text-[#292D32]" />
+					</DialogClose>
+					<DialogTitle className="text-center text-base font-bold text-[#1D2939]">
+						Cara cek username kamu
+					</DialogTitle>
+					<ul className="list-disc pl-4 text-[#737373] text-sm">
+						<li>Masuk dulu ke halaman profil.</li>
+						<li>
+							Terus scroll ke bawah sampai ketemu bagian "Informasi Akun".
+						</li>
+						<li>
+							Nah, di situ kamu bisa lihat detailnya, termasuk username kamu.
+						</li>
+					</ul>
+				</DialogHeader>
+				{isMobile ? (
+					<div className="relative bg-muted w-full h-[14rem]">
+						<Image
+							src="/imgs/username-mobile-tip.png"
+							alt="Username Mobile Tips"
+							fill
+							className="object-contain"
+						/>
+					</div>
+				) : (
+					<div className="relative bg-muted w-[36rem] h-[8rem]">
+						<Image
+							src="/imgs/username-website-tip.png"
+							alt="Username Website Tips"
 							fill
 							className="object-contain"
 						/>
