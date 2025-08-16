@@ -1,14 +1,29 @@
-import type { LineElement } from "@/shared/types/element/line";
+import {
+	LINE_TIP,
+	type LineElement,
+	type LineTip,
+} from "@/shared/types/element/line";
 import { Input } from "../../ui/input";
+import { Label } from "../../ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../ui/select";
 import { OpacityControl } from "../controls";
 import ColorPicker from "../controls/ColorPicker";
+import { ZIndexControls } from "./ShapeConfigurator";
 
 export default function LineConfigurator({
 	line,
 	onUpdate,
+	totalElement,
 }: {
 	line: LineElement;
 	onUpdate: (updates: Partial<LineElement>) => void;
+	totalElement: number;
 }) {
 	return (
 		<div className="space-y-4">
@@ -34,6 +49,69 @@ export default function LineConfigurator({
 				opacity={line.opacity}
 				onChange={(opacity) => onUpdate({ opacity })}
 			/>
+			<ZIndexControls
+				element={line}
+				onUpdate={(zIndex) => onUpdate({ zIndex })}
+				totalElement={totalElement}
+			/>
+			<LineTipControls
+				startTip={line.startTip}
+				endTip={line.endTip}
+				onChange={onUpdate}
+			/>
+			<LineWidthControls
+				strokeWidth={line.strokeWidth}
+				onUpdate={(strokeWidth) => onUpdate({ strokeWidth })}
+			/>
+		</div>
+	);
+}
+
+function LineTipControls({
+	startTip,
+	endTip,
+	onChange,
+}: {
+	startTip: LineTip | undefined;
+	endTip: LineTip | undefined;
+	onChange: (updates: Partial<LineElement>) => void;
+}) {
+	return (
+		<div className="space-y-2">
+			{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+			<label className="text-xs font-medium">Line Tip</label>
+			<div className="flex gap-x-2">
+				<Select
+					value={startTip}
+					onValueChange={(value) => onChange({ startTip: value as LineTip })}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Select a line tip" />
+					</SelectTrigger>
+					<SelectContent>
+						{Object.entries(LINE_TIP).map(([key, value]) => (
+							<SelectItem key={key} value={value}>
+								{key}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select
+					value={endTip}
+					onValueChange={(value) => onChange({ endTip: value as LineTip })}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Select a line tip" />
+					</SelectTrigger>
+					<SelectContent>
+						{Object.entries(LINE_TIP).map(([key, value]) => (
+							<SelectItem key={key} value={value}>
+								{key}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
 		</div>
 	);
 }
@@ -62,6 +140,8 @@ function LinePositionControls({
 			{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
 			<label className="text-xs font-medium">Start Position</label>
 			<div className="flex space-x-2">
+				{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+				<label className="text-xs font-medium">X</label>
 				<Input
 					type="number"
 					value={startX}
@@ -75,6 +155,8 @@ function LinePositionControls({
 					}
 					placeholder="Start X"
 				/>
+				{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+				<label className="text-xs font-medium">Y</label>
 				<Input
 					type="number"
 					value={startY}
@@ -92,6 +174,8 @@ function LinePositionControls({
 			{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
 			<label className="text-xs font-medium">End Position</label>
 			<div className="flex space-x-2">
+				{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+				<label className="text-xs font-medium">X</label>
 				<Input
 					type="number"
 					value={endX}
@@ -105,6 +189,8 @@ function LinePositionControls({
 					}
 					placeholder="End X"
 				/>
+				{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+				<label className="text-xs font-medium">Y</label>
 				<Input
 					type="number"
 					value={endY}
@@ -119,6 +205,31 @@ function LinePositionControls({
 					placeholder="End Y"
 				/>
 			</div>
+		</div>
+	);
+}
+
+function LineWidthControls({
+	strokeWidth,
+	onUpdate,
+}: {
+	strokeWidth: number;
+	onUpdate: (strokeWidth: number) => void;
+}) {
+	return (
+		<div className="space-y-2">
+			{/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+			<label className="text-xs font-medium">Line Width</label>
+			<Input
+				type="number"
+				value={strokeWidth}
+				onChange={(e) => onUpdate(Number.parseFloat(e.target.value))}
+				min={1}
+				max={100}
+				step={1}
+				className="w-full"
+				placeholder="Enter line width"
+			/>
 		</div>
 	);
 }
