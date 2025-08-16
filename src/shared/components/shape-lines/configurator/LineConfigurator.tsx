@@ -1,6 +1,6 @@
 import type { LineElement } from "@/shared/types/element/line";
 import { Input } from "../../ui/input";
-import { OpacityControl, RotationControl } from "../controls";
+import { OpacityControl } from "../controls";
 import ColorPicker from "../controls/ColorPicker";
 
 export default function LineConfigurator({
