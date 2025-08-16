@@ -168,7 +168,9 @@ export default function TemplateLine(props: Props) {
 						y2={dy * scale}
 						stroke="transparent"
 						strokeWidth={Math.max(strokeWidth * 3 * scale, 10)}
-						style={{ cursor: "pointer" }}
+						style={{
+							cursor: props.isPreview ? "auto" : "pointer",
+						}}
 						onClick={(e) => {
 							e.stopPropagation();
 							props.toggleActive(e);
