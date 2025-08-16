@@ -161,6 +161,7 @@ export default function TemplateLine(props: Props) {
 				width: `${Math.abs(dx) * scale}px`,
 				height: `${strokeWidth * scale}px`,
 				pointerEvents: "none",
+				zIndex: props.element.zIndex || 1,
 			}}
 		>
 			<svg

@@ -23,6 +23,7 @@ export interface LineElement {
 	endPoint: Position;
 	startTip?: string;
 	endTip?: string;
+	zIndex?: number;
 	// startTipSize?: number;
 	// endTipSize?: number;
 }
