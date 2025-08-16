@@ -39,7 +39,6 @@ export const useOnboardingForm = () => {
 				form.reset();
 
 				const { order } = res.data;
-				console.log("res.data", res.data);
 				updateOrder(order);
 
 				router.push("/templates");

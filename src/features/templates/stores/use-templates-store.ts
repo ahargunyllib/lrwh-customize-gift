@@ -49,7 +49,6 @@ export const useTemplatesStore = create<TemplateStore>()(
 			},
 
 			deleteOrder: () => {
-				console.log("[useTemplatesStore] Deleting order");
 				set({
 					order: {
 						id: "",
@@ -67,19 +66,10 @@ export const useTemplatesStore = create<TemplateStore>()(
 			saveTemplate(orderProductVariantId, dataURL) {
 				const order = get().order;
 
-				console.log(
-					"[useTemplatesStore] Saving template for orderProductVariantId:",
-					orderProductVariantId,
-				);
-
 				const productVariants = order.productVariants.map((pv) => ({
 					...pv,
 					templates: pv.templates.map((t) => {
 						if (t.id === orderProductVariantId) {
-							console.log(
-								"[useTemplatesStore] Saving template for orderProductVariantId:",
-								orderProductVariantId,
-							);
 							return {
 								...t,
 								dataURL,
@@ -100,19 +90,10 @@ export const useTemplatesStore = create<TemplateStore>()(
 			deleteDataURLTemplate(orderProductVariantId) {
 				const order = get().order;
 
-				console.log(
-					"[useTemplatesStore] Deleting template for orderProductVariantId:",
-					orderProductVariantId,
-				);
-
 				const productVariants = order.productVariants.map((pv) => ({
 					...pv,
 					templates: pv.templates.map((t) => {
 						if (t.id === orderProductVariantId) {
-							console.log(
-								"[useTemplatesStore] Deleting template for orderProductVariantId:",
-								orderProductVariantId,
-							);
 							return {
 								...t,
 								dataURL: null, // Clear the data URL
