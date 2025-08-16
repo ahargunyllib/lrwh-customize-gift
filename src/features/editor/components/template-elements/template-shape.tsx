@@ -8,6 +8,7 @@ interface Props extends TemplateElementBaseProps {
 }
 
 export interface TemplateElementBaseProps {
+	isPreview?: boolean;
 	isElementActive: boolean;
 	scale: number;
 	canvasSize?: { width: number; height: number };
@@ -63,46 +64,34 @@ export default function TemplateShape(props: Props) {
 	const scaledWidth = props.element.width * props.scale;
 	const scaledHeight = props.element.height * props.scale;
 
-	// Calculate clipping boundaries based on canvas size and current position
-	const getClipPath = () => {
-		const canvasWidth = props.canvasWidth * props.scale;
-		const canvasHeight = props.canvasHeight * props.scale;
-		const elementX = position.x * props.scale;
-		const elementY = position.y * props.scale;
-
-		// Calculate how much of the element is visible within canvas bounds
-		const leftClip = Math.max(0, -elementX);
-		const topClip = Math.max(0, -elementY);
-		const rightClip = Math.max(0, elementX + scaledWidth - canvasWidth);
-		const bottomClip = Math.max(0, elementY + scaledHeight - canvasHeight);
-
-		// Convert to percentages for clip-path
-		const leftPercent = (leftClip / scaledWidth) * 100;
-		const topPercent = (topClip / scaledHeight) * 100;
-		const rightPercent = ((scaledWidth - rightClip) / scaledWidth) * 100;
-		const bottomPercent = ((scaledHeight - bottomClip) / scaledHeight) * 100;
-
-		return `inset(${topPercent}% ${100 - rightPercent}% ${100 - bottomPercent}% ${leftPercent}%)`;
-	};
-
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
-			onMouseDown={(e) => {
-				handleMouseDown(e);
-			}}
-			onClick={(e) => {
-				e.stopPropagation();
-				props.toggleActive(e);
-			}}
+			onMouseDown={
+				props.isPreview
+					? undefined
+					: (e) => {
+							handleMouseDown(e);
+						}
+			}
+			onClick={
+				props.isPreview
+					? undefined
+					: (e) => {
+							e.stopPropagation();
+							props.toggleActive(e);
+						}
+			}
 			className={cn(
-				"absolute cursor-move",
-				props.isElementActive && "ring-1 ring-blue-500",
+				"absolute",
+				!props.isPreview && "cursor-move",
+				props.isElementActive && !props.isPreview && "ring-1 ring-blue-500",
 			)}
 			style={{
 				transform: `translate(${position.x * props.scale}px, ${position.y * props.scale}px) rotate(${props.element.rotation}deg)`,
 				width: scaledWidth,
 				height: scaledHeight,
+				pointerEvents: props.isPreview ? "none" : "auto",
 			}}
 		>
 			{/* Shape Preview - Only clip the shape content, not the handles */}
@@ -150,7 +139,7 @@ export default function TemplateShape(props: Props) {
 				)}
 			</div>
 
-			{props.isElementActive && (
+			{props.isElementActive && !props.isPreview && (
 				<>
 					{/* Resize Handles */}
 					{["nw", "n", "ne", "e", "se", "s", "sw", "w"].map((pos) => (
