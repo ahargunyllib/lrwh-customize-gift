@@ -17,6 +17,8 @@ import { useResizeImage } from "../hooks/use-resize-image";
 import { useResizeText } from "../hooks/use-resize-text";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
+import TemplateLine from "./template-elements/template-line";
+import TemplateShape from "./template-elements/template-shape";
 import TemplateText from "./template-elements/template-text";
 
 interface EditorCanvasProps {
@@ -113,6 +115,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				backgroundColor: "#ffffff",
 				images: [],
 				texts: [],
+				shapes: [],
+				lines: [],
 			});
 		}, [
 			initialTemplate,
@@ -216,6 +220,52 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						/>
 					))}
 
+					{/* Shapes */}
+					{template.shapes.map((shape) => (
+						<TemplateShape
+							key={shape.id}
+							element={shape}
+							isElementActive={activeElement === shape.id}
+							toggleActive={(e) => {
+								e.stopPropagation();
+								setActiveElement(shape.id);
+							}}
+							scale={scale}
+							isCustomizing={isCustomizing}
+							isSnapping={isSnapping}
+							canvasSize={{
+								width: template.width,
+								height: template.height,
+							}}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+						/>
+					))}
+
+					{/* Lines */}
+					{template.lines.map((line) => (
+						<TemplateLine
+							key={line.id}
+							element={line}
+							isElementActive={activeElement === line.id}
+							toggleActive={(e) => {
+								e.stopPropagation();
+								setActiveElement(line.id);
+							}}
+							scale={scale}
+							isCustomizing={isCustomizing}
+							getSnapPosition={getSnapPosition}
+							constrainToCanvas={constrainToCanvas}
+							onUpdate={(updates) =>
+								setTemplate((prev) => ({
+									...prev,
+									lines: prev.lines.map((l) =>
+										l.id === line.id ? { ...l, ...updates } : l,
+									),
+								}))
+							}
+						/>
+					))}
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
 						<Printer className="inline h-3 w-3 mr-1" />
 						{template.width}×{template.height}px&nbsp;(scale&nbsp;
