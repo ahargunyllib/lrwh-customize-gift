@@ -25,6 +25,8 @@ import type { TemplateData } from "@/shared/types/template";
 import { PlusCircle, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import TemplateLine from "../components/template-elements/template-line";
+import TemplateShape from "../components/template-elements/template-shape";
 
 export default function TemplateSelector() {
 	const router = useRouter();
@@ -113,6 +115,35 @@ export default function TemplateSelector() {
 							width: 50 * scale,
 							height: 10 * scale,
 						}}
+					/>
+				))}
+
+				{/* Shapes */}
+				{scaledTemplate.shapes.map((shape) => (
+					<TemplateShape
+						key={shape.id}
+						isPreview
+						scale={scale}
+						element={shape}
+						isElementActive={false}
+						toggleActive={() => {}}
+						canvasWidth={scaledTemplate.width}
+						canvasHeight={scaledTemplate.height}
+					/>
+				))}
+
+				{/* Lines */}
+				{scaledTemplate.lines.map((line) => (
+					<TemplateLine
+						isPreview
+						key={line.id}
+						scale={scale}
+						element={line}
+						isElementActive={false}
+						toggleActive={() => {}}
+						canvasWidth={scaledTemplate.width}
+						canvasHeight={scaledTemplate.height}
+						onUpdate={() => {}}
 					/>
 				))}
 			</div>
