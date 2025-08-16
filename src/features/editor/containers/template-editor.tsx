@@ -11,7 +11,19 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
+import {
+	Sheet,
+	SheetClose,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/shared/components/ui/sheet";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { getTemplateForSize } from "@/shared/lib/template";
+import type { OrderProductVariant } from "@/shared/types";
 import type { TemplateData } from "@/shared/types/template";
 import html2canvas from "html2canvas-pro";
 import { useRouter } from "next/navigation";
@@ -24,7 +36,6 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import type { OrderProductVariant } from "../../../shared/types";
 import EditorCanvas from "../components/editor-canvas";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
 import ZoomControl from "../components/zoom-control";
@@ -154,6 +165,7 @@ function ConfirmationDialog({
 
 	const { saveTemplate } = useTemplatesStore();
 	const router = useRouter();
+	const isMobile = useIsMobile();
 
 	const {
 		order: { productVariants },
@@ -181,38 +193,77 @@ function ConfirmationDialog({
 		router.back();
 	}, [canvasRef, saveTemplate, orderProductVariantId]);
 
-	return (
-		<Dialog
-			open={isOpen}
-			onOpenChange={async (open) => {
-				if (!open) {
-					// Reset the canvas state when dialog is closed
+	const onOpenChange = async (open: boolean) => {
+		if (!open) {
+			// Reset the canvas state when dialog is closed
+			const previewImage = document.getElementById(
+				"preview",
+			) as HTMLImageElement;
+			if (previewImage) {
+				previewImage.src = "";
+			}
+
+			setIsOpen(false);
+			return;
+		}
+
+		// Generate preview image when dialog is opened
+		if (canvasRef.current) {
+			html2canvas(canvasRef.current, { backgroundColor: null }).then(
+				(canvas) => {
 					const previewImage = document.getElementById(
 						"preview",
 					) as HTMLImageElement;
-					if (previewImage) {
-						previewImage.src = "";
-					}
+					previewImage.src = canvas.toDataURL("image/png");
+				},
+			);
+		}
 
-					setIsOpen(false);
-					return;
-				}
+		setIsOpen(open);
+	};
 
-				// Generate preview image when dialog is opened
-				if (canvasRef.current) {
-					html2canvas(canvasRef.current, { backgroundColor: null }).then(
-						(canvas) => {
-							const previewImage = document.getElementById(
-								"preview",
-							) as HTMLImageElement;
-							previewImage.src = canvas.toDataURL("image/png");
-						},
-					);
-				}
+	if (isMobile) {
+		return (
+			<Sheet open={isOpen} onOpenChange={onOpenChange}>
+				<SheetTrigger asChild>
+					<Button variant="outline">Simpan</Button>
+				</SheetTrigger>
+				<SheetContent side="bottom">
+					<SheetHeader className="gap-4 sm:text-center">
+						<SheetTitle className="text-center text-[#1D2939] font-bold">
+							Ini Preview Template kamu
+						</SheetTitle>
+						<SheetDescription className="text-center text-[#737373] text-sm">
+							Yuk dicek dulu, kalau masih ada yang mau diedit, tinggal klik
+							tombol di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
+						</SheetDescription>
+					</SheetHeader>
+					<div className="flex flex-col items-center justify-center">
+						<img id="preview" alt="Preview" className="border" />
+					</div>
+					<SheetFooter className="flex flex-row gap-2">
+						<SheetClose asChild>
+							<Button
+								variant="secondary"
+								className="flex-1 px-8 py-4 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-base font-bold text-[#344054]"
+							>
+								Edit Lagi
+							</Button>
+						</SheetClose>
+						<Button
+							onClick={() => onSaveHandler()}
+							className="flex-1 px-8 py-4 h-fit bg-[#2854AD] hover:bg-[#2854AD]/80 rounded-md shadow-none text-base font-bold text-[#ffffff]"
+						>
+							Simpan {hasMultipleProducts && "& lanjutkan"}
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
+		);
+	}
 
-				setIsOpen(open);
-			}}
-		>
+	return (
+		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogTrigger asChild>
 				<Button variant="outline">Simpan</Button>
 			</DialogTrigger>
