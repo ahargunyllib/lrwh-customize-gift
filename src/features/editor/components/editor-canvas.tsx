@@ -131,7 +131,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 				<div
 					ref={ref}
-					className="relative bg-white shadow-lg"
+					className="relative bg-white shadow-lg overflow-clip"
 					style={{
 						width: template.width * scale,
 						height: template.height * scale,
@@ -239,6 +239,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							}}
 							getSnapPosition={getSnapPosition}
 							constrainToCanvas={constrainToCanvas}
+							canvasWidth={template.width}
+							canvasHeight={template.height}
 						/>
 					))}
 
@@ -264,6 +266,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 									),
 								}))
 							}
+							canvasWidth={template.width}
+							canvasHeight={template.height}
 						/>
 					))}
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">
