@@ -7,7 +7,7 @@ import type {
 	TemplateData,
 	TextElement,
 } from "@/shared/types/template";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getLineConfig } from "../utils/line-config";
 
@@ -24,6 +24,20 @@ export function useTemplateEditor(initial?: TemplateData) {
 			shapes: [],
 			lines: [],
 		},
+	);
+
+	const totalElements = useMemo(
+		() =>
+			template.shapes.length +
+			template.lines.length +
+			template.texts.length +
+			template.images.length,
+		[
+			template.shapes.length,
+			template.lines.length,
+			template.texts.length,
+			template.images.length,
+		],
 	);
 
 	const [activeElement, setActiveElement] = useState<string | null>(null);
@@ -236,5 +250,6 @@ export function useTemplateEditor(initial?: TemplateData) {
 		sendBackward,
 		bringToFront,
 		sendToBack,
+		totalElements,
 	};
 }
