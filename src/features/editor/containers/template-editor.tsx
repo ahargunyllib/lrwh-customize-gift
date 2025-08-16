@@ -186,17 +186,6 @@ function ConfirmationDialog({
 		);
 	}, [productVariants]);
 
-	const {
-		order: { productVariants },
-	} = useTemplatesStore();
-
-	const hasMultipleProducts = useMemo(() => {
-		return (
-			productVariants.length > 1 ||
-			(productVariants.length === 1 && productVariants[0].templates.length > 1)
-		);
-	}, [productVariants]);
-
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const onSaveHandler = useCallback(async () => {
 		if (!canvasRef.current) return;
