@@ -18,16 +18,25 @@ const LINE_STYLES: Record<string, { dashArray?: string }> = {
 	"line-arrow": { dashArray: "" },
 };
 
-function renderLineTip(
-	tip: string,
-	isStart: boolean,
-	x: number,
-	y: number,
-	angle: number,
-	stroke: string,
-	strokeWidth: number,
-	scale: number,
-) {
+function renderLineTip({
+	tip,
+	isStart,
+	xPosition,
+	yPosition,
+	angle,
+	strokeColor,
+	strokeWidth,
+	scale,
+}: {
+	tip: string;
+	isStart: boolean;
+	xPosition: number;
+	yPosition: number;
+	angle: number;
+	strokeColor: string;
+	strokeWidth: number;
+	scale: number;
+}) {
 	if (tip === "none") return null;
 
 	if (tip === "arrow") {
@@ -35,8 +44,8 @@ function renderLineTip(
 		return (
 			<polygon
 				points={`-${size},-${size / 2} 0,0 -${size},${size / 2}`}
-				transform={`translate(${x}, ${y}) rotate(${isStart ? angle + 180 : angle})`}
-				fill={stroke}
+				transform={`translate(${xPosition}, ${yPosition}) rotate(${isStart ? angle + 180 : angle})`}
+				fill={strokeColor}
 			/>
 		);
 	}
@@ -45,11 +54,11 @@ function renderLineTip(
 		const radius = Math.max(strokeWidth, 4);
 		return (
 			<circle
-				cx={x}
-				cy={y}
+				cx={xPosition}
+				cy={yPosition}
 				r={radius}
 				fill="none"
-				stroke={stroke}
+				stroke={strokeColor}
 				strokeWidth={strokeWidth}
 			/>
 		);
@@ -57,14 +66,16 @@ function renderLineTip(
 
 	if (tip === "rounded") {
 		const radius = Math.max(strokeWidth / 4, 1) * scale;
-		return <circle cx={x} cy={y} r={radius} fill={stroke} />;
+		return (
+			<circle cx={xPosition} cy={yPosition} r={radius} fill={strokeColor} />
+		);
 	}
 
 	return (
 		<polygon
 			points="-5,-5 5,0 -5,5"
-			transform={`translate(${x}, ${y}) rotate(${angle})`}
-			fill={stroke}
+			transform={`translate(${xPosition}, ${yPosition}) rotate(${angle})`}
+			fill={strokeColor}
 		/>
 	);
 }
@@ -194,27 +205,27 @@ export default function TemplateLine(props: Props) {
 							style={{ pointerEvents: "none" }}
 						/>
 
-						{/* Tips */}
-						{renderLineTip(
-							startTip,
-							true,
-							0,
-							0,
+						{/* Line Tip */}
+						{renderLineTip({
+							tip: startTip,
+							isStart: true,
+							xPosition: 0,
+							yPosition: 0,
 							angle,
 							strokeColor,
-							strokeWidth * scale,
+							strokeWidth: strokeWidth * scale,
 							scale,
-						)}
-						{renderLineTip(
-							endTip,
-							false,
-							dx * scale,
-							dy * scale,
+						})}
+						{renderLineTip({
+							tip: endTip,
+							isStart: false,
+							xPosition: dx * scale,
+							yPosition: dy * scale,
 							angle,
 							strokeColor,
-							strokeWidth * scale,
+							strokeWidth: strokeWidth * scale,
 							scale,
-						)}
+						})}
 					</g>
 
 					{/* Active Selection - Keep handles outside clipping */}
