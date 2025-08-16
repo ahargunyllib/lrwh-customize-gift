@@ -14,21 +14,23 @@ export default function Layout({
 	const pathname = usePathname();
 
 	const order = useTemplatesStore((s) => s.order);
-	const { id } = order ?? {};
+	const id = order?.id;
 
-	const hasOrder = useMemo(() => Boolean(id), [id]);
+	const loaded = useMemo(() => typeof id !== "undefined", [id]);
+
+	const hasOrder = useMemo(() => id !== "", [id]);
 	const isOnboardingPage = useMemo(
 		() => pathname === "/templates/onboarding",
 		[pathname],
 	);
 
 	useEffect(() => {
-		if (!hasOrder && !isOnboardingPage) {
+		if (loaded && !hasOrder && !isOnboardingPage) {
 			router.replace("/templates/onboarding");
 		}
-	}, [hasOrder, router, isOnboardingPage]);
+	}, [hasOrder, router, isOnboardingPage, loaded]);
 
-	if (!hasOrder && !isOnboardingPage) {
+	if (!loaded && !hasOrder && !isOnboardingPage) {
 		return <FullscreenLoader label="Validating order..." delayMs={0} />;
 	}
 
