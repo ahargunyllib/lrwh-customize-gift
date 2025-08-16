@@ -65,6 +65,10 @@ export const getTemplates = async (query?: {
 			name: template.name,
 			productVariantId: template.productVariantId,
 			...template.data,
+			images: template.data?.images || [],
+			texts: template.data?.texts || [],
+			shapes: template.data?.shapes || [],
+			lines: template.data?.lines || [],
 		};
 	});
 
@@ -119,6 +123,10 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 		name: templates[0].name,
 		productVariantId: templates[0].productVariantId,
 		...templates[0].data,
+		images: templates[0].data?.images || [],
+		texts: templates[0].data?.texts || [],
+		shapes: templates[0].data?.shapes || [],
+		lines: templates[0].data?.lines || [],
 	};
 
 	return {
@@ -138,6 +146,8 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		backgroundImage: req.backgroundImage,
 		images: req.images,
 		texts: req.texts,
+		shapes: req.shapes,
+		lines: req.lines,
 	};
 
 	const queryBuilder = sql`
@@ -175,6 +185,8 @@ export const updateTemplate = async (
 		backgroundImage: req.backgroundImage,
 		images: req.images,
 		texts: req.texts,
+		shapes: req.shapes,
+		lines: req.lines,
 	};
 
 	const queryBuilder = sql`
