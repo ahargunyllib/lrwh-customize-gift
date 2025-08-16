@@ -6,12 +6,13 @@ export const getLineConfig = (type: LineElement["type"]): LineElement => {
 		draggable: true,
 		strokeColor: "#000000",
 		strokeWidth: 2,
-		opacity: 1,
+		opacity: 100,
 		// start and end point in center of the canvas
 		startPoint: { x: 0, y: 0 },
 		endPoint: { x: 50, y: 0 },
 		startTip: "none",
 		endTip: "none",
+		zIndex: 1,
 	};
 
 	switch (type) {

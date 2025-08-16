@@ -9,9 +9,16 @@ export type TLineElement =
 	| "line-arrow"
 	| "line-rounded";
 
-export interface LineTip {
-	type: "none" | "arrow" | "circle" | "square" | "rounded";
-}
+export const LINE_TIP = {
+	NONE: "none",
+	ARROW: "arrow",
+	CIRCLE: "circle",
+	SQUARE: "square",
+	ROUNDED: "rounded",
+} as const;
+
+export type LineTip = (typeof LINE_TIP)[keyof typeof LINE_TIP];
+
 export interface LineElement {
 	id: string;
 	type: TLineElement;
@@ -21,9 +28,7 @@ export interface LineElement {
 	opacity: number;
 	startPoint: Position;
 	endPoint: Position;
-	startTip?: string;
-	endTip?: string;
+	startTip?: LineTip;
+	endTip?: LineTip;
 	zIndex?: number;
-	// startTipSize?: number;
-	// endTipSize?: number;
 }
