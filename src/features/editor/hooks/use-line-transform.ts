@@ -23,58 +23,74 @@ export function useLineTransform({
 	);
 
 	// Keep refs to avoid stale values during drag
-	const offset = useRef({ x: 0, y: 0 });
-	const dragRef = useRef({ start, end });
+	const initialMousePos = useRef({ x: 0, y: 0 });
+	const initialPoints = useRef({ start, end });
+	const svgElementRef = useRef<SVGSVGElement | null>(null);
 
 	useEffect(() => {
 		setStartPoint(start);
 		setEndPoint(end);
-		dragRef.current = { start, end };
 	}, [start, end]);
 
+	// Helper function to convert screen coordinates to SVG coordinates
+	const screenToSVG = (
+		screenX: number,
+		screenY: number,
+		svgElement: SVGSVGElement,
+	) => {
+		const pt = svgElement.createSVGPoint();
+		pt.x = screenX;
+		pt.y = screenY;
+		return pt.matrixTransform(svgElement.getScreenCTM()?.inverse());
+	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
-		if (!dragging) return;
+		if (!dragging || !svgElementRef.current) return;
 
 		const handleMouseMove = (e: MouseEvent) => {
-			const x = e.clientX / scale;
-			const y = e.clientY / scale;
+			if (!svgElementRef.current) return;
+			const svgCoords = screenToSVG(
+				e.clientX,
+				e.clientY,
+				svgElementRef.current,
+			);
+			const initialSvgCoords = screenToSVG(
+				initialMousePos.current.x,
+				initialMousePos.current.y,
+				svgElementRef.current,
+			);
+
+			const deltaX = (svgCoords.x - initialSvgCoords.x) / scale;
+			const deltaY = (svgCoords.y - initialSvgCoords.y) / scale;
 
 			if (dragging === "line") {
-				const dx = x - offset.current.x;
-				const dy = y - offset.current.y;
-
 				const newStart = {
-					x: dragRef.current.start.x + dx,
-					y: dragRef.current.start.y + dy,
+					x: initialPoints.current.start.x + deltaX,
+					y: initialPoints.current.start.y + deltaY,
 				};
 				const newEnd = {
-					x: dragRef.current.end.x + dx,
-					y: dragRef.current.end.y + dy,
+					x: initialPoints.current.end.x + deltaX,
+					y: initialPoints.current.end.y + deltaY,
 				};
 
 				setStartPoint(newStart);
 				setEndPoint(newEnd);
 				onChange?.({ start: newStart, end: newEnd });
-
-				// Update offset and dragRef
-				offset.current = { x, y };
-				dragRef.current = { start: newStart, end: newEnd };
 			} else if (dragging === "start") {
 				const newStart = {
-					x: x - offset.current.x,
-					y: y - offset.current.y,
+					x: initialPoints.current.start.x + deltaX,
+					y: initialPoints.current.start.y + deltaY,
 				};
 				setStartPoint(newStart);
 				onChange?.({ start: newStart, end: endPoint });
-				dragRef.current.start = newStart;
 			} else if (dragging === "end") {
 				const newEnd = {
-					x: x - offset.current.x,
-					y: y - offset.current.y,
+					x: initialPoints.current.end.x + deltaX,
+					y: initialPoints.current.end.y + deltaY,
 				};
 				setEndPoint(newEnd);
 				onChange?.({ start: startPoint, end: newEnd });
-				dragRef.current.end = newEnd;
 			}
 		};
 
@@ -94,23 +110,18 @@ export function useLineTransform({
 		endPoint,
 		startLineDrag: (e: React.MouseEvent) => {
 			e.stopPropagation();
-			const x = e.clientX / scale;
-			const y = e.clientY / scale;
-			offset.current = { x, y };
-			dragRef.current = { start: startPoint, end: endPoint }; // sync ref
+			const svg = e.currentTarget.closest("svg") as SVGSVGElement;
+			svgElementRef.current = svg;
+			initialMousePos.current = { x: e.clientX, y: e.clientY };
+			initialPoints.current = { start: startPoint, end: endPoint };
 			setDragging("line");
 		},
 		startEndpointDrag: (which: "start" | "end") => (e: React.MouseEvent) => {
 			e.stopPropagation();
-			const x = e.clientX / scale;
-			const y = e.clientY / scale;
-
-			const point = which === "start" ? startPoint : endPoint;
-			offset.current = {
-				x: x - point.x,
-				y: y - point.y,
-			};
-
+			const svg = e.currentTarget.closest("svg") as SVGSVGElement;
+			svgElementRef.current = svg;
+			initialMousePos.current = { x: e.clientX, y: e.clientY };
+			initialPoints.current = { start: startPoint, end: endPoint };
 			setDragging(which);
 		},
 		isDragging: dragging !== null,
