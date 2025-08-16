@@ -7,34 +7,39 @@ import type {
 	TemplateData,
 	TextElement,
 } from "@/shared/types/template";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getLineConfig } from "../utils/line-config";
 
 export function useTemplateEditor(initial?: TemplateData) {
-	// const [template, setTemplate] = useState<TemplateData>(
-	// 	initial ?? {
-	// 		id: uuidv4(),
-	// 		name: "Custom Template",
-	// 		width: printSizes[1].width,
-	// 		height: printSizes[1].height,
-	// 		backgroundColor: "#ffffff",
-	// 		images: [],
-	// 		texts: [],
-	//     shapes: [],
-	// 	},
-	// );
-	const [template, setTemplate] = useState<TemplateData>({
-		id: uuidv4(),
-		name: "Custom Template",
-		width: 10 * 40, // default width in pixels (10cm * 40px/cm)
-		height: 20 * 40, // default height in pixels (20cm * 40px/cm)
-		backgroundColor: "#ffffff",
-		images: [],
-		texts: [],
-		shapes: [],
-		lines: [],
-	});
+	const [template, setTemplate] = useState<TemplateData>(
+		initial ?? {
+			id: uuidv4(),
+			name: "Custom Template",
+			width: 10 * 40,
+			height: 20 * 40,
+			backgroundColor: "#ffffff",
+			images: [],
+			texts: [],
+			shapes: [],
+			lines: [],
+		},
+	);
+
+	const totalElements = useMemo(
+		() =>
+			template.shapes.length +
+			template.lines.length +
+			template.texts.length +
+			template.images.length,
+		[
+			template.shapes.length,
+			template.lines.length,
+			template.texts.length,
+			template.images.length,
+		],
+	);
+
 	const [activeElement, setActiveElement] = useState<string | null>(null);
 
 	const addImage = (): string => {
@@ -95,6 +100,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			borderRadius: 0,
 			opacity: 100,
 			draggable: true,
+			zIndex: 1,
 		};
 
 		setTemplate((p) => {
@@ -244,5 +250,6 @@ export function useTemplateEditor(initial?: TemplateData) {
 		sendBackward,
 		bringToFront,
 		sendToBack,
+		totalElements,
 	};
 }

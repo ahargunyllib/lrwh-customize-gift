@@ -92,15 +92,10 @@ export default function TemplateShape(props: Props) {
 				width: scaledWidth,
 				height: scaledHeight,
 				pointerEvents: props.isPreview ? "none" : "auto",
+				zIndex: props.element.zIndex || 1,
 			}}
 		>
-			{/* Shape Preview - Only clip the shape content, not the handles */}
-			<div
-				className="w-full h-full"
-				// style={{
-				// 	clipPath: getClipPath(),
-				// }}
-			>
+			<div className="w-full h-full">
 				{/* Rectangle */}
 				{props.element.type === "rectangle" && (
 					<div

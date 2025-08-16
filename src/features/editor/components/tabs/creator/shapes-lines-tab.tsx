@@ -60,7 +60,14 @@ export default function ShapesLinesTab() {
 }
 
 function LinesTabContent() {
-	const { template, updateLine, deleteElement } = useTemplateContext();
+	const {
+		template,
+		updateLine,
+		deleteElement,
+		activeElement,
+		setActiveElement,
+		totalElements,
+	} = useTemplateContext();
 	const lines = template.lines;
 	return (
 		<>
@@ -74,12 +81,25 @@ function LinesTabContent() {
 						</span>
 					</div>
 
-					<Accordion type="single" className="space-y-2">
+					<Accordion
+						type="single"
+						className="space-y-2"
+						collapsible
+						value={activeElement || undefined}
+						onValueChange={setActiveElement}
+					>
 						{lines.map((line, idx) => (
 							<AccordionItem
 								key={line.id}
 								value={line.id}
-								className="border rounded-md"
+								className={cn(
+									"border-2 last:border-b-2 rounded-md",
+									activeElement === line.id && "border-black",
+								)}
+								onClick={(e) => {
+									e.stopPropagation();
+									setActiveElement(line.id);
+								}}
 							>
 								<div>
 									<AccordionTrigger className="p-2 gap-1">
@@ -94,6 +114,7 @@ function LinesTabContent() {
 										<LineConfigurator
 											line={line}
 											onUpdate={(updates) => updateLine(line.id, updates)}
+											totalElement={totalElements}
 										/>
 									</AccordionContent>
 								</div>
@@ -107,7 +128,14 @@ function LinesTabContent() {
 }
 
 function ShapeTabContent() {
-	const { template, deleteElement, updateShape } = useTemplateContext();
+	const {
+		template,
+		deleteElement,
+		updateShape,
+		activeElement,
+		setActiveElement,
+		totalElements,
+	} = useTemplateContext();
 	const shapes = template.shapes;
 
 	return (
@@ -122,12 +150,25 @@ function ShapeTabContent() {
 						</span>
 					</div>
 
-					<Accordion type="single" collapsible className="space-y-2">
+					<Accordion
+						type="single"
+						collapsible
+						className="space-y-2"
+						value={activeElement || undefined}
+						onValueChange={setActiveElement}
+					>
 						{shapes.map((shape, idx) => (
 							<AccordionItem
 								key={shape.id}
 								value={shape.id}
-								className="border rounded-md"
+								className={cn(
+									"border-2 last:border-b-2 rounded-md",
+									activeElement === shape.id && "border-black",
+								)}
+								onClick={(e) => {
+									e.stopPropagation();
+									setActiveElement(shape.id);
+								}}
 							>
 								<div>
 									<AccordionTrigger className="p-2 gap-1">
@@ -142,6 +183,7 @@ function ShapeTabContent() {
 										<ShapeConfigurator
 											shape={shape}
 											onUpdate={(updates) => updateShape(shape.id, updates)}
+											totalElement={totalElements}
 										/>
 									</AccordionContent>
 								</div>

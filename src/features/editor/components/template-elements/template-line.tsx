@@ -26,7 +26,6 @@ function renderLineTip({
 	angle,
 	strokeColor,
 	strokeWidth,
-	scale,
 }: {
 	tip: string;
 	isStart: boolean;
@@ -35,7 +34,6 @@ function renderLineTip({
 	angle: number;
 	strokeColor: string;
 	strokeWidth: number;
-	scale: number;
 }) {
 	if (tip === "none") return null;
 
@@ -65,7 +63,7 @@ function renderLineTip({
 	}
 
 	if (tip === "rounded") {
-		const radius = Math.max(strokeWidth / 4, 1) * scale;
+		const radius = strokeWidth * 0.5;
 		return (
 			<circle cx={xPosition} cy={yPosition} r={radius} fill={strokeColor} />
 		);
@@ -85,7 +83,7 @@ function getTipSize(tip: string, strokeWidth: number): number {
 	if (tip === "none") return 0;
 
 	if (tip === "arrow") {
-		return Math.max(strokeWidth * 2, 8);
+		return Math.max(strokeWidth * 1.8, 8);
 	}
 
 	if (tip === "circle") {
@@ -93,7 +91,7 @@ function getTipSize(tip: string, strokeWidth: number): number {
 	}
 
 	if (tip === "rounded") {
-		return Math.max(strokeWidth / 8, 0.5);
+		return strokeWidth * 0.05;
 	}
 
 	// Default tip size
@@ -161,6 +159,7 @@ export default function TemplateLine(props: Props) {
 				width: `${Math.abs(dx) * scale}px`,
 				height: `${strokeWidth * scale}px`,
 				pointerEvents: "none",
+				zIndex: props.element.zIndex || 1,
 			}}
 		>
 			<svg
@@ -192,7 +191,11 @@ export default function TemplateLine(props: Props) {
 						}}
 					/>
 
-					<g>
+					<g
+						style={{
+							opacity: element.opacity / 100,
+						}}
+					>
 						{/* Visible line (trimmed if tips are present) */}
 						<line
 							x1={trimmedStartX}
@@ -214,7 +217,6 @@ export default function TemplateLine(props: Props) {
 							angle,
 							strokeColor,
 							strokeWidth: strokeWidth * scale,
-							scale,
 						})}
 						{renderLineTip({
 							tip: endTip,
@@ -224,13 +226,28 @@ export default function TemplateLine(props: Props) {
 							angle,
 							strokeColor,
 							strokeWidth: strokeWidth * scale,
-							scale,
 						})}
 					</g>
 
 					{/* Active Selection - Keep handles outside clipping */}
 					{props.isElementActive && (
 						<>
+							{/* dash line for showing selection */}
+							<line
+								x1={trimmedStartX}
+								y1={trimmedStartY}
+								x2={trimmedEndX}
+								y2={trimmedEndY}
+								stroke={
+									["line-dashed", "line-dotted"].includes(props.element.type)
+										? "#1E88E5"
+										: "#fff"
+								}
+								// max width is 10px
+								strokeWidth={Math.min(strokeWidth * scale * 0.5, 2)}
+								strokeDasharray="4,4"
+								style={{ pointerEvents: "none" }}
+							/>
 							<circle
 								cx={0}
 								cy={0}
@@ -244,6 +261,7 @@ export default function TemplateLine(props: Props) {
 									startEndpointDrag("start")(e);
 								}}
 							/>
+							{/* dash line */}
 							<circle
 								cx={dx * scale}
 								cy={dy * scale}

@@ -15,4 +15,5 @@ export interface ShapeElement {
 	borderWidth: number;
 	borderRadius: number;
 	opacity: number;
+	zIndex: number;
 }
