@@ -48,6 +48,26 @@ export function getTemplateForSize(
 				}px`,
 			},
 		})),
+		shapes: template.shapes.map((shape) => ({
+			...shape,
+			width: shape.width * scaleX,
+			height: shape.height * scaleY,
+			position: {
+				x: shape.position.x * scaleX,
+				y: shape.position.y * scaleY,
+			},
+		})),
+		lines: template.lines.map((line) => ({
+			...line,
+			startPoint: {
+				x: line.startPoint.x * scaleX,
+				y: line.startPoint.y * scaleY,
+			},
+			endPoint: {
+				x: line.endPoint.x * scaleX,
+				y: line.endPoint.y * scaleY,
+			},
+		})),
 	};
 }
 
