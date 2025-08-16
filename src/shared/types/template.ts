@@ -19,6 +19,7 @@ export interface ImageElement {
 	borderRadius?: number;
 	grayscale?: boolean;
 	zIndex?: number;
+	rotate?: number;
 }
 
 export interface TextElement {
@@ -30,6 +31,7 @@ export interface TextElement {
 	height: number;
 	draggable?: boolean;
 	zIndex?: number;
+	rotate?: number;
 
 	style: {
 		fontFamily: string;

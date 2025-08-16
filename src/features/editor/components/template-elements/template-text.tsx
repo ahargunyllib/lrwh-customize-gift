@@ -58,7 +58,6 @@ export default function TemplateText({
 	setTemplate,
 }: TemplateTextProps) {
 	const {
-		rotate = 0,
 		backgroundColor,
 		borderRadius,
 		padding = 8,
@@ -248,7 +247,7 @@ export default function TemplateText({
 		top: (text.position.y || 0) * scale,
 		width: (text.width || 200) * scale,
 		height: (text.height || 100) * scale,
-		transform: `rotate(${rotate}deg)`,
+		transform: `rotate(${text.rotate}deg)`,
 		transformOrigin: "center center",
 		backgroundColor: backgroundColor || "transparent",
 		borderRadius: borderRadius || 0,

@@ -10,6 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/components/ui/select";
+import { Slider } from "@/shared/components/ui/slider";
 import { Switch } from "@/shared/components/ui/switch";
 import { Textarea } from "@/shared/components/ui/textarea";
 import {
@@ -275,7 +276,29 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						className="h-8"
 					/>
 				</div>
-
+				<div className="flex flex-col gap-1">
+					<div className="flex gap-1 items-center">
+						<Label className="text-xs w-20">Rotate</Label>
+						<Input
+							type="number"
+							className="h-7 px-2 text-xs"
+							value={txt.rotate ?? 0}
+							onChange={(e) =>
+								updateText(txt.id, {
+									rotate: Number(e.target.value),
+								})
+							}
+						/>
+					</div>
+					{/* Slider untuk Rotate */}
+					<Slider
+						value={[txt.rotate ?? 0]}
+						min={-180}
+						max={180}
+						step={1}
+						onValueChange={([val]) => updateText(txt.id, { rotate: val })}
+					/>
+				</div>
 				{/* Curve Settings */}
 				<div className="space-y-2 col-span-2 border-t pt-2">
 					<Label className="text-sm font-medium">Curve Text</Label>
