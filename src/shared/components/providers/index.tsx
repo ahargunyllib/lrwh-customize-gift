@@ -3,6 +3,7 @@
 import type React from "react";
 
 import GlobalDialog from "../../hooks/use-dialog";
+import GlobalSheet from "../../hooks/use-sheet";
 import { Toaster } from "../ui/sonner";
 import ReactQueryProvider from "./react-query-provider";
 import { ThemeProvider } from "./theme-provider";
@@ -18,6 +19,7 @@ export default function Provider({ children }: React.PropsWithChildren) {
 			<ReactQueryProvider>
 				{children}
 				<GlobalDialog />
+				<GlobalSheet />
 				<Toaster />
 			</ReactQueryProvider>
 		</ThemeProvider>
