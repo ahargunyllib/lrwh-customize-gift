@@ -130,8 +130,8 @@ export const getOrders = async (
 			username: order.username,
 			createdAt: order.createdAt,
 			products: variants.map((variant) => ({
-				id: variant.id,
-				name: variant.name,
+				id: variant.product.id,
+				name: variant.product.name,
 				productVariant: {
 					id: variant.id,
 					name: variant.name,
