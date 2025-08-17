@@ -25,8 +25,8 @@ import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { getTemplateForSize } from "@/shared/lib/template";
 import type { OrderProductVariant } from "@/shared/types";
 import type { TemplateData } from "@/shared/types/template";
-import { ImageUpscale } from "lucide-react";
 import html2canvas from "html2canvas-pro";
+import { ImageUpscale } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
 	createContext,
@@ -145,6 +145,7 @@ export default function TemplateEditor({
 								setActiveElement={editor.setActiveElement}
 								scale={1} // Always pass 1, scale is handled by CSS transform
 								allowDelete={false}
+								getLayerIndex={editor.getLayerIndex}
 							/>
 						</div>
 

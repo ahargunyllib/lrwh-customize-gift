@@ -1,3 +1,5 @@
+import TemplateLine from "@/features/editor/components/template-elements/template-line";
+import TemplateShape from "@/features/editor/components/template-elements/template-shape";
 import { Button } from "@/shared/components/ui/button";
 import { getTemplateForSize } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
@@ -232,6 +234,35 @@ const renderTemplatePreview = (
 					}}
 				/>
 			))}
+
+			{/* Shapes */}
+			{/* {scaledTemplate.shapes.map((shape) => (
+				<TemplateShape
+					key={shape.id}
+					isPreview
+					scale={scale}
+					element={shape}
+					isElementActive={false}
+					toggleActive={() => {}}
+					canvasWidth={scaledTemplate.width}
+					canvasHeight={scaledTemplate.height}
+				/>
+			))} */}
+
+			{/* Lines */}
+			{/* {scaledTemplate.lines.map((line) => (
+				<TemplateLine
+					isPreview
+					key={line.id}
+					scale={scale}
+					element={line}
+					isElementActive={false}
+					toggleActive={() => {}}
+					canvasWidth={scaledTemplate.width}
+					canvasHeight={scaledTemplate.height}
+					onUpdate={() => {}}
+				/>
+			))} */}
 		</div>
 	);
 };

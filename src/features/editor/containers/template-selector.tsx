@@ -119,7 +119,7 @@ export default function TemplateSelector() {
 				))}
 
 				{/* Shapes */}
-				{scaledTemplate.shapes.map((shape) => (
+				{/* {scaledTemplate.shapes.map((shape) => (
 					<TemplateShape
 						key={shape.id}
 						isPreview
@@ -130,10 +130,10 @@ export default function TemplateSelector() {
 						canvasWidth={scaledTemplate.width}
 						canvasHeight={scaledTemplate.height}
 					/>
-				))}
+				))} */}
 
 				{/* Lines */}
-				{scaledTemplate.lines.map((line) => (
+				{/* {scaledTemplate.lines.map((line) => (
 					<TemplateLine
 						isPreview
 						key={line.id}
@@ -145,7 +145,7 @@ export default function TemplateSelector() {
 						canvasHeight={scaledTemplate.height}
 						onUpdate={() => {}}
 					/>
-				))}
+				))} */}
 			</div>
 		);
 	};

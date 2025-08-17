@@ -1,3 +1,4 @@
+import { useTemplateContext } from "@/features/editor/containers/template-creator";
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
 import type { ImageElement, TextElement } from "@/shared/types/template";
@@ -22,11 +23,9 @@ import {
 export default function ShapeConfigurator({
 	shape,
 	onUpdate,
-	totalElement,
 }: {
 	shape: ShapeElement;
 	onUpdate: (updates: Partial<ShapeElement>) => void;
-	totalElement: number;
 }) {
 	return (
 		<div className="space-y-4">
@@ -77,7 +76,6 @@ export default function ShapeConfigurator({
 			<ZIndexControls
 				element={shape}
 				onUpdate={(zIndex) => onUpdate({ zIndex })}
-				totalElement={totalElement}
 			/>
 		</div>
 	);
@@ -86,35 +84,23 @@ export default function ShapeConfigurator({
 export function ZIndexControls({
 	element,
 	onUpdate,
-	totalElement,
 }: {
 	element: LineElement | ShapeElement | ImageElement | TextElement;
 	onUpdate: (updates: number) => void;
-	totalElement: number;
 }) {
+	const {
+		bringForwardLayer,
+		sendBackwardLayer,
+		bringToFrontLayer,
+		sendToBackLayer,
+		getLayerIndex,
+		getLayerLength,
+		isOnTopLayer,
+		isOnBottomLayer,
+	} = useTemplateContext();
 	// normalize zIndex for backward compatibility
-	const currentZIndex = element.zIndex ?? 1;
-
-	const bringForward = () => {
-		if (currentZIndex >= totalElement) return;
-		onUpdate(currentZIndex + 1);
-	};
-
-	const sendBackward = () => {
-		if (currentZIndex <= 1) return;
-		onUpdate(currentZIndex - 1);
-	};
-
-	const bringToFront = () => {
-		if (currentZIndex === totalElement) return;
-		onUpdate(totalElement);
-	};
-
-	const sendToBack = () => {
-		if (currentZIndex === 1) return;
-		onUpdate(1);
-	};
-
+	const currentZIndex = getLayerIndex(element.id);
+	const totalElement = getLayerLength();
 	return (
 		<div>
 			<Label className="text-xs font-medium">Z Index</Label>
@@ -123,10 +109,10 @@ export function ZIndexControls({
 					variant="outline"
 					size="sm"
 					className="h-7 text-xs"
-					disabled={currentZIndex >= totalElement}
+					disabled={isOnTopLayer(element.id)}
 					onClick={(e) => {
 						e.stopPropagation();
-						bringForward();
+						bringForwardLayer(element.id);
 					}}
 				>
 					<ArrowUp className="w-4 h-4 mr-1" />
@@ -136,10 +122,10 @@ export function ZIndexControls({
 					variant="outline"
 					size="sm"
 					className="h-7 text-xs"
-					disabled={currentZIndex <= 1}
+					disabled={isOnBottomLayer(element.id)}
 					onClick={(e) => {
 						e.stopPropagation();
-						sendBackward();
+						sendBackwardLayer(element.id);
 					}}
 				>
 					<ArrowDown className="w-4 h-4 mr-1" />
@@ -149,26 +135,26 @@ export function ZIndexControls({
 					variant="outline"
 					size="sm"
 					className="h-7 text-xs"
-					disabled={currentZIndex >= totalElement}
+					disabled={isOnTopLayer(element.id)}
 					onClick={(e) => {
 						e.stopPropagation();
-						bringToFront();
+						bringToFrontLayer(element.id);
 					}}
 				>
-					<ArrowUp className="w-4 h-4 mr-1" />
+					<ArrowUpToLine className="w-4 h-4 mr-1" />
 					To Front
 				</Button>
 				<Button
 					variant="outline"
 					size="sm"
 					className="h-7 text-xs"
-					disabled={currentZIndex <= 1}
+					disabled={isOnBottomLayer(element.id)}
 					onClick={(e) => {
 						e.stopPropagation();
-						sendToBack();
+						sendToBackLayer(element.id);
 					}}
 				>
-					<ArrowDown className="w-4 h-4 mr-1" />
+					<ArrowDownToLine className="w-4 h-4 mr-1" />
 					To Back
 				</Button>
 			</div>

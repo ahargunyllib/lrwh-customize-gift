@@ -183,7 +183,6 @@ function ShapeTabContent() {
 										<ShapeConfigurator
 											shape={shape}
 											onUpdate={(updates) => updateShape(shape.id, updates)}
-											totalElement={totalElements}
 										/>
 									</AccordionContent>
 								</div>

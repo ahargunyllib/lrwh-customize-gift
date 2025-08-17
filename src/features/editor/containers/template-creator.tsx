@@ -73,8 +73,13 @@ export default function TemplateCreator({
 }
 
 const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
-	const { template, setTemplate, activeElement, setActiveElement } =
-		useTemplateContext();
+	const {
+		template,
+		setTemplate,
+		activeElement,
+		setActiveElement,
+		getLayerIndex,
+	} = useTemplateContext();
 
 	const { scale, zoomIn, zoomOut, resetZoom } = useCanvasScale(
 		ref as React.RefObject<HTMLDivElement>,
@@ -102,6 +107,7 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 					setActiveElement={setActiveElement}
 					scale={scale}
 					isCustomizing={true}
+					getLayerIndex={getLayerIndex}
 				/>
 			</div>
 
