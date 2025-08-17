@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/shared/components/ui/button";
 import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { SendIcon } from "lucide-react";

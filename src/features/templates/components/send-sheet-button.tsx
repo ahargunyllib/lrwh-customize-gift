@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/shared/components/ui/button";
 import { useSheetStore } from "@/shared/hooks/use-sheet";
 import { SendIcon } from "lucide-react";
@@ -9,7 +11,7 @@ export default function SendSheetButton() {
 	return (
 		<Button
 			size="lg"
-			className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit sm:hidden flex w-full"
+			className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit w-full"
 			onClick={() => {
 				openSheet({
 					children: <SendSheet />,
