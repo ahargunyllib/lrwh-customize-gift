@@ -1,15 +1,4 @@
-import { template1 } from "@/features/editor/template/template-1";
-import { template5 } from "@/features/editor/template/template-5";
 import type { TemplateData } from "../types/template";
-
-// Registry of all available templates
-export const templateRegistry = {
-	default: template1,
-	1: template1,
-	5: template5,
-};
-
-export type TemplateType = keyof typeof templateRegistry;
 
 // Create templates for different print sizes
 export function getTemplateForSize(
