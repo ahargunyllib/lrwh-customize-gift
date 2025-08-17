@@ -1,4 +1,5 @@
 "use client";
+import { ZIndexControls } from "@/shared/components/shape-lines/configurator/ShapeConfigurator";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -46,6 +47,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 		bringToFront,
 		sendBackward,
 		sendToBack,
+		totalElements,
 	} = useTemplateContext();
 
 	return (
@@ -466,57 +468,11 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					</ToggleGroup>
 				</div>
 
-				{/* Layer Z-Index Control */}
-				<div className="flex flex-wrap gap-2 mt-2">
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7 text-xs"
-						onClick={(e) => {
-							e.stopPropagation();
-							bringForward(txt.id);
-						}}
-					>
-						<ArrowUp className="w-4 h-4 mr-1" />
-						Forward
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7 text-xs"
-						onClick={(e) => {
-							e.stopPropagation();
-							sendBackward(txt.id);
-						}}
-					>
-						<ArrowDown className="w-4 h-4 mr-1" />
-						Backward
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7 text-xs"
-						onClick={(e) => {
-							e.stopPropagation();
-							bringToFront(txt.id);
-						}}
-					>
-						<ArrowUpToLine className="w-4 h-4 mr-1" />
-						To Front
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="h-7 text-xs"
-						onClick={(e) => {
-							e.stopPropagation();
-							sendToBack(txt.id);
-						}}
-					>
-						<ArrowDownToLine className="w-4 h-4 mr-1" />
-						To Back
-					</Button>
-				</div>
+				<ZIndexControls
+					element={txt}
+					onUpdate={(zIndex) => updateText(txt.id, { zIndex })}
+					totalElement={totalElements}
+				/>
 
 				<Button
 					variant="destructive"

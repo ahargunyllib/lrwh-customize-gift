@@ -7,6 +7,7 @@ import { Switch } from "@/shared/components/ui/switch";
 import type { ImageElement } from "@/shared/types/template";
 import { useTemplateContext } from "../../containers/template-creator";
 
+import { ZIndexControls } from "@/shared/components/shape-lines/configurator/ShapeConfigurator";
 import {
 	ArrowDown,
 	ArrowDownToLine,
@@ -28,6 +29,7 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 		sendBackward,
 		bringToFront,
 		sendToBack,
+		totalElements,
 	} = useTemplateContext();
 
 	const inputId = `file-${img.id}`;
@@ -97,58 +99,6 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 								}}
 							>
 								Delete
-							</Button>
-						</div>
-
-						{/* Layer Z-Index Control */}
-						<div className="flex flex-wrap gap-2 mt-2">
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-7 text-xs"
-								onClick={(e) => {
-									e.stopPropagation();
-									bringForward(img.id);
-								}}
-							>
-								<ArrowUp className="w-4 h-4 mr-1" />
-								Forward
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-7 text-xs"
-								onClick={(e) => {
-									e.stopPropagation();
-									sendBackward(img.id);
-								}}
-							>
-								<ArrowDown className="w-4 h-4 mr-1" />
-								Backward
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-7 text-xs"
-								onClick={(e) => {
-									e.stopPropagation();
-									bringToFront(img.id);
-								}}
-							>
-								<ArrowUpToLine className="w-4 h-4 mr-1" />
-								To Front
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								className="h-7 text-xs"
-								onClick={(e) => {
-									e.stopPropagation();
-									sendToBack(img.id);
-								}}
-							>
-								<ArrowDownToLine className="w-4 h-4 mr-1" />
-								To Back
 							</Button>
 						</div>
 
@@ -222,6 +172,11 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 								</Label>
 							</div>
 						</div>
+						<ZIndexControls
+							element={img}
+							onUpdate={(zIndex) => updateImage(img.id, { zIndex })}
+							totalElement={totalElements}
+						/>
 					</div>
 				</div>
 			</CardContent>
