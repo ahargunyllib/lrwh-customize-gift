@@ -37,7 +37,7 @@ export default function AddOrderDialog({ products }: Props) {
 
 	const productVariantIdsArray = useFieldArray({
 		control: form.control,
-		name: "productVariantIds",
+		name: "productVariantIds" as never, // TypeScript workaround for field array name
 	});
 
 	return (
