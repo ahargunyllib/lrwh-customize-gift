@@ -115,12 +115,12 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50 font-sans;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+	* {
+		@apply border-border outline-ring/50 font-sans;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
 
 	.mungil {
 		font-family: "Mungil", sans-serif;
@@ -192,7 +192,6 @@
 	font-weight: normal;
 	font-style: normal;
 }
-
 @font-face {
 	font-family: "Quincy CF";
 	src: url("/fonts/quincycf-regular.otf") format("opentype");
@@ -293,8 +292,22 @@
 
 
 @font-face {
-  font-family: 'Mungil';
-  src: url('/fonts/Mungil-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+	font-family: "Space Mono";
+	src: url("/fonts/SpaceMono-Regular.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Alice";
+	src: url("/fonts/Alice-Regular.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "29LT Makina";
+	src: url("/fonts/29lt-makina-regular.otf") format("opentype");
+	font-weight: normal;
+	font-style: normal;
 }
