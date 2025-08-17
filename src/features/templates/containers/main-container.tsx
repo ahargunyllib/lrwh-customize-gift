@@ -9,8 +9,8 @@ import SendSheetButton from "@/features/templates/components/send-sheet-button";
 import { useTemplatesStore } from "@/features/templates/stores/use-templates-store";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { cn } from "@/shared/lib/utils";
-import { Header } from "@radix-ui/react-accordion";
 import { useMemo, useState } from "react";
+import Header from "../components/header";
 
 export default function MainContainer() {
 	const {
