@@ -288,7 +288,10 @@ export default function TemplateImage({
 			className={`absolute overflow-hidden ${isActive ? "ring-2 ring-blue-500" : ""} ${
 				isDragOver ? "ring-2 ring-green-500" : ""
 			}`}
-			style={containerStyle}
+			style={{
+				...containerStyle,
+				zIndex: image.zIndex,
+			}}
 			onClick={onClick}
 			onDragEnter={handleDragEnter}
 			onDragOver={handleDragOver}
