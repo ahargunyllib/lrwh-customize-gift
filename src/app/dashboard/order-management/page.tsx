@@ -13,7 +13,7 @@ import {
 import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { useGetOrdersQuery } from "@/shared/repository/order/query";
 import { useSearchParams } from "next/navigation";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 
 export default function Page() {
 	return (
@@ -26,7 +26,9 @@ export default function Page() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<OrderContainer />
+				<Suspense>
+					<OrderContainer />
+				</Suspense>
 			</CardContent>
 		</Card>
 	);
