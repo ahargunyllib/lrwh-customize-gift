@@ -33,7 +33,8 @@ export function getTemplateForSize(
 			style: {
 				...txt.style,
 				fontSize: `${
-					Number.parseFloat(txt.style.fontSize) * Math.min(scaleX, scaleY)
+					Number.parseFloat(String(txt.style.fontSize)) *
+					Math.min(scaleX, scaleY)
 				}px`,
 			},
 		})),
@@ -111,7 +112,7 @@ export function scaleTemplate(
 			},
 			style: {
 				...txt.style,
-				fontSize: `${Number.parseFloat(txt.style.fontSize) * Math.min(scaleX, scaleY)}px`,
+				fontSize: `${Number.parseFloat(String(txt.style.fontSize)) * Math.min(scaleX, scaleY)}px`,
 			},
 		})),
 	};
