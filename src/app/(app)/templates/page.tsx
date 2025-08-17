@@ -69,6 +69,7 @@ export default function Page() {
 	const router = useRouter();
 	const { openDialog, closeDialog } = useDialogStore();
 	const { openSheet, closeSheet } = useSheetStore();
+	const isMobile = useIsMobile();
 
 	const onSubmitHandler = () => {
 		const templates = [];
@@ -263,7 +264,97 @@ export default function Page() {
 										<Button
 											variant="ghost"
 											size="sm"
-											onClick={() => deleteDataURLTemplate(template.id)}
+											onClick={() => {
+												if (isMobile) {
+													openSheet({
+														children: (
+															<SheetContent side="bottom">
+																<div className="relative size-48 w-full">
+																	<Image
+																		src="/svgs/warning-1.svg"
+																		alt="Warning"
+																		fill
+																		objectFit="contain"
+																	/>
+																</div>
+																<SheetHeader className="gap-4 sm:text-center">
+																	<SheetTitle className="text-center text-[#1D2939] font-bold">
+																		Konfirmasi hapus template
+																	</SheetTitle>
+																	<SheetDescription className="text-center text-[#737373] text-sm">
+																		Apakah kamu yakin ingin menghapus template
+																		yang sudah kamu pilih dan edit? Kalau
+																		dihapus, perlu mulai dari awal lagi
+																	</SheetDescription>
+																</SheetHeader>
+																<SheetFooter className="flex flex-row gap-2">
+																	<Button
+																		variant="secondary"
+																		className="flex-1 px-8 py-4 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-base font-bold text-[#344054]"
+																		onClick={() => closeSheet()}
+																	>
+																		Batal
+																	</Button>
+																	<Button
+																		onClick={() =>
+																			deleteDataURLTemplate(template.id)
+																		}
+																		className="flex-1 px-8 py-4 h-fit bg-[#DC2625] hover:bg-[#DC2625]/80 rounded-md shadow-none text-base font-bold text-[#ffffff]"
+																	>
+																		Hapus template
+																	</Button>
+																</SheetFooter>
+															</SheetContent>
+														),
+													});
+													return;
+												}
+
+												openDialog({
+													children: (
+														<DialogContent
+															showCloseButton={false}
+															className="sm:max-w-sm"
+														>
+															<div className="relative size-48 w-full">
+																<Image
+																	src="/svgs/warning-1.svg"
+																	alt="Warning"
+																	fill
+																	objectFit="contain"
+																/>
+															</div>
+															<DialogHeader className="gap-4 sm:text-center">
+																<DialogTitle className="text-center text-[#1D2939] font-bold">
+																	Konfirmasi hapus template
+																</DialogTitle>
+																<DialogDescription className="text-center text-[#737373] text-sm">
+																	Apakah kamu yakin ingin menghapus template
+																	yang sudah kamu pilih dan edit? Kalau dihapus,
+																	perlu memulai dari awal lagi
+																</DialogDescription>
+															</DialogHeader>
+															<DialogFooter className="flex flex-row gap-2">
+																<Button
+																	variant="secondary"
+																	className="flex-1 px-8 py-4 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-base font-bold text-[#344054]"
+																	onClick={() => closeDialog()}
+																>
+																	Batal
+																</Button>
+																<Button
+																	onClick={() =>
+																		deleteDataURLTemplate(template.id)
+																	}
+																	className="flex-1 px-8 py-4 h-fit bg-[#DC2625] hover:bg-[#DC2625]/80 rounded-md shadow-none text-base font-bold text-[#ffffff]"
+																>
+																	Hapus template
+																</Button>
+															</DialogFooter>
+														</DialogContent>
+													),
+												});
+											}}
 											className="text-destructive hover:text-destructive font-semibold hover:font-bold w-full"
 										>
 											Hapus
