@@ -24,7 +24,7 @@ export const tabsData = {
 		},
 		{
 			label: "Manage Templates",
-			href: "/",
+			href: "/old",
 			icon: LayoutTemplate,
 		},
 	],

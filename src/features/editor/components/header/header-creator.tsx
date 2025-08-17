@@ -2,7 +2,7 @@
 import { Button } from "@/shared/components/ui/button";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { ArrowLeft, Menu, Save } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Props {
 	title: string;
@@ -11,6 +11,7 @@ interface Props {
 }
 export default function HeaderBar({ title, onMenuClick, onSave }: Props) {
 	const isMobile = useIsMobile();
+	const router = useRouter();
 
 	return (
 		<header className="border-b bg-white">
@@ -21,11 +22,9 @@ export default function HeaderBar({ title, onMenuClick, onSave }: Props) {
 							<Menu className="h-5 w-5" />
 						</Button>
 					)}
-					<Link href="/">
-						<Button variant="ghost" size="icon">
-							<ArrowLeft className="h-5 w-5" />
-						</Button>
-					</Link>
+					<Button variant="ghost" size="icon" onClick={() => router.back()}>
+						<ArrowLeft className="h-5 w-5" />
+					</Button>
 					<h1 className="text-lg md:text-xl font-bold truncate">{title}</h1>
 				</div>
 				<Button variant="outline" size="sm" onClick={onSave}>

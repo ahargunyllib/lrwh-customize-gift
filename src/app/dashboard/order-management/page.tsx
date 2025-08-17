@@ -1,9 +1,8 @@
 "use client";
 
-import {
-	DataTable,
-	columns,
-} from "@/features/order-management/components/order-table";
+import OrderTable from "@/features/order-management/components/order-table";
+import AddOrderDialogContainer from "@/features/order-management/container/add-order-dialog-container";
+import { Button } from "@/shared/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -11,8 +10,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/shared/components/ui/card";
+import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { useGetOrdersQuery } from "@/shared/repository/order/query";
 import { useSearchParams } from "next/navigation";
+import { Fragment } from "react";
 
 export default function Page() {
 	return (
@@ -40,11 +41,29 @@ function OrderContainer() {
 		limit: Number(sp.get("limit")) || 10,
 	});
 
+	const { openDialog } = useDialogStore();
+
 	if (isLoading) return <div>Loading...</div>;
 
 	if (!res?.data) return <div>No data</div>;
 
 	const orders = res.data.orders;
 
-	return <DataTable columns={columns} data={orders} />;
+	return (
+		<Fragment>
+			<div className="flex justify-between items-center px-2 py-4">
+				<Button
+					variant="outline"
+					onClick={() => {
+						openDialog({
+							children: <AddOrderDialogContainer />,
+						});
+					}}
+				>
+					Add Order
+				</Button>
+			</div>
+			<OrderTable data={orders} />
+		</Fragment>
+	);
 }

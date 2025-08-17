@@ -19,7 +19,6 @@ export function getTemplateForSize(
 		height: number;
 	},
 ): TemplateData {
-	console.log(template, size);
 	const scaleX = size.width / template.width;
 	const scaleY = size.height / template.height;
 

@@ -5,13 +5,24 @@ import {
 	orderProductVariantsTable,
 	ordersTable,
 } from "@/server/db/schema/orders";
-import { and, desc, eq, ilike, or } from "drizzle-orm";
-import { uploadFileToS3 } from "../../../server/s3";
+import {
+	productVariantsTable,
+	productsTable,
+} from "@/server/db/schema/products";
+import { uploadBufferToS3 } from "@/server/s3";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import {
+	MAX_BYTES,
+	looksLikePng,
+	parseDataUrl,
+	sha256,
+} from "../../lib/data-url";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
+	GetOrdersResponse,
 	SubmitOrderRequest,
 	UpdateOrderParams,
 	UpdateOrderRequest,
@@ -44,10 +55,96 @@ export const getOrders = async (query: GetOrdersQuery) => {
 		};
 	}
 
+	const orderIds = orders.map((order) => order.id);
+	const { data: orderProductVariants, error: fetchOrderProductVariantsErr } =
+		await tryCatch(
+			db
+				.select()
+				.from(orderProductVariantsTable)
+				.where(inArray(orderProductVariantsTable.orderId, orderIds)),
+		);
+	if (fetchOrderProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchOrderProductVariantsErr.message,
+			message: "Failed to fetch order product variants",
+		};
+	}
+	const productVariantIds = orderProductVariants.map(
+		(variant) => variant.productVariantId,
+	);
+	const { data: productVariants, error: fetchProductVariantsErr } =
+		await tryCatch(
+			db
+				.select({
+					id: productVariantsTable.id,
+					name: productVariantsTable.name,
+					product: {
+						id: productsTable.id,
+						name: productsTable.name,
+					},
+					width: productVariantsTable.width,
+					height: productVariantsTable.height,
+				})
+				.from(productVariantsTable)
+				.innerJoin(
+					productsTable,
+					eq(productVariantsTable.productId, productsTable.id),
+				)
+				.where(inArray(productVariantsTable.id, productVariantIds)),
+		);
+	if (fetchProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchProductVariantsErr.message,
+			message: "Failed to fetch product variants",
+		};
+	}
+
+	const orderRes: GetOrdersResponse["orders"] = orders.map((order) => {
+		const variants = orderProductVariants
+			.filter((opv) => opv.orderId === order.id)
+			.map((opv) => {
+				const variant = productVariants.find(
+					(pv) => pv.id === opv.productVariantId,
+				);
+
+				return {
+					id: variant?.id ?? "",
+					name: variant?.name ?? "",
+					width: variant?.width ?? 0,
+					height: variant?.height ?? 0,
+					product: {
+						id: variant?.product.id ?? "",
+						name: variant?.product.name ?? "",
+					},
+					imageUrl: opv.imageUrl || null,
+				};
+			});
+
+		return {
+			id: order.id,
+			orderNumber: order.orderNumber,
+			username: order.username,
+			createdAt: order.createdAt,
+			products: variants.map((variant) => ({
+				id: variant.id,
+				name: variant.name,
+				productVariant: {
+					id: variant.id,
+					name: variant.name,
+					width: variant.width,
+					height: variant.height,
+				},
+				imageUrl: variant.imageUrl,
+			})),
+		};
+	});
+
 	return {
 		success: true,
 		data: {
-			orders,
+			orders: orderRes,
 		},
 		message: "Orders fetched successfully",
 	};
@@ -58,7 +155,11 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 ): Promise<ApiResponse<VerifyOrderByUsernameAndOrderNumberResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
-			.select()
+			.select({
+				id: ordersTable.id,
+				username: ordersTable.username,
+				orderNumber: ordersTable.orderNumber,
+			})
 			.from(ordersTable)
 			.where(
 				and(
@@ -85,10 +186,68 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 
 	const order = orders[0];
 
+	const { data: orderProductVariants, error: fetchOrderProductVariantsErr } =
+		await tryCatch(
+			db
+				.select()
+				.from(orderProductVariantsTable)
+				.where(eq(orderProductVariantsTable.orderId, order.id)),
+		);
+	if (fetchOrderProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchOrderProductVariantsErr.message,
+			message: "Failed to fetch order product variants",
+		};
+	}
+
+	const productVariantIds = orderProductVariants.map(
+		(variant) => variant.productVariantId,
+	);
+
+	const { data: productVariants, error: fetchProductVariantsErr } =
+		await tryCatch(
+			db
+				.select({
+					id: productVariantsTable.id,
+					name: productVariantsTable.name,
+					product: {
+						id: productsTable.id,
+						name: productsTable.name,
+					},
+				})
+				.from(productVariantsTable)
+				.innerJoin(
+					productsTable,
+					eq(productVariantsTable.productId, productsTable.id),
+				)
+				.where(inArray(productVariantsTable.id, productVariantIds)),
+		);
+	if (fetchProductVariantsErr) {
+		return {
+			success: false,
+			error: fetchProductVariantsErr.message,
+			message: "Failed to fetch product variants",
+		};
+	}
+
+	const orderRes: VerifyOrderByUsernameAndOrderNumberResponse["order"] = {
+		...order,
+		productVariants: productVariants.map((variant) => ({
+			...variant,
+			templates: orderProductVariants
+				.filter((opv) => opv.productVariantId === variant.id)
+				.map((opv) => ({
+					id: opv.id,
+					dataURL: null, // Assuming dataURL is not needed here, adjust if necessary
+				})),
+		})),
+	};
+
 	return {
 		success: true,
 		data: {
-			order,
+			order: orderRes,
 		},
 		message: "Order fetched successfully",
 	};
@@ -269,48 +428,175 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 };
 
 export const submitOrder = async (req: SubmitOrderRequest) => {
-	const file = new File([req.file], `order-${req.orderId}-${Date.now()}.png`, {
-		type: req.file.type,
-	});
+	const { orderId, templates } = req;
 
-	const { data: uploadResult, error: uploadError } = await tryCatch(
-		uploadFileToS3(file),
+	// 1) Decode & validate all templates
+	const decoded = await Promise.all(
+		templates.map(async (t) => {
+			const { data: parsed, error: parseErr } = await tryCatch(
+				Promise.resolve(parseDataUrl(t.dataURL)),
+			);
+			if (parseErr || !parsed) {
+				console.error(
+					`Failed to parse Data URL for variant ${t.orderProductVariantId}: ${parseErr?.message}`,
+				);
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: parseErr?.message ?? "Invalid Data URL",
+					message: "Failed to parse Data URL",
+				};
+			}
+
+			const { mime, base64 } = parsed;
+			console.log(
+				`Processing Data URL for variant ${t.orderProductVariantId}: mime=${mime}, base64 length=${base64.length}`,
+			);
+			const approxDecodedBytes = Buffer.byteLength(base64, "base64");
+			if (approxDecodedBytes > MAX_BYTES) {
+				console.error(
+					`Data URL for variant ${t.orderProductVariantId} exceeds ${MAX_BYTES} bytes`,
+				);
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: `Data URL exceeds ${MAX_BYTES} bytes`,
+					message: "Data URL too large",
+				};
+			}
+
+			const buf = Buffer.from(base64, "base64");
+			if (mime !== "image/png" || !looksLikePng(buf)) {
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: "Expected PNG format",
+					message: "Invalid file format",
+				};
+			}
+
+			const hash = sha256(buf);
+			const key = `orders_${orderId}_${t.orderProductVariantId}_${hash}.png`;
+
+			return {
+				success: true as const,
+				data: {
+					orderProductVariantId: t.orderProductVariantId,
+					mime,
+					buf,
+					key,
+					hash,
+				},
+			};
+		}),
 	);
-	if (uploadError) {
+
+	// Early exit if any decode failed
+	const decodeErrors = decoded.filter((d) => !d.success);
+	if (decodeErrors.length > 0) {
 		return {
 			success: false,
-			error: uploadError.message,
-			message: "Failed to upload file",
+			error: "Some images failed validation",
+			message: decodeErrors
+				.map((e) => `${e.orderProductVariantId}: ${e.error}`)
+				.join("; "),
 		};
 	}
 
-	if (!uploadResult.success) {
+	const validItems = decoded.filter((d) => d.success).map((d) => d.data);
+
+	// 2) Upload in parallel
+	const uploadResults = await Promise.all(
+		validItems.map(async ({ buf, key, mime }) => {
+			const { data: uploadRes, error: uploadErr } = await tryCatch(
+				uploadBufferToS3(buf, key, mime),
+			);
+
+			if (uploadErr) {
+				console.error(
+					`Failed to upload file for key ${key}: ${uploadErr.message}`,
+				);
+				return {
+					success: false as const,
+					key,
+					error: uploadErr.message,
+					message: "Failed to upload file",
+				};
+			}
+			if (!uploadRes.success) {
+				console.error(`Upload failed for key ${key}: ${uploadRes.error}`);
+				return {
+					success: false as const,
+					key,
+					error: uploadRes.error ?? "Unknown upload error",
+					message: uploadRes.message ?? "Upload failed",
+				};
+			}
+			return {
+				success: true as const,
+				key,
+				fileUrl: uploadRes.data?.fileUrl,
+			};
+		}),
+	);
+
+	const failedUploads = uploadResults.filter((u) => !u.success);
+	if (failedUploads.length > 0) {
 		return {
 			success: false,
-			error: uploadResult.error,
-			message: "Failed to upload file",
+			error: "Some uploads failed",
+			message: failedUploads.map((u) => `${u.key}: ${u.error}`).join("; "),
 		};
 	}
 
-	const { error: orderError } = await tryCatch(
-		db
-			.update(ordersTable)
-			.set({
-				imageUrl: uploadResult.data?.fileUrl,
-			})
-			.where(eq(ordersTable.id, req.orderId)),
+	const keyToUrl = new Map<string, string>();
+	for (const u of uploadResults) {
+		if (u.success && u.fileUrl) keyToUrl.set(u.key, u.fileUrl);
+	}
+
+	// 3) DB updates in a transaction
+	const { error: txErr } = await tryCatch(
+		db.transaction(async (tx) => {
+			for (const item of validItems) {
+				const fileUrl = keyToUrl.get(item.key);
+				if (!fileUrl) {
+					console.error(`Missing URL for key ${item.key}`);
+					tx.rollback();
+					return;
+				}
+
+				const { error: updateErr } = await tryCatch(
+					tx
+						.update(orderProductVariantsTable)
+						.set({ imageUrl: fileUrl })
+						.where(
+							and(
+								eq(orderProductVariantsTable.orderId, orderId),
+								eq(orderProductVariantsTable.id, item.orderProductVariantId),
+							),
+						),
+				);
+				if (updateErr) {
+					console.error(
+						`DB update failed for variant ${item.orderProductVariantId}: ${updateErr.message}`,
+					);
+					tx.rollback();
+					return;
+				}
+			}
+		}),
 	);
 
-	if (orderError) {
+	if (txErr) {
 		return {
 			success: false,
-			error: orderError.message,
-			message: "Failed to update order with image URL",
+			error: txErr.message,
+			message: "Failed to update order with uploaded files",
 		};
 	}
 
 	return {
 		success: true,
-		message: "File uploaded and order updated successfully",
+		message: "Files uploaded and order updated successfully",
 	};
 };
