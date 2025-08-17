@@ -1,5 +1,6 @@
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
+import type { ImageElement, TextElement } from "@/shared/types/template";
 import {
 	ArrowDown,
 	ArrowDownToLine,
@@ -87,7 +88,7 @@ export function ZIndexControls({
 	onUpdate,
 	totalElement,
 }: {
-	element: LineElement | ShapeElement;
+	element: LineElement | ShapeElement | ImageElement | TextElement;
 	onUpdate: (updates: number) => void;
 	totalElement: number;
 }) {
