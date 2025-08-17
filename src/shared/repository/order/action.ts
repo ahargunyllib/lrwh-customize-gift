@@ -30,7 +30,9 @@ import type {
 	VerifyOrderByUsernameAndOrderNumberResponse,
 } from "./dto";
 
-export const getOrders = async (query: GetOrdersQuery) => {
+export const getOrders = async (
+	query: GetOrdersQuery,
+): Promise<ApiResponse<GetOrdersResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
 			.select()
