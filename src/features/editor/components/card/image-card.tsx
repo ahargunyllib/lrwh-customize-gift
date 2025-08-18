@@ -132,6 +132,43 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 									}
 								/>
 							</div>
+							{/* Position X & Y */}
+							<div className="grid grid-cols-2 gap-2">
+								<div className="space-y-0.5">
+									<Label className="text-xs">Position X</Label>
+									<Input
+										type="number"
+										value={img.position.x ?? 0}
+										onChange={(e) =>
+											updateImage(img.id, {
+												position: {
+													...img.position,
+													x: Number(e.target.value),
+												},
+											})
+										}
+										className="h-8"
+										onClick={(e) => e.stopPropagation()}
+									/>
+								</div>
+								<div className="space-y-0.5">
+									<Label className="text-xs">Position Y</Label>
+									<Input
+										type="number"
+										value={img.position.y ?? 0}
+										onChange={(e) =>
+											updateImage(img.id, {
+												position: {
+													...img.position,
+													y: Number(e.target.value),
+												},
+											})
+										}
+										className="h-8"
+										onClick={(e) => e.stopPropagation()}
+									/>
+								</div>
+							</div>
 							<div className="flex gap-1 items-center">
 								<Label className="text-xs w-20">Radius</Label>
 								<Input
@@ -177,6 +214,18 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 							onUpdate={(zIndex) => updateImage(img.id, { zIndex })}
 							totalElement={totalElements}
 						/>
+						<div className="flex items-center gap-2 mt-1">
+							<Switch
+								checked={img.draggable ?? false}
+								onCheckedChange={(val) =>
+									updateImage(img.id, { draggable: val })
+								}
+								id={`draggable-${img.id}`}
+							/>
+							<Label htmlFor={`draggable-${img.id}`} className="text-xs">
+								Draggable
+							</Label>
+						</div>
 					</div>
 				</div>
 			</CardContent>
