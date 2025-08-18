@@ -69,11 +69,11 @@ export const getTemplates = async (query?: {
 			texts: template.data?.texts || [],
 			shapes: template.data?.shapes || [],
 			lines: template.data?.lines || [],
-			layer: template.data?.layer || [
-				...template.data.images.map((i) => i.id),
-				...template.data.texts.map((t) => t.id),
-				...(template.data?.shapes?.map((s) => s.id) || []),
-				...(template.data?.lines?.map((l) => l.id) || []),
+			layer: template.data?.layer ?? [
+				...(template.data?.images?.map((i) => i.id) ?? []),
+				...(template.data?.texts?.map((t) => t.id) ?? []),
+				...(template.data?.shapes?.map((s) => s.id) ?? []),
+				...(template.data?.lines?.map((l) => l.id) ?? []),
 			],
 		};
 	});
@@ -133,11 +133,11 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 		texts: templates[0].data?.texts || [],
 		shapes: templates[0].data?.shapes || [],
 		lines: templates[0].data?.lines || [],
-		layer: templates[0].data?.layer || [
-			...templates[0].data.images.map((i) => i.id),
-			...templates[0].data.texts.map((t) => t.id),
-			...(templates[0].data?.shapes?.map((s) => s.id) || []),
-			...(templates[0].data?.lines?.map((l) => l.id) || []),
+		layer: templates[0].data?.layer ?? [
+			...(templates[0].data?.images?.map((i) => i.id) ?? []),
+			...(templates[0].data?.texts?.map((t) => t.id) ?? []),
+			...(templates[0].data?.shapes?.map((s) => s.id) ?? []),
+			...(templates[0].data?.lines?.map((l) => l.id) ?? []),
 		],
 	};
 
