@@ -508,11 +508,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					</ToggleGroup>
 				</div>
 
-				<ZIndexControls
-					element={txt}
-					onUpdate={(zIndex) => updateText(txt.id, { zIndex })}
-					totalElement={totalElements}
-				/>
+				<ZIndexControls element={txt} />
 
 				<Button
 					variant="destructive"

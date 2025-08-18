@@ -209,11 +209,7 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 								</Label>
 							</div>
 						</div>
-						<ZIndexControls
-							element={img}
-							onUpdate={(zIndex) => updateImage(img.id, { zIndex })}
-							totalElement={totalElements}
-						/>
+						<ZIndexControls element={img} />
 						<div className="flex items-center gap-2 mt-1">
 							<Switch
 								checked={img.draggable ?? false}

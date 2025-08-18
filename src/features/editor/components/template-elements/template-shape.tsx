@@ -1,6 +1,5 @@
 import { cn } from "@/shared/lib/utils";
 import type { ShapeElement } from "@/shared/types/element/shape";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useElementTransform } from "../../hooks/use-element-transform";
 
 interface Props extends TemplateElementBaseProps {
@@ -29,6 +28,7 @@ export interface TemplateElementBaseProps {
 	) => { x: number; y: number };
 	canvasWidth: number;
 	canvasHeight: number;
+	layerIndex: number;
 }
 
 export default function TemplateShape(props: Props) {
@@ -92,7 +92,7 @@ export default function TemplateShape(props: Props) {
 				width: scaledWidth,
 				height: scaledHeight,
 				pointerEvents: props.isPreview ? "none" : "auto",
-				zIndex: props.element.zIndex || 1,
+				zIndex: props.layerIndex,
 			}}
 		>
 			<div className="w-full h-full">

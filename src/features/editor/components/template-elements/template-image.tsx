@@ -29,6 +29,7 @@ interface TemplateImageProps {
 	isSnapping?: boolean;
 	canvasWidth?: number;
 	canvasHeight?: number;
+	layerIndex: number;
 }
 
 export default function TemplateImage({
@@ -43,6 +44,7 @@ export default function TemplateImage({
 	isSnapping = false,
 	canvasWidth = 0,
 	canvasHeight = 0,
+	layerIndex,
 }: TemplateImageProps) {
 	const [isDragOver, setIsDragOver] = useState(false);
 	const dragTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -290,7 +292,7 @@ export default function TemplateImage({
 			}`}
 			style={{
 				...containerStyle,
-				zIndex: image.zIndex,
+				zIndex: layerIndex,
 			}}
 			onClick={onClick}
 			onDragEnter={handleDragEnter}

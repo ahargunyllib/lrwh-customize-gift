@@ -8,8 +8,8 @@ import { useKeyboardDelete } from "@/features/editor/hooks/use-keyboard-delete";
 import { validateTextElement } from "@/shared/lib/elements";
 import type { TemplateData } from "@/shared/types/template";
 import { Printer } from "lucide-react";
-import { forwardRef, useEffect, useState } from "react";
 import type React from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAlignmentGuides } from "../hooks/use-allignment-guides";
 import { useAutoTextHeight } from "../hooks/use-auto-text-height";
@@ -30,6 +30,7 @@ interface EditorCanvasProps {
 	isCustomizing?: boolean;
 	initialTemplate?: TemplateData;
 	allowDelete?: boolean;
+	getLayerIndex: (id: string) => number;
 }
 
 const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
@@ -43,6 +44,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			isCustomizing = false,
 			initialTemplate,
 			allowDelete = true,
+			getLayerIndex,
 		},
 		ref,
 	) => {
@@ -117,6 +119,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 				texts: [],
 				shapes: [],
 				lines: [],
+				layer: [],
 			});
 		}, [
 			initialTemplate,
@@ -179,6 +182,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							isSnapping={isSnapping}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							layerIndex={getLayerIndex(image.id)}
 						/>
 					))}
 
@@ -217,6 +221,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							canvasHeight={template.height}
 							onResizeStart={handleTextResizeStart}
 							setTemplate={setTemplate}
+							layerIndex={getLayerIndex(text.id)}
 						/>
 					))}
 
@@ -241,6 +246,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							constrainToCanvas={constrainToCanvas}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							layerIndex={getLayerIndex(shape.id)}
+							isPreview={!allowDelete}
 						/>
 					))}
 
@@ -268,6 +275,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							layerIndex={getLayerIndex(line.id)}
+							isPreview={!allowDelete}
 						/>
 					))}
 					<div className="absolute -bottom-8 w-full text-center text-xs text-gray-500 flex items-center justify-center">

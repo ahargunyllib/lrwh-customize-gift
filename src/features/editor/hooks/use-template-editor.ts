@@ -23,6 +23,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			texts: [],
 			shapes: [],
 			lines: [],
+			layer: [],
 		},
 	);
 
@@ -39,6 +40,59 @@ export function useTemplateEditor(initial?: TemplateData) {
 			template.images.length,
 		],
 	);
+
+	const bringForwardLayer = (id: string) => {
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index === -1 || index === prev.layer.length - 1) return prev;
+			const layer = [...prev.layer];
+			[layer[index], layer[index + 1]] = [layer[index + 1], layer[index]];
+			return { ...prev, layer };
+		});
+	};
+
+	const bringToFrontLayer = (id: string) => {
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index === -1 || index === prev.layer.length - 1) return prev;
+			const layer = [...prev.layer];
+			const [target] = layer.splice(index, 1);
+			layer.push(target);
+			return { ...prev, layer };
+		});
+	};
+
+	const sendBackwardLayer = (id: string) => {
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index <= 0) return prev;
+			const layer = [...prev.layer];
+			[layer[index], layer[index - 1]] = [layer[index - 1], layer[index]];
+			return { ...prev, layer };
+		});
+	};
+
+	const sendToBackLayer = (id: string) => {
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index <= 0) return prev;
+			const layer = [...prev.layer];
+			const [target] = layer.splice(index, 1);
+			layer.unshift(target);
+			return { ...prev, layer };
+		});
+	};
+
+	const getLayerIndex = (id: string) => {
+		const idx = template.layer.indexOf(id);
+		return idx === -1 ? 0 : idx;
+	};
+
+	const getLayerLength = () => template.layer.length;
+
+	const isOnTopLayer = (id: string) =>
+		getLayerIndex(id) === getLayerLength() - 1;
+	const isOnBottomLayer = (id: string) => getLayerIndex(id) === 0;
 
 	const [activeElement, setActiveElement] = useState<string | null>(null);
 
@@ -105,7 +159,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 
 		setTemplate((p) => {
 			console.log(p);
-			return { ...p, shapes: [...p.shapes, shape] };
+			return { ...p, shapes: [...p.shapes, shape], layer: [...p.layer, id] };
 		});
 		setActiveElement(id);
 		return id;
@@ -122,7 +176,22 @@ export function useTemplateEditor(initial?: TemplateData) {
 		const line: LineElement = getLineConfig(type);
 		setTemplate((p) => ({
 			...p,
-			lines: [...p.lines, line],
+			lines: [
+				...p.lines,
+				{
+					...line,
+					id,
+					startPoint: {
+						x: template.width / 2 - 100,
+						y: template.height / 2 - 100,
+					},
+					endPoint: {
+						x: template.width / 2 + 100,
+						y: template.height / 2 + 100,
+					},
+				},
+			],
+			layer: [...p.layer, id],
 		}));
 		setActiveElement(id);
 		return id;
@@ -246,6 +315,17 @@ export function useTemplateEditor(initial?: TemplateData) {
 		updateImage,
 		updateText,
 		changePrintSize,
+
+		// Layer
+		bringForwardLayer,
+		sendBackwardLayer,
+		bringToFrontLayer,
+		sendToBackLayer,
+		getLayerIndex,
+		getLayerLength,
+		isOnTopLayer,
+		isOnBottomLayer,
+
 		bringForward,
 		sendBackward,
 		bringToFront,

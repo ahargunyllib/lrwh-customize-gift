@@ -81,6 +81,7 @@ export interface TemplateData {
 	texts: TextElement[];
 	shapes: ShapeElement[];
 	lines: LineElement[];
+	layer: string[];
 }
 
 // export type PrintSize = "10x20" | "15x20" | "20x30";

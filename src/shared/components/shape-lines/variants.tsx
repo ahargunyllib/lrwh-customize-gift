@@ -87,7 +87,6 @@ export const lineVariants: LineVariant[] = [
 		preview: (
 			<div className="flex items-center">
 				<div className="w-10 h-0.5 bg-gray-700" />
-				<div className="w-0 h-0 border-l-[6px] border-l-gray-700 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent" />
 			</div>
 		),
 	},
