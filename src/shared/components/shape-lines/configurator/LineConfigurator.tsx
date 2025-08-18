@@ -49,11 +49,7 @@ export default function LineConfigurator({
 				opacity={line.opacity}
 				onChange={(opacity) => onUpdate({ opacity })}
 			/>
-			<ZIndexControls
-				element={line}
-				onUpdate={(zIndex) => onUpdate({ zIndex })}
-				totalElement={totalElement}
-			/>
+			<ZIndexControls element={line} />
 			<LineTipControls
 				startTip={line.startTip}
 				endTip={line.endTip}

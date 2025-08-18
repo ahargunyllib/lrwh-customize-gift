@@ -172,11 +172,7 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 								</Label>
 							</div>
 						</div>
-						<ZIndexControls
-							element={img}
-							onUpdate={(zIndex) => updateImage(img.id, { zIndex })}
-							totalElement={totalElements}
-						/>
+						<ZIndexControls element={img} />
 					</div>
 				</div>
 			</CardContent>

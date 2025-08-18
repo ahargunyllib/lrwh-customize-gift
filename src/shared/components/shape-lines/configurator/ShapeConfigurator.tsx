@@ -73,20 +73,15 @@ export default function ShapeConfigurator({
 				opacity={shape.opacity}
 				onChange={(opacity) => onUpdate({ opacity })}
 			/>
-			<ZIndexControls
-				element={shape}
-				onUpdate={(zIndex) => onUpdate({ zIndex })}
-			/>
+			<ZIndexControls element={shape} />
 		</div>
 	);
 }
 
 export function ZIndexControls({
 	element,
-	onUpdate,
 }: {
 	element: LineElement | ShapeElement | ImageElement | TextElement;
-	onUpdate: (updates: number) => void;
 }) {
 	const {
 		bringForwardLayer,
