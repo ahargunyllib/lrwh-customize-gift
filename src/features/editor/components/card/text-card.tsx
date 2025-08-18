@@ -125,6 +125,72 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						/>
 					</div>
 				</div>
+				{/* Position X & Y */}
+				<div className="grid grid-cols-2 gap-2">
+					<div className="space-y-0.5">
+						<Label className="text-xs">Position X</Label>
+						<Input
+							type="number"
+							value={txt.position.x ?? 0}
+							onChange={(e) =>
+								updateText(txt.id, {
+									position: { ...txt.position, x: Number(e.target.value) },
+								})
+							}
+							className="h-8"
+							onClick={(e) => e.stopPropagation()}
+						/>
+					</div>
+					<div className="space-y-0.5">
+						<Label className="text-xs">Position Y</Label>
+						<Input
+							type="number"
+							value={txt.position.y ?? 0}
+							onChange={(e) =>
+								updateText(txt.id, {
+									position: { ...txt.position, y: Number(e.target.value) },
+								})
+							}
+							className="h-8"
+							onClick={(e) => e.stopPropagation()}
+						/>
+					</div>
+				</div>
+				{/* Font Weight */}
+				<div className="space-y-0.5">
+					<Label className="text-xs">Font Weight</Label>
+					<Select
+						value={
+							txt.style.fontWeight === "normal"
+								? "400"
+								: txt.style.fontWeight === "bold"
+									? "700"
+									: (txt.style.fontWeight?.toString() ?? "400")
+						}
+						onValueChange={(value) =>
+							updateText(txt.id, {
+								style: {
+									...txt.style,
+									fontWeight: value,
+								},
+							})
+						}
+					>
+						<SelectTrigger className="h-8 w-full">
+							<SelectValue placeholder="Font Weight" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="100">Thin</SelectItem>
+							<SelectItem value="200">Extra Light</SelectItem>
+							<SelectItem value="300">Light</SelectItem>
+							<SelectItem value="400">Normal</SelectItem>
+							<SelectItem value="500">Medium</SelectItem>
+							<SelectItem value="600">Semi Bold</SelectItem>
+							<SelectItem value="700">Bold</SelectItem>
+							<SelectItem value="800">Extra Bold</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 
 				{/* Color */}
 				<div className="space-y-0.5 col-span-2">
@@ -395,32 +461,6 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							</div>
 						</>
 					)}
-				</div>
-
-				{/* Centering */}
-				<div className="grid grid-cols-2 gap-2 mt-2">
-					<div className="flex items-center gap-2">
-						<Label className="text-xs">Center X</Label>
-						<Switch
-							checked={txt.style.centerX}
-							onCheckedChange={(val) =>
-								updateText(txt.id, {
-									style: { ...txt.style, centerX: val },
-								})
-							}
-						/>
-					</div>
-					<div className="flex items-center gap-2">
-						<Label className="text-xs">Center Y</Label>
-						<Switch
-							checked={txt.style.centerY}
-							onCheckedChange={(val) =>
-								updateText(txt.id, {
-									style: { ...txt.style, centerY: val },
-								})
-							}
-						/>
-					</div>
 				</div>
 
 				{/* Editable (Draggable false) */}
