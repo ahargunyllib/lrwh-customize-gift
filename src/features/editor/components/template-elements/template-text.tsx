@@ -258,7 +258,7 @@ export default function TemplateText({
 		boxSizing: "border-box",
 		clipPath: getClipPath(), // Apply cropping
 		overflow: "hidden", // Ensure content doesn't overflow
-		zIndex: text.zIndex,
+		zIndex: layerIndex,
 	});
 
 	const getTextStyle = (): React.CSSProperties => ({
@@ -284,7 +284,7 @@ export default function TemplateText({
 		boxSizing: "border-box",
 		textStroke: textStroke || WebkitTextStroke || undefined,
 		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
-		zIndex: text.zIndex,
+		zIndex: layerIndex,
 	});
 
 	const getDisplayStyle = (): React.CSSProperties => ({
@@ -309,7 +309,7 @@ export default function TemplateText({
 		overflow: "hidden",
 		textStroke: textStroke || WebkitTextStroke || undefined,
 		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
-		zIndex: text.zIndex,
+		zIndex: layerIndex,
 	});
 
 	const handleMouseDown = (e: React.MouseEvent) => {
@@ -546,7 +546,7 @@ export default function TemplateText({
 						autoFocus
 						style={{
 							...getTextStyle(),
-							zIndex: text.zIndex,
+							zIndex: layerIndex,
 							display: curved ? "none" : "block", // Hide textarea when curved
 						}}
 					/>
