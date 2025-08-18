@@ -30,7 +30,9 @@ import type {
 	VerifyOrderByUsernameAndOrderNumberResponse,
 } from "./dto";
 
-export const getOrders = async (query: GetOrdersQuery) => {
+export const getOrders = async (
+	query: GetOrdersQuery,
+): Promise<ApiResponse<GetOrdersResponse>> => {
 	const { data: orders, error } = await tryCatch(
 		db
 			.select()
@@ -128,8 +130,8 @@ export const getOrders = async (query: GetOrdersQuery) => {
 			username: order.username,
 			createdAt: order.createdAt,
 			products: variants.map((variant) => ({
-				id: variant.id,
-				name: variant.name,
+				id: variant.product.id,
+				name: variant.product.name,
 				productVariant: {
 					id: variant.id,
 					name: variant.name,

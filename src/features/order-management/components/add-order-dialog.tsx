@@ -2,6 +2,7 @@ import { Button } from "@/shared/components/ui/button";
 import {
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/shared/components/ui/dialog";
@@ -132,9 +133,11 @@ export default function AddOrderDialog({ products }: Props) {
 							/>
 						))}
 					</div>
-					<Button type="submit">
-						{form.isLoading ? "Creating..." : "Create Order"}
-					</Button>
+					<DialogFooter>
+						<Button type="submit">
+							{form.isLoading ? "Creating..." : "Create Order"}
+						</Button>
+					</DialogFooter>
 				</form>
 			</Form>
 		</DialogContent>

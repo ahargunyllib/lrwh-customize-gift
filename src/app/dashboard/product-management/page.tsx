@@ -12,10 +12,10 @@ export default function Page() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Order Management</CardTitle>
+				<CardTitle>Product Management</CardTitle>
 				<CardDescription>
-					Manage your orders efficiently with our comprehensive order management
-					system.
+					Manage your products efficiently with our comprehensive product
+					management system.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
