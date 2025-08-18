@@ -37,6 +37,7 @@ interface TemplateTextProps {
 		posY: number,
 	) => void;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
+	layerIndex: number;
 }
 
 export default function TemplateText({
@@ -56,6 +57,7 @@ export default function TemplateText({
 	canvasHeight = 0,
 	onResizeStart,
 	setTemplate,
+	layerIndex,
 }: TemplateTextProps) {
 	const {
 		backgroundColor,

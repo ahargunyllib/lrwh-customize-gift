@@ -182,6 +182,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							isSnapping={isSnapping}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							layerIndex={getLayerIndex(image.id)}
 						/>
 					))}
 
@@ -220,6 +221,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							canvasHeight={template.height}
 							onResizeStart={handleTextResizeStart}
 							setTemplate={setTemplate}
+							layerIndex={getLayerIndex(text.id)}
 						/>
 					))}
 
