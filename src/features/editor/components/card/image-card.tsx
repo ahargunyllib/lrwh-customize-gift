@@ -21,6 +21,19 @@ interface Props {
 	onSelect: () => void;
 }
 
+/**
+ * Renders an editor card for a single image element, exposing controls to edit its source,
+ * size, position, radius, rotation, grayscale, draggable state, and to delete the element.
+ *
+ * The component reads and updates the image via the template context (updateImage, deleteElement, etc.).
+ * Clicking the card invokes `onSelect` to mark the element as selected; when `selected` is true a visual ring is shown.
+ * The "Replace" action opens a file picker and, if an image is chosen, reads it as a data URL and updates the image `src`.
+ *
+ * @param img - The image element being edited (properties like src, width, height, position, borderRadius, rotate, grayscale, draggable are used).
+ * @param selected - Whether this card is currently selected; toggles the selection ring.
+ * @param onSelect - Callback invoked when the card is clicked to select it.
+ * @returns A JSX element representing the image editor card.
+ */
 export default function ImageCard({ img, selected, onSelect }: Props) {
 	const {
 		updateImage,

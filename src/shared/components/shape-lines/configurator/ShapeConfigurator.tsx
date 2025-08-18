@@ -20,6 +20,17 @@ import {
 	SizeControls,
 } from "../controls";
 
+/**
+ * Renders a set of controls for editing properties of a shape element and forwards incremental updates.
+ *
+ * The component shows controls for position, size, border radius, rotation, fill/border colors,
+ * border width, opacity, and z-index. User interactions produce partial updates that are passed
+ * to `onUpdate` so the caller can merge and persist changes.
+ *
+ * @param shape - The ShapeElement being edited.
+ * @param onUpdate - Callback invoked with partial ShapeElement updates (e.g., `{ position }`, `{ width, height }`, `{ borderRadius }`).
+ * @returns A React element containing the configured controls.
+ */
 export default function ShapeConfigurator({
 	shape,
 	onUpdate,
@@ -78,6 +89,15 @@ export default function ShapeConfigurator({
 	);
 }
 
+/**
+ * UI controls for adjusting an element's z-order within the template layer stack.
+ *
+ * Renders four buttons to move the provided element forward, backward, to front, or to back.
+ * Each control is disabled when the element is already at the corresponding extreme (top/bottom).
+ *
+ * @param element - The element (LineElement | ShapeElement | ImageElement | TextElement) whose layer position will be changed.
+ * @returns A React element containing the Z-index controls.
+ */
 export function ZIndexControls({
 	element,
 }: {

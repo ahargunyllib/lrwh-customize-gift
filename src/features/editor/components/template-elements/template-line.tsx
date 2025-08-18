@@ -98,6 +98,19 @@ function getTipSize(tip: string, strokeWidth: number): number {
 	return 5;
 }
 
+/**
+ * Render an interactive, styled line element with optional end caps and draggable endpoints.
+ *
+ * Renders an SVG line between element.startPoint and element.endPoint, optionally trimmed to accommodate end tips (arrow, circle, rounded, etc.). The line supports:
+ * - Dragging the whole line (updates both start and end points via the onUpdate callback).
+ * - Dragging individual endpoints to reposition start or end (updates via onUpdate).
+ * - Click to toggle active state via props.toggleActive.
+ * - Visual selection handles and a dashed selection overlay when props.isElementActive is true.
+ *
+ * The component respects props.scale when computing tip sizes and rendered dimensions, uses props.layerIndex for stacking order, and defaults strokeColor/strokeWidth/startTip/endTip when missing on the element.
+ *
+ * @param props - Component props (expects an element with startPoint/endPoint, an onUpdate callback that accepts partial LineElement updates, and UI flags such as isElementActive, isPreview, toggleActive, scale, and layerIndex).
+ */
 export default function TemplateLine(props: Props) {
 	const { startLineDrag, startEndpointDrag } = useLineTransform({
 		start: props.element.startPoint,

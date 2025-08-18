@@ -11,6 +11,34 @@ import { useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getLineConfig } from "../utils/line-config";
 
+/**
+ * React hook that manages editable template state and provides helpers for creating,
+ * updating, deleting, and ordering template elements (images, texts, shapes, lines).
+ *
+ * The hook stores a TemplateData object (with an explicit `layer: string[]` used for
+ * ordering shapes and lines) and the id of the currently active element. If `initial`
+ * is omitted, a default template is created. Element creation helpers (addImage, addText,
+ * addShape, addLine) return the created element id and set it as active. Update helpers
+ * merge partial payloads into matching elements. Ordering helpers exist both for cross-type
+ * ordering of images/texts and for layer-based ordering of shapes/lines.
+ *
+ * @param initial - Optional initial TemplateData to seed the editor state; when absent a
+ *                  default template (with generated id and default dimensions/background)
+ *                  is created.
+ * @returns An object exposing:
+ *   - template, setTemplate: the current TemplateData state and setter.
+ *   - activeElement, setActiveElement: id of the selected element and setter.
+ *   - addImage, addText, addShape, addLine: creators that return the new element id.
+ *   - updateShape, updateLine, updateImage, updateText: partial-update helpers.
+ *   - deleteElement: removes an element by id from all element arrays.
+ *   - changePrintSize: scales the template to provided dimensions (interpreted in cm).
+ *   - Layer helpers for shapes/lines: bringForwardLayer, bringToFrontLayer,
+ *     sendBackwardLayer, sendToBackLayer, getLayerIndex, getLayerLength,
+ *     isOnTopLayer, isOnBottomLayer.
+ *   - Cross-element ordering helpers for images/texts: bringForward, sendBackward,
+ *     bringToFront, sendToBack.
+ *   - totalElements: memoized total count of shapes + lines + texts + images.
+ */
 export function useTemplateEditor(initial?: TemplateData) {
 	const [template, setTemplate] = useState<TemplateData>(
 		initial ?? {

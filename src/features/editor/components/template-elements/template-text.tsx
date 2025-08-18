@@ -40,6 +40,18 @@ interface TemplateTextProps {
 	layerIndex: number;
 }
 
+/**
+ * Renders and manages a text element on a canvas, supporting display, editing, curved layout, dragging, snapping, cropping, and resizing.
+ *
+ * This React client component presents a text element (straight or curved) positioned on a canvas-like surface. It:
+ * - Renders editable textarea when `isEditing` is true (hidden for curved text) and a display view otherwise (SVG textPath for curved text).
+ * - Computes and updates element height using a hidden textarea (for straight text) or a curve-based minimum (for curved text) via the provided `setTemplate` updater.
+ * - Enables dragging when `text.draggable` is true: while dragging it dispatches a CustomEvent named `"elementMove"` with { id, type: "text", position } which consumers can listen to; optional snapping is applied via `getSnapPosition` when `isSnapping` is true and movement is slow.
+ * - Emits resize start through `onResizeStart` when a resize handle is pressed (adds a temporary `data-resizing` marker to the handle element while resizing).
+ * - Applies an inset clip-path to visually crop portions of the element that lie outside the canvas bounds (based on `canvasWidth` / `canvasHeight`).
+ *
+ * Note: `layerIndex` is accepted by the component API but is not used by the current implementation.
+ */
 export default function TemplateText({
 	text,
 	isActive,

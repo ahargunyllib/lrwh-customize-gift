@@ -32,6 +32,32 @@ interface TemplateImageProps {
 	layerIndex: number;
 }
 
+/**
+ * Renders an interactive, draggable, and optionally resizable image element inside the canvas area.
+ *
+ * The component displays an image using the supplied ImageElement data and supports:
+ * - Drag-and-drop file replacement (dispatches a `imageReplace` CustomEvent with `{ id, src }` when an image file is dropped).
+ * - Pointer dragging to move the element (dispatches an `elementMove` CustomEvent with `{ id, type: "image", position }` while moving).
+ * - Optional snapping via `getSnapPosition` when `isSnapping` is enabled.
+ * - Optional resize handles when `isCustomizing` is true (invokes `onResizeStart` when a handle is pressed).
+ * - Cropping via `clip-path` when the image extends outside the provided canvas dimensions, and optional centering within the canvas.
+ *
+ * Only visual/interaction behavior is handled here; actual state updates should be handled by listeners for the emitted custom events or by parent callbacks.
+ *
+ * @param image - Image element data (position, size, rotation, src, borderRadius, draggable, grayscale, centering flags, id).
+ * @param isActive - If true, show an active selection ring.
+ * @param onClick - Click handler invoked when the element is clicked (also called after a successful drop).
+ * @param scale - Global scale factor applied to position and size (default: 1).
+ * @param isCustomizing - When true, render resize handles (default: false).
+ * @param onResizeStart - Callback invoked when a resize handle is pressed: (event, id, direction, width, height).
+ * @param getSnapPosition - Optional snapping helper used during drag: (position, width, height) => snappedPosition.
+ * @param isSnapping - Enable snapping behavior when dragging (default: false).
+ * @param canvasWidth - Canvas width used for clipping and centering (default: 0).
+ * @param canvasHeight - Canvas height used for clipping and centering (default: 0).
+ * @param layerIndex - Z-index used to control stacking order for this element.
+ *
+ * @returns The JSX element for the template image.
+ */
 export default function TemplateImage({
 	image,
 	isActive,

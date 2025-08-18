@@ -58,6 +58,17 @@ export const useTemplateContext = () => {
 	return ctx;
 };
 
+/**
+ * Renders the template editing UI for a given template size and wires editor state into context.
+ *
+ * Provides the editor canvas, sidebar, zoom/gesture controls, and (when an `orderProductVariantId` is supplied)
+ * a save/preview flow via the ConfirmationDialog. Supplies editor state through TemplateCtx so child components
+ * (EditorCanvas, EditorSidebar, ImageMobileEditor, etc.) can access and mutate the active template.
+ *
+ * @param original - The template data to edit; its width/height define the selected editing size.
+ * @param orderProductVariantId - Optional product-variant ID that enables the save/preview dialog flow when present.
+ * @returns The TemplateEditor React element rendering the editing workspace and related UI.
+ */
 export default function TemplateEditor({
 	original,
 	orderProductVariantId,

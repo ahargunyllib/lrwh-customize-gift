@@ -31,6 +31,25 @@ export interface TemplateElementBaseProps {
 	layerIndex: number;
 }
 
+/**
+ * Renders an interactive shape (rectangle, circle, or triangle) with transform controls.
+ *
+ * This component displays a shape based on `props.element` and provides drag, resize and rotate
+ * interactions (with grid/resize/rotation snapping enabled). Visual handles for resizing and
+ * a rotate handle are shown when the element is active and not in preview mode. The element is
+ * positioned and rotated according to the element's properties and the provided `scale`, and
+ * the container's z-index is driven by `props.layerIndex`.
+ *
+ * Side effects:
+ * - Mutates `props.element.position`, `props.element.width`, `props.element.height`, and
+ *   `props.element.rotation` in response to user interactions (drag, resize, rotate).
+ *
+ * Interaction notes:
+ * - When `isPreview` is true pointer events are disabled and interaction handlers are not attached.
+ * - Clicking (when not preview) stops propagation and calls `props.toggleActive`.
+ * - Snapping and canvas constraints are provided via `props.getSnapPosition` and
+ *   `props.constrainToCanvas`.
+ */
 export default function TemplateShape(props: Props) {
 	const {
 		position,

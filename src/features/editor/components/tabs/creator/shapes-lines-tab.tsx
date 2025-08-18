@@ -127,6 +127,22 @@ function LinesTabContent() {
 	);
 }
 
+/**
+ * Renders the "Shapes" tab UI for managing shapes within a template.
+ *
+ * Reads template state and actions from the template context (shapes, updateShape,
+ * deleteElement, activeElement, setActiveElement) and renders:
+ * - A ShapeSelector for adding new shapes.
+ * - A section header showing the count of added shapes when present.
+ * - An Accordion listing each shape with an ElementAccordionTrigger (icon, label,
+ *   color swatch, delete control) and a ShapeConfigurator for editing that shape.
+ *
+ * The accordion is single-select and driven by `activeElement`; selecting an item
+ * sets it as the active element. Updates and deletes are forwarded to the context
+ * handlers with the relevant shape id.
+ *
+ * @returns The JSX element for the Shapes tab.
+ */
 function ShapeTabContent() {
 	const {
 		template,

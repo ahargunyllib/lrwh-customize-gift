@@ -39,6 +39,19 @@ interface Props {
 	onSelect: () => void;
 }
 
+/**
+ * Renders an editor card for a single text element inside the template editor.
+ *
+ * The card shows controls to edit the text content and style (font family, size,
+ * weight, color, outline, letter spacing, rotation, curved text settings, alignment),
+ * position, draggable state, z-index and provides a delete action. Interactions call
+ * into the template context (e.g., updateText, deleteElement) to persist changes.
+ *
+ * @param txt - The TextElement being edited (contains content, style, position, rotate, draggable, id, etc.).
+ * @param selected - Whether this text element is currently selected (applies focused ring styling).
+ * @param onSelect - Callback invoked when the card is clicked to select this element.
+ * @returns The JSX element for the text editor card.
+ */
 export default function TextCard({ txt, selected, onSelect }: Props) {
 	const {
 		updateText,

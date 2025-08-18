@@ -52,6 +52,14 @@ function Provider({
 	);
 }
 
+/**
+ * Top-level template creation UI that provides editor context and renders the editor layout.
+ *
+ * Wraps children in the template Provider (optionally loading an existing template by id)
+ * and composes the main editor UI: a closable sidebar and the canvas area.
+ *
+ * @param templateId - Optional id of a template to load into the editor on mount.
+ */
 export default function TemplateCreator({
 	templateId,
 }: { templateId?: string }) {

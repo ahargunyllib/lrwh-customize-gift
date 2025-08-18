@@ -28,6 +28,22 @@ import { useRouter } from "next/navigation";
 import TemplateLine from "../components/template-elements/template-line";
 import TemplateShape from "../components/template-elements/template-shape";
 
+/**
+ * Renders the "Select a Template" client-side React component used to browse, preview, and choose custom templates.
+ *
+ * Displays a responsive grid of templates fetched from the templates query, showing a scaled visual preview for each template and offering actions to open or edit a template in the editor. When the user is authenticated, additional controls are shown: a "Create New" button, a user menu with dashboard and logout actions, and the ability to edit templates. Selecting "Use Template" or clicking a template's primary action navigates to the editor for that template via the router.
+ *
+ * Navigation and authentication:
+ * - Uses the router to navigate to editor and edit routes (e.g., `/editor/:id`, `/editor/:id/edit`, `/editor/create`).
+ * - Shows authenticated-only controls when session indicates the user is logged in.
+ * - Triggers the logout mutation from the logout hook for the logout action.
+ *
+ * UI details:
+ * - Previews are rendered at a fixed preview scale and include background, images, and simplified text placeholders.
+ * - Template edit/use actions are exposed via a dialog per template card.
+ *
+ * @returns A React element containing the template selection UI.
+ */
 export default function TemplateSelector() {
 	const router = useRouter();
 	// const [selectedSize, setSelectedSize] = useState(printSizes[1]);

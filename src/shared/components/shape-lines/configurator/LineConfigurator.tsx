@@ -16,6 +16,18 @@ import { OpacityControl } from "../controls";
 import ColorPicker from "../controls/ColorPicker";
 import { ZIndexControls } from "./ShapeConfigurator";
 
+/**
+ * UI for configuring a LineElement's visual and positional properties.
+ *
+ * Renders controls to edit the line's start/end positions, color, opacity, z-index,
+ * tip types, and stroke width. User changes are propagated via the `onUpdate`
+ * callback as partial updates to the provided `line`.
+ *
+ * @param line - The LineElement being edited; initial control values are derived from this object.
+ * @param onUpdate - Callback invoked with partial updates to the LineElement when any control changes.
+ * @param totalElement - Currently unused; preserved for compatibility with the configurator props shape.
+ * @returns A JSX element containing the configured controls.
+ */
 export default function LineConfigurator({
 	line,
 	onUpdate,
