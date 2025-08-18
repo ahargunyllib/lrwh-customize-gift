@@ -42,47 +42,51 @@ export function useTemplateEditor(initial?: TemplateData) {
 	);
 
 	const bringForwardLayer = (id: string) => {
-		const index = template.layer.findIndex((l) => l === id);
-		if (index === -1 || index === template.layer.length - 1) return;
-		const reordered = [...template.layer];
-		[reordered[index], reordered[index + 1]] = [
-			reordered[index + 1],
-			reordered[index],
-		];
-		setTemplate((p) => ({ ...p, layer: reordered }));
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index === -1 || index === prev.layer.length - 1) return prev;
+			const layer = [...prev.layer];
+			[layer[index], layer[index + 1]] = [layer[index + 1], layer[index]];
+			return { ...prev, layer };
+		});
 	};
 
 	const bringToFrontLayer = (id: string) => {
-		const index = template.layer.findIndex((l) => l === id);
-		if (index === -1 || index === template.layer.length - 1) return;
-		const reordered = [...template.layer];
-		const [target] = reordered.splice(index, 1);
-		reordered.push(target);
-		setTemplate((p) => ({ ...p, layer: reordered }));
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index === -1 || index === prev.layer.length - 1) return prev;
+			const layer = [...prev.layer];
+			const [target] = layer.splice(index, 1);
+			layer.push(target);
+			return { ...prev, layer };
+		});
 	};
 
 	const sendBackwardLayer = (id: string) => {
-		const index = template.layer.findIndex((l) => l === id);
-		if (index <= 0) return;
-		const reordered = [...template.layer];
-		[reordered[index], reordered[index - 1]] = [
-			reordered[index - 1],
-			reordered[index],
-		];
-		setTemplate((p) => ({ ...p, layer: reordered }));
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index <= 0) return prev;
+			const layer = [...prev.layer];
+			[layer[index], layer[index - 1]] = [layer[index - 1], layer[index]];
+			return { ...prev, layer };
+		});
 	};
 
 	const sendToBackLayer = (id: string) => {
-		const index = template.layer.findIndex((l) => l === id);
-		if (index <= 0) return;
-		const reordered = [...template.layer];
-		const [target] = reordered.splice(index, 1);
-		reordered.unshift(target);
-		setTemplate((p) => ({ ...p, layer: reordered }));
+		setTemplate((prev) => {
+			const index = prev.layer.findIndex((l) => l === id);
+			if (index <= 0) return prev;
+			const layer = [...prev.layer];
+			const [target] = layer.splice(index, 1);
+			layer.unshift(target);
+			return { ...prev, layer };
+		});
 	};
 
-	const getLayerIndex = (id: string) =>
-		template.layer.findIndex((l) => l === id);
+	const getLayerIndex = (id: string) => {
+		const idx = template.layer.indexOf(id);
+		return idx === -1 ? 0 : idx;
+	};
 
 	const getLayerLength = () => template.layer.length;
 
