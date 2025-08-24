@@ -11,6 +11,7 @@ import { Printer } from "lucide-react";
 import type React from "react";
 import { forwardRef, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useImageAdjust } from "../hooks/use-adjust-image";
 import { useAlignmentGuides } from "../hooks/use-allignment-guides";
 import { useAutoTextHeight } from "../hooks/use-auto-text-height";
 import { useResizeImage } from "../hooks/use-resize-image";
@@ -49,7 +50,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 		ref,
 	) => {
 		const [editingTextId, setEditingTextId] = useState<string | null>(null);
-
+		const { handleImageAdjust } = useImageAdjust({ template, setTemplate });
 		useImageReplace(setTemplate);
 		useElementCenter(setTemplate);
 		useElementMove(setTemplate);
@@ -129,6 +130,17 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			// template.height,
 		]);
 
+		useEffect(() => {
+			const handleImageAdjustEvent = (e: Event) =>
+				handleImageAdjust(e as CustomEvent);
+
+			document.addEventListener("imageAdjust", handleImageAdjustEvent);
+
+			return () => {
+				document.removeEventListener("imageAdjust", handleImageAdjustEvent);
+			};
+		}, [handleImageAdjust]);
+
 		return (
 			<>
 				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
@@ -182,6 +194,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							isSnapping={isSnapping}
 							canvasWidth={template.width}
 							canvasHeight={template.height}
+							// setTemplate={setTemplate}
 							layerIndex={getLayerIndex(image.id)}
 						/>
 					))}

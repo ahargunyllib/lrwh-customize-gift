@@ -8,18 +8,20 @@ export interface Position {
 
 export interface ImageElement {
 	id: string;
-	type: "image";
 	src: string;
-	position: Position;
+	type: "image";
+	position: { x: number; y: number };
 	width: number;
 	height: number;
-	draggable?: boolean;
-	centerX?: boolean;
-	centerY?: boolean;
+	rotate?: number;
+	zIndex: number;
+	draggable: boolean;
 	borderRadius?: number;
 	grayscale?: boolean;
-	zIndex?: number;
-	rotate?: number;
+	imageOffset?: { x: number; y: number };
+	imageScale?: number;
+	centerX?: boolean;
+	centerY?: boolean;
 }
 
 export interface TextElement {
