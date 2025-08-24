@@ -108,7 +108,11 @@ export function useTemplateEditor(initial?: TemplateData) {
 			height: 200,
 			draggable: true,
 		};
-		setTemplate((p) => ({ ...p, images: [...p.images, img] }));
+		setTemplate((p) => ({
+			...p,
+			images: [...p.images, img],
+			layer: [...p.layer, id],
+		}));
 		setActiveElement(id);
 		return id;
 	};
@@ -133,7 +137,11 @@ export function useTemplateEditor(initial?: TemplateData) {
 				lineHeight: "1.2",
 			},
 		};
-		setTemplate((p) => ({ ...p, texts: [...p.texts, txt] }));
+		setTemplate((p) => ({
+			...p,
+			texts: [...p.texts, txt],
+			layer: [...p.layer, id],
+		}));
 		setActiveElement(id);
 		return id;
 	};

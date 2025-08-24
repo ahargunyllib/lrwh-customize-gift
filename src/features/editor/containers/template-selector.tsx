@@ -24,18 +24,38 @@ import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
 import type { TemplateData } from "@/shared/types/template";
 import { PlusCircle, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import TemplateLine from "../components/template-elements/template-line";
 import TemplateShape from "../components/template-elements/template-shape";
 
 export default function TemplateSelector() {
 	const router = useRouter();
+
+	const searchParams = useSearchParams();
+	const currentPage = Number(searchParams.get("page")) || 1;
+	const [page, setPage] = useState(currentPage);
+
 	// const [selectedSize, setSelectedSize] = useState(printSizes[1]);
-	const { data: res, isLoading, error } = useGetTemplatesQuery();
+	const { data: res, isLoading, error } = useGetTemplatesQuery({ page });
 	const session = useSessionQuery();
 	const { mutate: logout } = useLogoutMutation();
 
 	const customTemplates = res?.data?.templates || [];
+	const totalPages = Number(res?.data?.pagination?.total_page) || 1;
+
+	// Keep page in sync with URL
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		const params = new URLSearchParams(searchParams.toString());
+		params.set("page", page.toString());
+		router.push(`?${params.toString()}`);
+	}, [page, router]);
+
+	useEffect(() => {
+		const next = Number(searchParams.get("page")) || 1;
+		setPage((prev) => (prev !== next ? next : prev));
+	}, [searchParams]);
 
 	// const handleSizeChange = (size: string) => {
 	// 	const newSize = printSizes.find((s) => s.name === size);
@@ -266,6 +286,25 @@ export default function TemplateSelector() {
 						</CardContent>
 					</Card>
 				))}
+			</div>
+			<div className="flex justify-center items-center gap-4 mt-8">
+				<Button
+					variant="outline"
+					disabled={page <= 1}
+					onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+				>
+					Previous
+				</Button>
+				<span>
+					Page {page} of {totalPages}
+				</span>
+				<Button
+					variant="outline"
+					disabled={page >= totalPages}
+					onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+				>
+					Next
+				</Button>
 			</div>
 		</div>
 	);
