@@ -42,7 +42,7 @@ export default function TemplateSelector() {
 	const { mutate: logout } = useLogoutMutation();
 
 	const customTemplates = res?.data?.templates || [];
-	const totalPages = res?.data?.pagination.total_page || 1;
+	const totalPages = Number(res?.data?.pagination?.total_page) || 1;
 
 	// Keep page in sync with URL
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -51,6 +51,11 @@ export default function TemplateSelector() {
 		params.set("page", page.toString());
 		router.push(`?${params.toString()}`);
 	}, [page, router]);
+
+	useEffect(() => {
+		const next = Number(searchParams.get("page")) || 1;
+		setPage((prev) => (prev !== next ? next : prev));
+	}, [searchParams]);
 
 	// const handleSizeChange = (size: string) => {
 	// 	const newSize = printSizes.find((s) => s.name === size);
