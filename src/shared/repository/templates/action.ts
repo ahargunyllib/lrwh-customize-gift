@@ -224,3 +224,26 @@ export const updateTemplate = async (
 		message: "Template updated successfully",
 	};
 };
+
+export const deleteTemplate = async (id: TemplateEntity["id"]) => {
+	const queryBuilder = sql`
+    delete from templates
+    where id = ${id}
+  `;
+
+	const { error } = await tryCatch(db.execute(queryBuilder));
+	if (error) {
+		console.error(error);
+		return {
+			success: false,
+			error: error.message,
+			message: "Failed to delete template",
+		};
+	}
+
+	return {
+		success: true,
+		data: null,
+		message: "Template deleted successfully",
+	};
+};

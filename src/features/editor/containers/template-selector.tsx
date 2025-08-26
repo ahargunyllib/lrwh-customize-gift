@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/shared/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -20,12 +20,16 @@ import {
 import { getTemplateForSize } from "@/shared/lib/template";
 import { useLogoutMutation } from "@/shared/repository/auth/query";
 import { useSessionQuery } from "@/shared/repository/session-manager/query";
-import { useGetTemplatesQuery } from "@/shared/repository/templates/query";
+import {
+	useDeleteTemplateMutation,
+	useGetTemplatesQuery,
+} from "@/shared/repository/templates/query";
 import type { TemplateData } from "@/shared/types/template";
 import { PlusCircle, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import TemplateLine from "../components/template-elements/template-line";
 import TemplateShape from "../components/template-elements/template-shape";
 
@@ -71,103 +75,6 @@ export default function TemplateSelector() {
 
 	const handleTemplateSelect = (templateId: string) => {
 		router.push(`/editor/${templateId}`);
-	};
-
-	const renderTemplatePreview = (
-		template: TemplateData,
-		size: {
-			width: number;
-			height: number;
-		},
-	) => {
-		const scaledTemplate = getTemplateForSize(template, size);
-		const scale = 0.2; // Preview scale
-
-		return (
-			<div
-				className="relative bg-white shadow-md overflow-hidden"
-				style={{
-					width: scaledTemplate.width * scale,
-					height: scaledTemplate.height * scale,
-				}}
-			>
-				{/* Background */}
-				<div
-					className="absolute inset-0"
-					style={{
-						backgroundColor: scaledTemplate.backgroundColor,
-						backgroundImage: scaledTemplate.backgroundImage
-							? `url(${scaledTemplate.backgroundImage})`
-							: undefined,
-						backgroundSize: "cover",
-						backgroundPosition: "center",
-					}}
-				/>
-
-				{/* Images */}
-				{scaledTemplate.images.map((image) => (
-					<div
-						key={image.id}
-						className="absolute"
-						style={{
-							left: image.position.x * scale,
-							top: image.position.y * scale,
-							width: image.width * scale,
-							height: image.height * scale,
-						}}
-					>
-						<img
-							src={image.src || "https://placecats.com/300/200"}
-							alt="Template element"
-							className="w-full h-full object-cover"
-						/>
-					</div>
-				))}
-
-				{/* Simplified text representation */}
-				{scaledTemplate.texts.map((text) => (
-					<div
-						key={text.id}
-						className="absolute bg-gray-200"
-						style={{
-							left: text.position.x * scale,
-							top: text.position.y * scale,
-							width: 50 * scale,
-							height: 10 * scale,
-						}}
-					/>
-				))}
-
-				{/* Shapes */}
-				{/* {scaledTemplate.shapes.map((shape) => (
-					<TemplateShape
-						key={shape.id}
-						isPreview
-						scale={scale}
-						element={shape}
-						isElementActive={false}
-						toggleActive={() => {}}
-						canvasWidth={scaledTemplate.width}
-						canvasHeight={scaledTemplate.height}
-					/>
-				))} */}
-
-				{/* Lines */}
-				{/* {scaledTemplate.lines.map((line) => (
-					<TemplateLine
-						isPreview
-						key={line.id}
-						scale={scale}
-						element={line}
-						isElementActive={false}
-						toggleActive={() => {}}
-						canvasWidth={scaledTemplate.width}
-						canvasHeight={scaledTemplate.height}
-						onUpdate={() => {}}
-					/>
-				))} */}
-			</div>
-		);
 	};
 
 	return (
@@ -231,60 +138,7 @@ export default function TemplateSelector() {
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{customTemplates.map((template) => (
-					<Card key={template.id} className="overflow-hidden">
-						<CardContent className="p-4">
-							<div className="flex flex-col items-center gap-4">
-								<div className="h-40 flex items-center justify-center">
-									{renderTemplatePreview(template, {
-										width: template.width,
-										height: template.height,
-									})}
-								</div>
-								<div className="w-full">
-									<h3 className="text-lg font-medium mb-2">
-										{template.name} (Custom)
-									</h3>
-									<Dialog>
-										<DialogTrigger asChild>
-											<Button className="w-full">Select Template</Button>
-										</DialogTrigger>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Custom Template</DialogTitle>
-											</DialogHeader>
-											<div className="py-4">
-												<p className="text-sm text-gray-500 mb-4">
-													This is a custom template. You can edit it or use it
-													as is.
-												</p>
-												<div className="flex gap-2">
-													{session.data?.isLoggedIn && (
-														<Button
-															className="flex-1"
-															variant="outline"
-															onClick={() =>
-																router.push(`/editor/${template.id}/edit`)
-															}
-														>
-															Edit Template
-														</Button>
-													)}
-													<Button
-														className="flex-1"
-														onClick={() => {
-															router.push(`/editor/${template.id}`);
-														}}
-													>
-														Use Template
-													</Button>
-												</div>
-											</div>
-										</DialogContent>
-									</Dialog>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+					<TemplateCard key={template.id} template={template} />
 				))}
 			</div>
 			<div className="flex justify-center items-center gap-4 mt-8">
@@ -309,3 +163,161 @@ export default function TemplateSelector() {
 		</div>
 	);
 }
+
+function TemplateCard({ template }: { template: TemplateData }) {
+	const { mutate: deleteTemplate, isPending } = useDeleteTemplateMutation(
+		template.id,
+	);
+
+	const router = useRouter();
+
+	return (
+		<Card key={template.id} className="overflow-hidden">
+			<CardContent className="p-4">
+				<div className="flex flex-col items-center gap-4">
+					<div className="h-40 flex items-center justify-center">
+						{renderTemplatePreview(template, {
+							width: template.width,
+							height: template.height,
+						})}
+					</div>
+				</div>
+			</CardContent>
+			<CardFooter className="flex flex-col gap-2">
+				<h3 className="text-lg font-medium mb-2">{template.name} (Custom)</h3>
+				<div className="flex gap-2">
+					<Button
+						className="flex-1"
+						variant="destructive"
+						onClick={() =>
+							deleteTemplate(undefined, {
+								onSuccess: (res) => {
+									if (!res.success) {
+										toast.error(res.message);
+										return;
+									}
+
+									toast.success(res.message);
+								},
+							})
+						}
+					>
+						Delete
+					</Button>
+					<Button
+						className="flex-1"
+						variant="outline"
+						onClick={() => router.push(`/editor/${template.id}/edit`)}
+					>
+						Edit
+					</Button>
+					<Button
+						className="flex-1"
+						onClick={() => {
+							router.push(`/editor/${template.id}`);
+						}}
+					>
+						Test
+					</Button>
+				</div>
+			</CardFooter>
+		</Card>
+	);
+}
+
+const renderTemplatePreview = (
+	template: TemplateData,
+	size: {
+		width: number;
+		height: number;
+	},
+) => {
+	const scaledTemplate = getTemplateForSize(template, size);
+	const scale = 0.2; // Preview scale
+
+	return (
+		<div
+			className="relative bg-white shadow-md overflow-hidden"
+			style={{
+				width: scaledTemplate.width * scale,
+				height: scaledTemplate.height * scale,
+			}}
+		>
+			{/* Background */}
+			<div
+				className="absolute inset-0"
+				style={{
+					backgroundColor: scaledTemplate.backgroundColor,
+					backgroundImage: scaledTemplate.backgroundImage
+						? `url(${scaledTemplate.backgroundImage})`
+						: undefined,
+					backgroundSize: "cover",
+					backgroundPosition: "center",
+				}}
+			/>
+
+			{/* Images */}
+			{scaledTemplate.images.map((image) => (
+				<div
+					key={image.id}
+					className="absolute"
+					style={{
+						left: image.position.x * scale,
+						top: image.position.y * scale,
+						width: image.width * scale,
+						height: image.height * scale,
+					}}
+				>
+					<img
+						src={image.src || "https://placecats.com/300/200"}
+						alt="Template element"
+						className="w-full h-full object-cover"
+					/>
+				</div>
+			))}
+
+			{/* Simplified text representation */}
+			{scaledTemplate.texts.map((text) => (
+				<div
+					key={text.id}
+					className="absolute bg-gray-200"
+					style={{
+						left: text.position.x * scale,
+						top: text.position.y * scale,
+						width: 50 * scale,
+						height: 10 * scale,
+					}}
+				/>
+			))}
+
+			{/* Shapes */}
+			{/* {scaledTemplate.shapes.map((shape) => (
+					<TemplateShape
+						key={shape.id}
+						isPreview
+						scale={scale}
+						element={shape}
+						isElementActive={false}
+						toggleActive={() => {}}
+						canvasWidth={scaledTemplate.width}
+						canvasHeight={scaledTemplate.height}
+					/>
+				))} */}
+
+			{/* Lines */}
+			{/* {scaledTemplate.lines.map((line) => (
+					<TemplateLine
+						isPreview
+						key={line.id}
+						scale={scale}
+						element={line}
+						isElementActive={false}
+						toggleActive={() => {}}
+						canvasWidth={scaledTemplate.width}
+						canvasHeight={scaledTemplate.height}
+						onUpdate={() => {}}
+					/>
+				))} */}
+		</div>
+	);
+};

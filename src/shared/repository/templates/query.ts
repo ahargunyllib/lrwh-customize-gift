@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ProductVariant } from "../../types";
 import {
 	createTemplate,
+	deleteTemplate,
 	getTemplateById,
 	getTemplates,
 	updateTemplate,
@@ -46,6 +47,21 @@ export const useUpdateTemplateMutation = (id: TemplateEntity["id"]) => {
 
 	return useMutation({
 		mutationFn: (data: CreateTemplateRequest) => updateTemplate(data, id),
+		onSuccess: (res) => {
+			if (!res.success) {
+				return;
+			}
+
+			queryClient.invalidateQueries({ queryKey: ["templates"] });
+		},
+	});
+};
+
+export const useDeleteTemplateMutation = (id: TemplateEntity["id"]) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: () => deleteTemplate(id),
 		onSuccess: (res) => {
 			if (!res.success) {
 				return;
