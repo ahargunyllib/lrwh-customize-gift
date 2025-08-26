@@ -1,4 +1,4 @@
-import type { OrderProductVariant } from "@/shared/types";
+import type { OrderProductVariant, Pagination } from "@/shared/types";
 import { z } from "zod";
 import type { Order, Product, ProductVariant } from "../../types";
 
@@ -26,6 +26,9 @@ export type GetOrdersResponse = {
 			imageUrl: OrderProductVariant["imageUrl"];
 		}[];
 	}[];
+	meta: {
+		pagination: Pagination;
+	};
 };
 
 export const VerifyOrderByUsernameAndOrderNumberSchema = z.object({

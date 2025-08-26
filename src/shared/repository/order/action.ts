@@ -10,7 +10,8 @@ import {
 	productsTable,
 } from "@/server/db/schema/products";
 import { uploadBufferToS3 } from "@/server/s3";
-import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import type { Pagination } from "@/shared/types";
+import { and, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import {
 	MAX_BYTES,
 	looksLikePng,
@@ -54,6 +55,27 @@ export const getOrders = async (
 			success: false,
 			error: error.message,
 			message: "Failed to fetch orders",
+		};
+	}
+
+	const { data: meta, error: countErr } = await tryCatch(
+		db
+			.select({ count: count(ordersTable.id) })
+			.from(ordersTable)
+			.where(
+				query.search
+					? or(
+							ilike(ordersTable.orderNumber, `%${query.search}%`),
+							ilike(ordersTable.username, `%${query.search}%`),
+						)
+					: undefined,
+			),
+	);
+	if (countErr) {
+		return {
+			success: false,
+			error: countErr.message,
+			message: "Failed to count products",
 		};
 	}
 
@@ -143,10 +165,20 @@ export const getOrders = async (
 		};
 	});
 
+	const pagination: Pagination = {
+		total_data: meta[0].count,
+		total_page: Math.ceil(meta[0].count / (query.limit || 10)),
+		page: query.page || 1,
+		limit: query.limit || 10,
+	};
+
 	return {
 		success: true,
 		data: {
 			orders: orderRes,
+			meta: {
+				pagination,
+			},
 		},
 		message: "Orders fetched successfully",
 	};
