@@ -6,7 +6,8 @@ import {
 } from "@/shared/repository/order/dto";
 import { useVerifyOrderByUsernameAndOrderNumberMutation } from "@/shared/repository/order/query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { redirect, useRouter } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTemplatesStore } from "../stores/use-templates-store";
@@ -14,12 +15,13 @@ import { useTemplatesStore } from "../stores/use-templates-store";
 export const useOnboardingForm = () => {
 	const { mutate: verifyOrderByUsernameAndOrderNumber, isPending } =
 		useVerifyOrderByUsernameAndOrderNumberMutation();
+	const searchParams = useSearchParams();
 
 	const form = useForm<VerifyOrderByUsernameAndOrderNumberRequest>({
 		resolver: zodResolver(VerifyOrderByUsernameAndOrderNumberSchema),
 		defaultValues: {
-			username: "",
-			orderNumber: "",
+			username: searchParams.get("username") || "",
+			orderNumber: searchParams.get("orderNumber") || "",
 		},
 	});
 
@@ -45,6 +47,13 @@ export const useOnboardingForm = () => {
 			},
 		});
 	});
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies:
+	useEffect(() => {
+		if (searchParams.get("username") && searchParams.get("orderNumber")) {
+			onSubmitHandler();
+		}
+	}, [searchParams]);
 
 	return {
 		...form,
