@@ -62,7 +62,7 @@ export default function TemplateText({
 	const {
 		backgroundColor,
 		borderRadius,
-		padding = 8,
+		padding = 0,
 		letterSpacing,
 		curved = false,
 		curveRadius = 200,
@@ -271,8 +271,9 @@ export default function TemplateText({
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: padding || 8,
+		padding: 0,
 		margin: 0,
+
 		border: "none",
 		outline: "none",
 		background: "transparent",
@@ -297,7 +298,7 @@ export default function TemplateText({
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: curved ? 0 : padding || 8,
+		padding: curved ? 0 : 0,
 		margin: 0,
 		border: "none",
 		outline: "none",
