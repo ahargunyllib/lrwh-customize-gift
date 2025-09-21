@@ -154,7 +154,7 @@ export default function TemplateImage({
 		}
 	}, [isCropMode, originalDimensions, calculateCurrentCropArea]);
 
-	// Load original image dimensions
+	// Load original image dimensions and set default fill mode
 	const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
 		const img = e.currentTarget;
 		setOriginalDimensions({
@@ -162,48 +162,81 @@ export default function TemplateImage({
 			height: img.naturalHeight,
 		});
 
-		// Initialize image settings if not set
+		// Initialize image settings if not set - DEFAULT TO FILL MODE
 		if (!image.imageOffset && !image.imageScale) {
-			const containerAspectRatio = image.width / image.height;
-			const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+			const containerWidth = image.width;
+			const containerHeight = image.height;
+			const imageWidth = img.naturalWidth;
+			const imageHeight = img.naturalHeight;
 
-			let initialScale: number;
-			let offsetX: number;
-			let offsetY: number;
+			// Calculate scale to fill the container (cover behavior)
+			const scaleX = containerWidth / imageWidth;
+			const scaleY = containerHeight / imageHeight;
+			const fillScale = Math.max(scaleX, scaleY); // Use max for fill/cover
 
-			if (Math.abs(containerAspectRatio - 1) < 0.01) {
-				// Container is 1:1 aspect ratio - use full scale
-				initialScale = Math.min(
-					image.width / img.naturalWidth,
-					image.height / img.naturalHeight,
-				);
-				const scaledWidth = img.naturalWidth * initialScale;
-				const scaledHeight = img.naturalHeight * initialScale;
-				offsetX = (image.width - scaledWidth) / 2;
-				offsetY = (image.height - scaledHeight) / 2;
-			} else {
-				// Default to cover behavior
-				const scaleX = image.width / img.naturalWidth;
-				const scaleY = image.height / img.naturalHeight;
-				initialScale = Math.max(scaleX, scaleY);
+			// Calculate the scaled dimensions
+			const scaledWidth = imageWidth * fillScale;
+			const scaledHeight = imageHeight * fillScale;
 
-				const scaledWidth = img.naturalWidth * initialScale;
-				const scaledHeight = img.naturalHeight * initialScale;
-				offsetX = (image.width - scaledWidth) / 2;
-				offsetY = (image.height - scaledHeight) / 2;
-			}
+			// Center the image in the container
+			const offsetX = (containerWidth - scaledWidth) / 2;
+			const offsetY = (containerHeight - scaledHeight) / 2;
 
-			// Dispatch initial settings
+			// Dispatch initial settings with fill behavior
 			document.dispatchEvent(
 				new CustomEvent("imageAdjust", {
 					detail: {
 						id: image.id,
 						imageOffset: { x: offsetX, y: offsetY },
-						imageScale: initialScale,
+						imageScale: fillScale,
 					},
 				}),
 			);
 		}
+	};
+
+	// Handle image replacement (drag & drop or file select) with fill mode
+	const handleImageReplace = (newImageSrc: string) => {
+		// Create a temporary image to get dimensions
+		const tempImg = new Image();
+		tempImg.onload = () => {
+			const containerWidth = image.width;
+			const containerHeight = image.height;
+			const imageWidth = tempImg.naturalWidth;
+			const imageHeight = tempImg.naturalHeight;
+
+			// Calculate scale to fill the container
+			const scaleX = containerWidth / imageWidth;
+			const scaleY = containerHeight / imageHeight;
+			const fillScale = Math.max(scaleX, scaleY);
+
+			// Calculate the scaled dimensions
+			const scaledWidth = imageWidth * fillScale;
+			const scaledHeight = imageHeight * fillScale;
+
+			// Center the image in the container
+			const offsetX = (containerWidth - scaledWidth) / 2;
+			const offsetY = (containerHeight - scaledHeight) / 2;
+
+			// Update image source and settings
+			document.dispatchEvent(
+				new CustomEvent("imageReplace", {
+					detail: {
+						id: image.id,
+						src: newImageSrc,
+						imageOffset: { x: offsetX, y: offsetY },
+						imageScale: fillScale,
+					},
+				}),
+			);
+
+			// Update original dimensions for the new image
+			setOriginalDimensions({
+				width: imageWidth,
+				height: imageHeight,
+			});
+		};
+		tempImg.src = newImageSrc;
 	};
 
 	// Get current image style for display
@@ -347,24 +380,21 @@ export default function TemplateImage({
 	const applyCrop = () => {
 		if (!originalDimensions) return;
 
-		// Calculate the new scale to fit the crop area into the container
+		// Calculate the new scale to fit the crop area into the container using fill mode
 		const scaleX = image.width / cropArea.width;
 		const scaleY = image.height / cropArea.height;
-		const newScale = Math.min(scaleX, scaleY); // Use min to ensure crop area fits entirely
+		const newScale = Math.max(scaleX, scaleY); // Use max for fill behavior
 
 		// Calculate offset to position the cropped area correctly
-		// We want to move the image so that the crop area's top-left becomes (0,0)
 		const newOffsetX = -cropArea.x * newScale;
 		const newOffsetY = -cropArea.y * newScale;
 
-		// Center the cropped content if it's smaller than the container
+		// Center the cropped content
 		const croppedWidth = cropArea.width * newScale;
 		const croppedHeight = cropArea.height * newScale;
 
-		const centerOffsetX =
-			croppedWidth < image.width ? (image.width - croppedWidth) / 2 : 0;
-		const centerOffsetY =
-			croppedHeight < image.height ? (image.height - croppedHeight) / 2 : 0;
+		const centerOffsetX = (image.width - croppedWidth) / 2;
+		const centerOffsetY = (image.height - croppedHeight) / 2;
 
 		const finalOffsetX = newOffsetX + centerOffsetX;
 		const finalOffsetY = newOffsetY + centerOffsetY;
@@ -388,20 +418,38 @@ export default function TemplateImage({
 		setIsCropMode(false);
 	};
 
-	// Reset crop functionality
+	// Reset crop functionality with fill mode
 	const resetCrop = () => {
 		if (!originalDimensions) return;
 
-		// Reset crop area to cover entire image
-		const fullCropArea = {
-			x: 0,
-			y: 0,
-			width: originalDimensions.width,
-			height: originalDimensions.height,
+		// Reset to default fill behavior
+		const containerWidth = image.width;
+		const containerHeight = image.height;
+		const imageWidth = originalDimensions.width;
+		const imageHeight = originalDimensions.height;
+
+		// Calculate what area would be visible with fill scale
+		const scaleX = containerWidth / imageWidth;
+		const scaleY = containerHeight / imageHeight;
+		const fillScale = Math.max(scaleX, scaleY);
+
+		// Calculate the area that would be cropped to fill the container
+		const visibleWidth = containerWidth / fillScale;
+		const visibleHeight = containerHeight / fillScale;
+
+		// Center the crop area
+		const cropX = (imageWidth - visibleWidth) / 2;
+		const cropY = (imageHeight - visibleHeight) / 2;
+
+		const fillCropArea = {
+			x: Math.max(0, cropX),
+			y: Math.max(0, cropY),
+			width: Math.min(visibleWidth, imageWidth),
+			height: Math.min(visibleHeight, imageHeight),
 		};
 
-		setCropArea(fullCropArea);
-		setCropAspectRatio(originalDimensions.width / originalDimensions.height);
+		setCropArea(fillCropArea);
+		setCropAspectRatio(fillCropArea.width / fillCropArea.height);
 	};
 
 	// Regular drag functionality
@@ -439,11 +487,7 @@ export default function TemplateImage({
 			const reader = new FileReader();
 			reader.onload = (ev) => {
 				if (ev.target?.result) {
-					document.dispatchEvent(
-						new CustomEvent("imageReplace", {
-							detail: { id: image.id, src: ev.target.result },
-						}),
-					);
+					handleImageReplace(ev.target.result as string);
 				}
 			};
 			reader.readAsDataURL(file);
@@ -748,7 +792,7 @@ export default function TemplateImage({
 									onClick={resetCrop}
 									className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
 								>
-									Reset
+									Reset to Fill
 								</button>
 								{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 								<button
