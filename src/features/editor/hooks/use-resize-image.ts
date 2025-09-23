@@ -1,8 +1,5 @@
-"use client";
-
-import type React from "react";
-
 import type { TemplateData } from "@/shared/types/template";
+import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 
 interface UseResizeImageProps {
@@ -17,7 +14,12 @@ interface ResizeState {
 	startY: number;
 	startWidth: number;
 	startHeight: number;
+	startPosition: { x: number; y: number };
 	aspectRatio: number;
+	originalScaleX: number;
+	originalScaleY: number;
+	originalImageOffset: { x: number; y: number };
+	naturalDimensions: { width: number; height: number };
 }
 
 export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
@@ -42,18 +44,92 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 			const startX = (e.clientX - canvasRect.left) / scale;
 			const startY = (e.clientY - canvasRect.top) / scale;
 
-			setResizingImageId(imageId);
-			setResizeState({
-				imageId,
-				direction,
-				startX,
-				startY,
-				startWidth: width,
-				startHeight: height,
-				aspectRatio: width / height,
+			setTemplate((prev) => {
+				const image = prev.images.find((img) => img.id === imageId);
+				if (!image) return prev;
+
+				// Get image element to access natural dimensions
+				const imgElement = document.querySelector(
+					`img[src="${image.src}"]`,
+				) as HTMLImageElement;
+				const naturalWidth = imgElement?.naturalWidth;
+				const naturalHeight = imgElement?.naturalHeight;
+
+				setResizingImageId(imageId);
+				setResizeState({
+					imageId,
+					direction,
+					startX,
+					startY,
+					startWidth: width,
+					startHeight: height,
+					startPosition: { ...image.position },
+					aspectRatio: width / height,
+					originalScaleX: image.scaleX || 1,
+					originalScaleY: image.scaleY || 1,
+					originalImageOffset: image.imageOffset || { x: 0, y: 0 },
+					naturalDimensions: { width: naturalWidth, height: naturalHeight },
+				});
+
+				return prev;
 			});
 		},
-		[scale],
+		[scale, setTemplate],
+	);
+
+	const calculateImageAdjustment = useCallback(
+		(
+			newWidth: number,
+			newHeight: number,
+			resizeState: ResizeState,
+			direction: string,
+		) => {
+			const { naturalDimensions } = resizeState;
+
+			// Calculate how to adjust the image scaling based on container size change
+			let newScaleX = resizeState.originalScaleX;
+			let newScaleY = resizeState.originalScaleY;
+			let newImageOffset = resizeState.originalImageOffset;
+
+			// For edge resizing, only adjust one axis
+			if (direction === "e" || direction === "w") {
+				// Horizontal edge - only adjust scaleX
+				const widthRatio = newWidth / resizeState.startWidth;
+				newScaleX = resizeState.originalScaleX * widthRatio;
+
+				// Adjust X offset proportionally
+				newImageOffset = {
+					x: resizeState.originalImageOffset.x * widthRatio,
+					y: resizeState.originalImageOffset.y,
+				};
+			} else if (direction === "n" || direction === "s") {
+				// Vertical edge - only adjust scaleY
+				const heightRatio = newHeight / resizeState.startHeight;
+				newScaleY = resizeState.originalScaleY * heightRatio;
+
+				// Adjust Y offset proportionally
+				newImageOffset = {
+					x: resizeState.originalImageOffset.x,
+					y: resizeState.originalImageOffset.y * heightRatio,
+				};
+			} else {
+				// Corner resizing - adjust both scaleX and scaleY
+				const widthRatio = newWidth / resizeState.startWidth;
+				const heightRatio = newHeight / resizeState.startHeight;
+
+				newScaleX = resizeState.originalScaleX * widthRatio;
+				newScaleY = resizeState.originalScaleY * heightRatio;
+
+				// Adjust both offsets proportionally
+				newImageOffset = {
+					x: resizeState.originalImageOffset.x * widthRatio,
+					y: resizeState.originalImageOffset.y * heightRatio,
+				};
+			}
+
+			return { newScaleX, newScaleY, newImageOffset };
+		},
+		[],
 	);
 
 	const handleMouseMove = useCallback(
@@ -110,26 +186,42 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 				["ne", "nw", "se", "sw"].includes(resizeState.direction) &&
 				!e.shiftKey
 			) {
-				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+				// Calculate which dimension changed more and use that as the primary
+				const widthChange = Math.abs(newWidth - resizeState.startWidth);
+				const heightChange = Math.abs(newHeight - resizeState.startHeight);
+
+				if (widthChange > heightChange) {
 					newHeight = newWidth / resizeState.aspectRatio;
 				} else {
 					newWidth = newHeight * resizeState.aspectRatio;
 				}
 			}
 
-			// Update template with new dimensions
+			// Calculate new image scale and offset based on the new container size
+			const { newScaleX, newScaleY, newImageOffset } = calculateImageAdjustment(
+				newWidth,
+				newHeight,
+				resizeState,
+				resizeState.direction,
+			);
+
+			// Update template with new dimensions and image adjustments
 			setTemplate((prev) => ({
 				...prev,
 				images: prev.images.map((img) => {
 					if (img.id === resizeState.imageId) {
-						const newPosition = { ...img.position };
+						const newPosition = { ...resizeState.startPosition };
 
 						// Adjust position for handles that affect the top-left corner
 						if (resizeState.direction.includes("w")) {
-							newPosition.x = img.position.x + (img.width - newWidth);
+							newPosition.x =
+								resizeState.startPosition.x +
+								(resizeState.startWidth - newWidth);
 						}
 						if (resizeState.direction.includes("n")) {
-							newPosition.y = img.position.y + (img.height - newHeight);
+							newPosition.y =
+								resizeState.startPosition.y +
+								(resizeState.startHeight - newHeight);
 						}
 
 						return {
@@ -137,13 +229,16 @@ export function useResizeImage({ setTemplate, scale }: UseResizeImageProps) {
 							width: Math.round(newWidth),
 							height: Math.round(newHeight),
 							position: newPosition,
+							scaleX: newScaleX,
+							scaleY: newScaleY,
+							imageOffset: newImageOffset,
 						};
 					}
 					return img;
 				}),
 			}));
 		},
-		[resizeState, scale, setTemplate],
+		[resizeState, scale, setTemplate, calculateImageAdjustment],
 	);
 
 	const handleMouseUp = useCallback(() => {

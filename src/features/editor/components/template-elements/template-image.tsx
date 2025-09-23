@@ -1,5 +1,4 @@
-"use client";
-import type { ImageElement } from "@/shared/types/template";
+import type { CropArea, ImageElement } from "@/shared/types/template";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type React from "react";
 
@@ -30,13 +29,6 @@ interface TemplateImageProps {
 	canvasWidth?: number;
 	canvasHeight?: number;
 	layerIndex: number;
-}
-
-interface CropArea {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
 }
 
 export default function TemplateImage({
@@ -83,10 +75,6 @@ export default function TemplateImage({
 	const [isResizingCrop, setIsResizingCrop] = useState(false);
 	const [resizeDirection, setResizeDirection] = useState<string>("");
 	const [cropAspectRatio, setCropAspectRatio] = useState<number>(1);
-
-	// Crop overlay positioning
-	const cropOverlayRef = useRef<HTMLDivElement>(null);
-	const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
 	const [imageDisplayScale, setImageDisplayScale] = useState(1);
 
 	const clearDragTimeout = useCallback(() => {
@@ -104,18 +92,17 @@ export default function TemplateImage({
 			return { x: 0, y: 0, width: image.width, height: image.height };
 
 		const imageOffset = image.imageOffset || { x: 0, y: 0 };
-		const imageScale = image.imageScale || 1;
+		const scaleX = image.scaleX || 1;
+		const scaleY = image.scaleY || 1;
 
 		// Calculate what part of the original image is currently visible
-		// Convert container coordinates back to original image coordinates
-		const visibleX = Math.max(0, -imageOffset.x / imageScale);
-		const visibleY = Math.max(0, -imageOffset.y / imageScale);
+		const visibleX = Math.max(0, -imageOffset.x / scaleX);
+		const visibleY = Math.max(0, -imageOffset.y / scaleY);
 
-		// Calculate the visible dimensions in original image coordinates
 		const maxVisibleWidth = originalDimensions.width - visibleX;
 		const maxVisibleHeight = originalDimensions.height - visibleY;
-		const containerWidthInOriginal = image.width / imageScale;
-		const containerHeightInOriginal = image.height / imageScale;
+		const containerWidthInOriginal = image.width / scaleX;
+		const containerHeightInOriginal = image.height / scaleY;
 
 		const visibleWidth = Math.min(maxVisibleWidth, containerWidthInOriginal);
 		const visibleHeight = Math.min(maxVisibleHeight, containerHeightInOriginal);
@@ -131,7 +118,8 @@ export default function TemplateImage({
 		image.width,
 		image.height,
 		image.imageOffset,
-		image.imageScale,
+		image.scaleX,
+		image.scaleY,
 	]);
 
 	// Initialize crop area when entering crop mode
@@ -139,7 +127,6 @@ export default function TemplateImage({
 		if (isCropMode && originalDimensions) {
 			const currentCrop = calculateCurrentCropArea();
 			setCropArea(currentCrop);
-
 			setCropAspectRatio(currentCrop.width / currentCrop.height);
 
 			// Calculate display scale for the overlay
@@ -148,7 +135,7 @@ export default function TemplateImage({
 
 			const scaleX = maxWidth / originalDimensions.width;
 			const scaleY = maxHeight / originalDimensions.height;
-			const displayScale = Math.min(scaleX, scaleY, 0.8); // Limit max scale
+			const displayScale = Math.min(scaleX, scaleY, 0.8);
 
 			setImageDisplayScale(displayScale);
 		}
@@ -157,40 +144,39 @@ export default function TemplateImage({
 	// Load original image dimensions
 	const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
 		const img = e.currentTarget;
+		const naturalWidth = img.naturalWidth;
+		const naturalHeight = img.naturalHeight;
+
 		setOriginalDimensions({
-			width: img.naturalWidth,
-			height: img.naturalHeight,
+			width: naturalWidth,
+			height: naturalHeight,
 		});
 
 		// Initialize image settings if not set
-		if (!image.imageOffset && !image.imageScale) {
+		if (!image.imageOffset || (!image.scaleX && !image.scaleY)) {
+			// Calculate scale to fill the container (like background-size: cover)
 			const containerAspectRatio = image.width / image.height;
-			const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+			const imageAspectRatio = naturalWidth / naturalHeight;
 
-			let initialScale: number;
+			let initialScaleX: number;
+			let initialScaleY: number;
 			let offsetX: number;
 			let offsetY: number;
 
-			if (Math.abs(containerAspectRatio - 1) < 0.01) {
-				// Container is 1:1 aspect ratio - use full scale
-				initialScale = Math.min(
-					image.width / img.naturalWidth,
-					image.height / img.naturalHeight,
-				);
-				const scaledWidth = img.naturalWidth * initialScale;
-				const scaledHeight = img.naturalHeight * initialScale;
-				offsetX = (image.width - scaledWidth) / 2;
+			if (containerAspectRatio > imageAspectRatio) {
+				// Container is wider than image - scale to fit width
+				initialScaleX = image.width / naturalWidth;
+				initialScaleY = initialScaleX;
+				const scaledHeight = naturalHeight * initialScaleY;
+				offsetX = 0;
 				offsetY = (image.height - scaledHeight) / 2;
 			} else {
-				// Default to cover behavior
-				const scaleX = image.width / img.naturalWidth;
-				const scaleY = image.height / img.naturalHeight;
-				initialScale = Math.max(scaleX, scaleY);
-
-				const scaledWidth = img.naturalWidth * initialScale;
-				const scaledHeight = img.naturalHeight * initialScale;
+				// Container is taller than image - scale to fit height
+				initialScaleY = image.height / naturalHeight;
+				initialScaleX = initialScaleY;
+				const scaledWidth = naturalWidth * initialScaleX;
 				offsetX = (image.width - scaledWidth) / 2;
-				offsetY = (image.height - scaledHeight) / 2;
+				offsetY = 0;
 			}
 
 			// Dispatch initial settings
@@ -199,7 +185,8 @@ export default function TemplateImage({
 					detail: {
 						id: image.id,
 						imageOffset: { x: offsetX, y: offsetY },
-						imageScale: initialScale,
+						scaleX: initialScaleX,
+						scaleY: initialScaleY,
 					},
 				}),
 			);
@@ -210,17 +197,19 @@ export default function TemplateImage({
 	const getImageStyle = (): React.CSSProperties => {
 		const clipPath = getClipPath();
 		const imageOffset = image.imageOffset || { x: 0, y: 0 };
-		const imageScale = image.imageScale || 1;
+		const scaleX = image.scaleX || 1;
+		const scaleY = image.scaleY || 1;
 
 		return {
 			clipPath,
 			filter: image.grayscale ? "grayscale(1)" : "none",
-			transform: `translate(${imageOffset.x}px, ${imageOffset.y}px) scale(${imageScale})`,
-			transformOrigin: "top left",
+			transform: `translate(${imageOffset.x}px, ${imageOffset.y}px) scale(${scaleX}, ${scaleY})`,
+			transformOrigin: "0 0",
 			width: originalDimensions?.width || "auto",
 			height: originalDimensions?.height || "auto",
 			maxWidth: "none",
 			maxHeight: "none",
+			transition: "var(--transition-editor)",
 		};
 	};
 
@@ -350,7 +339,7 @@ export default function TemplateImage({
 		// Calculate the new scale to fit the crop area into the container
 		const scaleX = image.width / cropArea.width;
 		const scaleY = image.height / cropArea.height;
-		const newScale = Math.min(scaleX, scaleY); // Use min to ensure crop area fits entirely
+		const newScale = Math.min(scaleX, scaleY);
 
 		// Calculate offset to position the cropped area correctly
 		// We want to move the image so that the crop area's top-left becomes (0,0)
@@ -375,7 +364,8 @@ export default function TemplateImage({
 				detail: {
 					id: image.id,
 					imageOffset: { x: finalOffsetX, y: finalOffsetY },
-					imageScale: newScale,
+					scaleX: newScale,
+					scaleY: newScale,
 				},
 			}),
 		);
@@ -631,9 +621,9 @@ export default function TemplateImage({
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
 				ref={dropZoneRef}
-				className={`absolute overflow-hidden ${isActive ? "ring-2 ring-blue-500" : ""} ${
-					isDragOver ? "ring-2 ring-green-500" : ""
-				}`}
+				className={`absolute overflow-hidden transition-all duration-200 ${
+					isActive ? "ring-2 ring-editor-selection shadow-editor-element" : ""
+				} ${isDragOver ? "ring-2 ring-primary" : ""}`}
 				style={{
 					...containerStyle,
 					zIndex: layerIndex,
@@ -653,9 +643,12 @@ export default function TemplateImage({
 					}}
 				>
 					<img
-						src={image.src || "https://placecats.com/300/200"}
+						src={
+							image.src ||
+							"https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
+						}
 						alt="Template element"
-						className="pointer-events-none"
+						className="pointer-events-none select-none"
 						draggable={false}
 						style={getImageStyle()}
 						onLoad={handleImageLoad}
@@ -675,36 +668,52 @@ export default function TemplateImage({
 				{isActive && isCustomizing && (
 					<>
 						<div
-							className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-w-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "w")}
+							className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-w-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "w", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-e-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "e")}
+							className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-e-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "e", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute left-1/2 -top-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-n-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "n")}
+							className="absolute left-1/2 -top-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-n-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "n", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-s-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "s")}
+							className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-s-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "s", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-nw-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+							className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-nw-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "nw", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-ne-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+							className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-ne-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "ne", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-sw-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+							className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-sw-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "sw", image.width, image.height)
+							}
 						/>
 						<div
-							className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-se-resize"
-							onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+							className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-editor-handle border-2 border-editor-handle-border cursor-se-resize shadow-sm"
+							onMouseDown={(e) =>
+								onResizeStart?.(e, image.id, "se", image.width, image.height)
+							}
 						/>
 					</>
 				)}
@@ -717,12 +726,12 @@ export default function TemplateImage({
 					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 					<div
 						className="fixed inset-0 bg-black bg-opacity-50 z-40"
-						onClick={cancelCrop}
+						onClick={() => setIsCropMode(false)}
 					/>
 
 					{/* Crop Modal */}
 					<div
-						className="fixed z-50 bg-white rounded-lg shadow-2xl border-2 border-gray-300"
+						className="fixed z-50 bg-white rounded-lg shadow-editor-modal border-2 border-border"
 						style={{
 							left: "50%",
 							top: "50%",
@@ -740,37 +749,32 @@ export default function TemplateImage({
 						}}
 					>
 						{/* Header */}
-						<div className="flex justify-between items-center p-4 border-b border-gray-200">
-							<h3 className="text-gray-800 font-medium text-lg">Adjust Crop</h3>
+						<div className="flex justify-between items-center p-4 border-b border-border">
+							<h3 className="text-foreground font-medium text-lg">
+								Adjust Crop
+							</h3>
 							<div className="flex gap-2">
-								{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 								<button
-									onClick={resetCrop}
-									className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-								>
-									Reset
-								</button>
-								{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-								<button
-									onClick={cancelCrop}
-									className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+									type="button"
+									onClick={() => setIsCropMode(false)}
+									className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
 								>
 									Cancel
 								</button>
-								{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 								<button
+									type="button"
 									onClick={applyCrop}
-									className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+									className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
 								>
 									Apply
 								</button>
 							</div>
 						</div>
 
-						{/* Image container */}
+						{/* Image container with crop overlay */}
 						<div className="p-4">
 							<div
-								className="relative mx-auto overflow-hidden bg-gray-100 rounded"
+								className="relative mx-auto overflow-hidden bg-editor-canvas rounded"
 								style={{
 									width: Math.min(
 										originalDimensions.width * imageDisplayScale,
@@ -782,19 +786,21 @@ export default function TemplateImage({
 									),
 								}}
 							>
-								{/* Full image */}
 								<img
-									src={image.src || "https://placecats.com/300/200"}
+									src={
+										image.src ||
+										"https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
+									}
 									alt="Crop preview"
 									className="w-full h-full object-contain select-none"
 									draggable={false}
 								/>
 
-								{/* Crop overlay */}
+								{/* Crop overlay with dark areas */}
 								<div className="absolute inset-0">
-									{/* Dark overlay - 4 rectangles around crop area */}
+									{/* Dark overlays */}
 									<div
-										className="absolute bg-black bg-opacity-60"
+										className="absolute bg-editor-crop-overlay bg-opacity-60"
 										style={{
 											left: 0,
 											top: 0,
@@ -803,7 +809,7 @@ export default function TemplateImage({
 										}}
 									/>
 									<div
-										className="absolute bg-black bg-opacity-60"
+										className="absolute bg-editor-crop-overlay bg-opacity-60"
 										style={{
 											left: 0,
 											top: (cropArea.y + cropArea.height) * imageDisplayScale,
@@ -812,7 +818,7 @@ export default function TemplateImage({
 										}}
 									/>
 									<div
-										className="absolute bg-black bg-opacity-60"
+										className="absolute bg-editor-crop-overlay bg-opacity-60"
 										style={{
 											left: 0,
 											top: cropArea.y * imageDisplayScale,
@@ -821,7 +827,7 @@ export default function TemplateImage({
 										}}
 									/>
 									<div
-										className="absolute bg-black bg-opacity-60"
+										className="absolute bg-editor-crop-overlay bg-opacity-60"
 										style={{
 											left: (cropArea.x + cropArea.width) * imageDisplayScale,
 											top: cropArea.y * imageDisplayScale,
@@ -830,9 +836,9 @@ export default function TemplateImage({
 										}}
 									/>
 
-									{/* Crop area */}
+									{/* Crop selection area */}
 									<div
-										className="absolute border-2 border-white cursor-move shadow-lg"
+										className="absolute border-2 border-editor-crop-area cursor-move"
 										style={{
 											left: cropArea.x * imageDisplayScale,
 											top: cropArea.y * imageDisplayScale,
@@ -858,7 +864,6 @@ export default function TemplateImage({
 											className="absolute -bottom-2 -right-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow cursor-se-resize"
 											onMouseDown={(e) => handleCropResizeMouseDown(e, "se")}
 										/>
-
 										{/* Grid lines */}
 										<div className="absolute inset-0 pointer-events-none">
 											<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white opacity-70" />
@@ -871,9 +876,9 @@ export default function TemplateImage({
 							</div>
 						</div>
 
-						<div className="px-4 pb-4 text-center text-gray-600 text-sm">
-							Drag to move • Drag corners to resize (maintains aspect ratio) •
-							Target size: {image.width} × {image.height} px
+						<div className="px-4 pb-4 text-center text-muted-foreground text-sm">
+							Double-click image to crop • Target size: {image.width} ×{" "}
+							{image.height}px
 						</div>
 					</div>
 				</>
