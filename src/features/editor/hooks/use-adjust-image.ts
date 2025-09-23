@@ -1,4 +1,4 @@
-import type { TemplateData } from "@/shared/types/template";
+import type { ImageElement, TemplateData } from "@/shared/types/template";
 import { useCallback } from "react";
 
 interface UseImageAdjustProps {
@@ -42,14 +42,11 @@ export function useImageAdjust({ template, setTemplate }: UseImageAdjustProps) {
 		(
 			imageId: string,
 			fitType: "cover" | "contain" | "fill" | "fit-width" | "fit-height",
+			naturalWidth: number,
+			naturalHeight: number,
 		) => {
 			const image = template.images.find((img) => img.id === imageId);
 			if (!image) return;
-
-			// You would need to get the natural dimensions of the image
-			// This could be stored when the image loads or passed as parameter
-			const naturalWidth = 800; // Replace with actual natural width
-			const naturalHeight = 600; // Replace with actual natural height
 
 			let newScaleX: number;
 			let newScaleY: number;
@@ -147,8 +144,13 @@ export function useImageAdjust({ template, setTemplate }: UseImageAdjustProps) {
 
 	// Helper to reset image to original state
 	const resetImage = useCallback(
-		(imageId: string) => {
-			calculateImageFit(imageId, "cover");
+		(image: ImageElement) => {
+			calculateImageFit(
+				image.id,
+				"cover",
+				image?.naturalWidth || 200,
+				image?.naturalHeight || 200,
+			);
 		},
 		[calculateImageFit],
 	);

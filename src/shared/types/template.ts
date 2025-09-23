@@ -23,6 +23,8 @@ export interface ImageElement {
 	scaleY?: number;
 	centerX?: boolean;
 	centerY?: boolean;
+	naturalWidth?: number;
+	naturalHeight?: number;
 }
 export interface CropArea {
 	x: number;
