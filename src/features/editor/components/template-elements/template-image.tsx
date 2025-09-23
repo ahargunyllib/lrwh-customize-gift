@@ -197,13 +197,13 @@ export default function TemplateImage({
 	const getImageStyle = (): React.CSSProperties => {
 		const clipPath = getClipPath();
 		const imageOffset = image.imageOffset || { x: 0, y: 0 };
-		const scaleX = image.scaleX || 1;
-		const scaleY = image.scaleY || 1;
+		const scaleX = (image.scaleX || 1) * scale;
+		const scaleY = (image.scaleY || 1) * scale;
 
 		return {
 			clipPath,
 			filter: image.grayscale ? "grayscale(1)" : "none",
-			transform: `translate(${imageOffset.x}px, ${imageOffset.y}px) scale(${scaleX}, ${scaleY})`,
+			transform: `translate(${imageOffset.x * scale}px, ${imageOffset.y * scale}px) scale(${scaleX}, ${scaleY})`,
 			transformOrigin: "0 0",
 			width: originalDimensions?.width || "auto",
 			height: originalDimensions?.height || "auto",
@@ -217,15 +217,15 @@ export default function TemplateImage({
 	const getClipPath = () => {
 		if (!canvasWidth || !canvasHeight) return undefined;
 
-		const imgX = image.position.x;
-		const imgY = image.position.y;
-		const imgW = image.width;
-		const imgH = image.height;
+		const imgX = image.position.x * scale;
+		const imgY = image.position.y * scale;
+		const imgW = image.width * scale;
+		const imgH = image.height * scale;
 
 		const clipLeft = Math.max(0, -imgX);
 		const clipTop = Math.max(0, -imgY);
-		const clipRight = Math.min(imgW, canvasWidth - imgX);
-		const clipBottom = Math.min(imgH, canvasHeight - imgY);
+		const clipRight = Math.min(imgW, canvasWidth * scale - imgX);
+		const clipBottom = Math.min(imgH, canvasHeight * scale - imgY);
 
 		if (clipRight <= clipLeft || clipBottom <= clipTop) {
 			return "inset(100% 100% 100% 100%)";
