@@ -621,7 +621,7 @@ export default function TemplateImage({
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
 				ref={dropZoneRef}
-				className={`absolute overflow-hidden transition-all duration-200 ${
+				className={`absolute overflow-hidden ${
 					isActive ? "ring-2 ring-editor-selection shadow-editor-element" : ""
 				} ${isDragOver ? "ring-2 ring-primary" : ""}`}
 				style={{
