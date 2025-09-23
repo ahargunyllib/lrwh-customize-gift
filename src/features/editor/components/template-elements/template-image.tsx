@@ -1,6 +1,7 @@
 import type { CropArea, ImageElement } from "@/shared/types/template";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type React from "react";
+import { CropModal } from "./crop-modal";
 
 interface TemplateImageProps {
 	image: ImageElement;
@@ -721,167 +722,17 @@ export default function TemplateImage({
 
 			{/* Crop Overlay Modal */}
 			{isCropMode && originalDimensions && (
-				<>
-					{/* Backdrop */}
-					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-					<div
-						className="fixed inset-0 bg-black bg-opacity-50 z-40"
-						onClick={() => setIsCropMode(false)}
-					/>
-
-					{/* Crop Modal */}
-					<div
-						className="fixed z-50 bg-white rounded-lg shadow-editor-modal border-2 border-border"
-						style={{
-							left: "50%",
-							top: "50%",
-							transform: "translate(-50%, -50%)",
-							width: Math.min(
-								originalDimensions.width * imageDisplayScale + 60,
-								window.innerWidth * 0.9,
-							),
-							height: Math.min(
-								originalDimensions.height * imageDisplayScale + 100,
-								window.innerHeight * 0.9,
-							),
-							maxWidth: "90vw",
-							maxHeight: "90vh",
-						}}
-					>
-						{/* Header */}
-						<div className="flex justify-between items-center p-4 border-b border-border">
-							<h3 className="text-foreground font-medium text-lg">
-								Adjust Crop
-							</h3>
-							<div className="flex gap-2">
-								<button
-									type="button"
-									onClick={() => setIsCropMode(false)}
-									className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
-								>
-									Cancel
-								</button>
-								<button
-									type="button"
-									onClick={applyCrop}
-									className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
-								>
-									Apply
-								</button>
-							</div>
-						</div>
-
-						{/* Image container with crop overlay */}
-						<div className="p-4">
-							<div
-								className="relative mx-auto overflow-hidden bg-editor-canvas rounded"
-								style={{
-									width: Math.min(
-										originalDimensions.width * imageDisplayScale,
-										window.innerWidth * 0.8,
-									),
-									height: Math.min(
-										originalDimensions.height * imageDisplayScale,
-										window.innerHeight * 0.7,
-									),
-								}}
-							>
-								<img
-									src={
-										image.src ||
-										"https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
-									}
-									alt="Crop preview"
-									className="w-full h-full object-contain select-none"
-									draggable={false}
-								/>
-
-								{/* Crop overlay with dark areas */}
-								<div className="absolute inset-0">
-									{/* Dark overlays */}
-									<div
-										className="absolute bg-editor-crop-overlay bg-opacity-60"
-										style={{
-											left: 0,
-											top: 0,
-											right: 0,
-											height: cropArea.y * imageDisplayScale,
-										}}
-									/>
-									<div
-										className="absolute bg-editor-crop-overlay bg-opacity-60"
-										style={{
-											left: 0,
-											top: (cropArea.y + cropArea.height) * imageDisplayScale,
-											right: 0,
-											bottom: 0,
-										}}
-									/>
-									<div
-										className="absolute bg-editor-crop-overlay bg-opacity-60"
-										style={{
-											left: 0,
-											top: cropArea.y * imageDisplayScale,
-											width: cropArea.x * imageDisplayScale,
-											height: cropArea.height * imageDisplayScale,
-										}}
-									/>
-									<div
-										className="absolute bg-editor-crop-overlay bg-opacity-60"
-										style={{
-											left: (cropArea.x + cropArea.width) * imageDisplayScale,
-											top: cropArea.y * imageDisplayScale,
-											right: 0,
-											height: cropArea.height * imageDisplayScale,
-										}}
-									/>
-
-									{/* Crop selection area */}
-									<div
-										className="absolute border-2 border-editor-crop-area cursor-move"
-										style={{
-											left: cropArea.x * imageDisplayScale,
-											top: cropArea.y * imageDisplayScale,
-											width: cropArea.width * imageDisplayScale,
-											height: cropArea.height * imageDisplayScale,
-											backgroundColor: "transparent",
-										}}
-										onMouseDown={handleCropMouseDown}
-									>
-										<div
-											className="absolute -top-2 -left-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow cursor-nw-resize"
-											onMouseDown={(e) => handleCropResizeMouseDown(e, "nw")}
-										/>
-										<div
-											className="absolute -top-2 -right-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow cursor-ne-resize"
-											onMouseDown={(e) => handleCropResizeMouseDown(e, "ne")}
-										/>
-										<div
-											className="absolute -bottom-2 -left-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow cursor-sw-resize"
-											onMouseDown={(e) => handleCropResizeMouseDown(e, "sw")}
-										/>
-										<div
-											className="absolute -bottom-2 -right-2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow cursor-se-resize"
-											onMouseDown={(e) => handleCropResizeMouseDown(e, "se")}
-										/>
-										{/* Grid lines */}
-										<div className="absolute inset-0 pointer-events-none">
-											<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white opacity-70" />
-											<div className="absolute left-2/3 top-0 bottom-0 w-px bg-white opacity-70" />
-											<div className="absolute top-1/3 left-0 right-0 h-px bg-white opacity-70" />
-											<div className="absolute top-2/3 left-0 right-0 h-px bg-white opacity-70" />
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<div className="px-4 pb-4 text-center text-muted-foreground text-sm">
-							Double-click image to crop • Target size: {image.width} ×{" "}
-							{image.height}px
-						</div>
-					</div>
-				</>
+				<CropModal
+					isOpen={isCropMode}
+					onClose={cancelCrop}
+					image={image}
+					originalDimensions={originalDimensions}
+					cropArea={cropArea}
+					setCropArea={setCropArea}
+					applyCrop={applyCrop}
+					onCropMouseDown={handleCropMouseDown}
+					onCropResizeMouseDown={handleCropResizeMouseDown}
+				/>
 			)}
 		</>
 	);
