@@ -106,6 +106,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			position: { x: template.width / 2 - 100, y: template.height / 2 - 100 },
 			width: 200,
 			height: 200,
+
 			draggable: true,
 		};
 		setTemplate((p) => ({
