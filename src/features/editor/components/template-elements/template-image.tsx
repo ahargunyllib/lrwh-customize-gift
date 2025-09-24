@@ -153,6 +153,45 @@ export default function TemplateImage({
 			height: naturalHeight,
 		});
 
+		// Set offset to fill the container (background-size: cover behavior)
+		if (image.imageOffset) {
+			const containerAspectRatio = image.width / image.height;
+			const imageAspectRatio = naturalWidth / naturalHeight;
+
+			let fillScaleX: number;
+			let fillScaleY: number;
+			let fillOffsetX: number;
+			let fillOffsetY: number;
+
+			if (containerAspectRatio > imageAspectRatio) {
+				// Container is wider - scale to fill width, crop height
+				fillScaleX = image.width / naturalWidth;
+				fillScaleY = fillScaleX;
+				const scaledHeight = naturalHeight * fillScaleY;
+				fillOffsetX = 0;
+				fillOffsetY = -(scaledHeight - image.height) / 2;
+			} else {
+				// Container is taller - scale to fill height, crop width
+				fillScaleY = image.height / naturalHeight;
+				fillScaleX = fillScaleY;
+				const scaledWidth = naturalWidth * fillScaleX;
+				fillOffsetX = -(scaledWidth - image.width) / 2;
+				fillOffsetY = 0;
+			}
+
+			document.dispatchEvent(
+				new CustomEvent("imageAdjust", {
+					detail: {
+						id: image.id,
+						imageOffset: { x: fillOffsetX, y: fillOffsetY },
+						scaleX: fillScaleX,
+						scaleY: fillScaleY,
+					},
+				}),
+			);
+			return;
+		}
+
 		// Initialize image settings if not set
 		if (!image.imageOffset || (!image.scaleX && !image.scaleY)) {
 			// Calculate scale to fill the container (like background-size: cover)
