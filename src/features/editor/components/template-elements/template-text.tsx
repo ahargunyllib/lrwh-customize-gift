@@ -265,7 +265,7 @@ export default function TemplateText({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: fontSizeNum,
+		fontSize: fontSizeNum * scale,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
@@ -281,7 +281,10 @@ export default function TemplateText({
 		overflow: "hidden",
 		wordWrap: "break-word",
 		whiteSpace: "pre-wrap",
-		letterSpacing: letterSpacing || "normal",
+		letterSpacing:
+			(letterSpacing || "normal") === "normal"
+				? "normal"
+				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
 		textStroke: textStroke || WebkitTextStroke || undefined,
 		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
@@ -292,7 +295,7 @@ export default function TemplateText({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: fontSizeNum,
+		fontSize: fontSizeNum * scale,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
@@ -305,7 +308,10 @@ export default function TemplateText({
 		background: "transparent",
 		wordWrap: "break-word",
 		whiteSpace: curved ? "nowrap" : "pre-wrap",
-		letterSpacing: letterSpacing || "normal",
+		letterSpacing:
+			(letterSpacing || "normal") === "normal"
+				? "normal"
+				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
 		overflow: "hidden",
 		textStroke: textStroke || WebkitTextStroke || undefined,
