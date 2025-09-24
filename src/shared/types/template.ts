@@ -19,9 +19,18 @@ export interface ImageElement {
 	borderRadius?: number;
 	grayscale?: boolean;
 	imageOffset?: { x: number; y: number };
-	imageScale?: number;
+	scaleX?: number;
+	scaleY?: number;
 	centerX?: boolean;
 	centerY?: boolean;
+	naturalWidth?: number;
+	naturalHeight?: number;
+}
+export interface CropArea {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 }
 
 export interface TextElement {
