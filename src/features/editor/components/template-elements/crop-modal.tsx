@@ -38,14 +38,24 @@ export const CropModal = ({
 
 	const scaleX = availableWidth / originalDimensions.width;
 	const scaleY = availableHeight / originalDimensions.height;
-	const imageDisplayScale = Math.min(scaleX, scaleY, 1); // Allow up to 1.5x scaling
+	const imageDisplayScale = Math.min(scaleX, scaleY, 1);
 
 	const displayWidth = originalDimensions.width * imageDisplayScale;
 	const displayHeight = originalDimensions.height * imageDisplayScale;
 
-	const modalWidth = Math.min(displayWidth + padding, maxModalWidth);
+	// Calculate modal dimensions with proper minimum sizes
+	const minModalWidth = 400; // Minimum width for small images
+	const minModalHeight = 300 + headerHeight + footerHeight; // Minimum height for small images
+
+	const modalWidth = Math.min(
+		Math.max(displayWidth + padding * 2, minModalWidth),
+		maxModalWidth,
+	);
 	const modalHeight = Math.min(
-		displayHeight + headerHeight + footerHeight + padding,
+		Math.max(
+			displayHeight + headerHeight + footerHeight + padding * 2,
+			minModalHeight,
+		),
 		maxModalHeight,
 	);
 
@@ -74,13 +84,9 @@ export const CropModal = ({
 				{/* Header */}
 				<div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
 					<div>
-						<h3 className="text-gray-900 font-semibold text-lg">
+						<h3 className="text-gray-900 font-semibold text-sm md:text-lg">
 							Adjust Image Crop
 						</h3>
-						<p className="text-sm text-gray-600 mt-1">
-							Drag to move • Resize corners to adjust • Target: {image.width} ×{" "}
-							{image.height}px
-						</p>
 					</div>
 					<div className="flex gap-3">
 						<button
@@ -112,10 +118,7 @@ export const CropModal = ({
 						}}
 					>
 						<img
-							src={
-								image.src ||
-								"https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
-							}
+							src={image.src}
 							alt="Crop preview"
 							className="w-full h-full object-contain select-none"
 							draggable={false}
