@@ -124,6 +124,30 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							onClick={(e) => e.stopPropagation()}
 						/>
 					</div>
+					{/* Line Height */}
+					<div className="space-y-0.5">
+						<Label className="text-xs">Line Height</Label>
+						<Input
+							type="number"
+							min={0.5}
+							max={3}
+							step={0.1}
+							value={txt.style.lineHeight}
+							onChange={(e) =>
+								updateText(txt.id, {
+									style: {
+										...txt.style,
+										lineHeight: Math.max(
+											0.5,
+											Number.parseFloat(e.target.value),
+										).toString(),
+									},
+								})
+							}
+							className="h-8"
+							onClick={(e) => e.stopPropagation()}
+						/>
+					</div>
 				</div>
 				{/* Position X & Y */}
 				<div className="grid grid-cols-2 gap-2">
