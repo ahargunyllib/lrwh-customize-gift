@@ -23,7 +23,12 @@ import {
 	getPaginationRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDownIcon, ChevronRightIcon, EyeIcon } from "lucide-react";
+import {
+	ChevronDownIcon,
+	ChevronRightIcon,
+	DownloadIcon,
+	EyeIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
@@ -142,17 +147,32 @@ export default function OrderTable({ data }: Props) {
 				const countHavingImages = products.filter((p) => p.imageUrl).length;
 				const hasAllImages = countHavingImages === products.length;
 				return (
-					<Badge
-						variant={
-							hasAllImages
-								? "default"
-								: countHavingImages === 0
-									? "destructive"
-									: "secondary"
-						}
-					>
-						{countHavingImages}/{products.length} Images
-					</Badge>
+					<div className="flex flex-row items-center gap-2">
+						<Badge
+							variant={
+								hasAllImages
+									? "default"
+									: countHavingImages === 0
+										? "destructive"
+										: "secondary"
+							}
+						>
+							{countHavingImages}/{products.length} Images
+						</Badge>
+						{hasAllImages && (
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={async () => {
+									for (const product of products) {
+										downloadImage(product.imageUrl);
+									}
+								}}
+							>
+								<DownloadIcon className="h-4 w-4" />
+							</Button>
+						)}
+					</div>
 				);
 			},
 		},
@@ -229,51 +249,6 @@ export default function OrderTable({ data }: Props) {
 													<p className="text-gray-500">No products.</p>
 												)}
 												{row.original.products.map((variant, idx) => {
-													const downloadImage = async () => {
-														const { imageUrl } = variant;
-														if (!imageUrl) {
-															toast.error(
-																"No image URL available for download.",
-															);
-															return;
-														}
-
-														const key = imageUrl.split("/").pop();
-
-														const { data: response, error: fetchErr } =
-															await tryCatch(fetch(`/api/files/${key}`));
-														if (fetchErr) {
-															toast.error("Failed to fetch the image URL.", {
-																description: fetchErr.message,
-															});
-															return;
-														}
-
-														if (!response.ok) {
-															toast.error("Failed to download the image.");
-															return;
-														}
-
-														const { data: blob, error: blobErr } =
-															await tryCatch(response.blob());
-														if (blobErr) {
-															toast.error(
-																"Failed to convert response to blob.",
-															);
-															return;
-														}
-
-														const url = URL.createObjectURL(blob);
-														const a = document.createElement("a");
-														a.href = url;
-														a.download =
-															imageUrl.split("/").pop() || "image.png";
-														document.body.appendChild(a);
-														a.click();
-														document.body.removeChild(a);
-														URL.revokeObjectURL(url);
-													};
-
 													return (
 														<div
 															key={`${variant.id}-${idx}`}
@@ -328,7 +303,9 @@ export default function OrderTable({ data }: Props) {
 																		/>
 																		<DialogFooter>
 																			<Button
-																				onClick={downloadImage}
+																				onClick={() =>
+																					downloadImage(variant.imageUrl)
+																				}
 																				variant="outline"
 																			>
 																				Download Image
@@ -358,3 +335,42 @@ export default function OrderTable({ data }: Props) {
 		</Table>
 	);
 }
+
+const downloadImage = async (imageUrl: string | null) => {
+	if (!imageUrl) {
+		toast.error("No image URL provided.");
+		return;
+	}
+
+	const key = imageUrl.split("/").pop();
+
+	const { data: response, error: fetchErr } = await tryCatch(
+		fetch(`/api/files/${key}`),
+	);
+	if (fetchErr) {
+		toast.error("Failed to fetch the image URL.", {
+			description: fetchErr.message,
+		});
+		return;
+	}
+
+	if (!response.ok) {
+		toast.error("Failed to download the image.");
+		return;
+	}
+
+	const { data: blob, error: blobErr } = await tryCatch(response.blob());
+	if (blobErr) {
+		toast.error("Failed to convert response to blob.");
+		return;
+	}
+
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = imageUrl.split("/").pop() || "image.png";
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+};
