@@ -29,8 +29,8 @@ export default function ListFilledTemplates({
 }) {
 	const { deleteDataURLTemplate } = useTemplatesStore();
 	const isMobile = useIsMobile();
-	const { openDialog } = useDialogStore();
-	const { openSheet } = useSheetStore();
+	const { openDialog, closeDialog } = useDialogStore();
+	const { openSheet, closeSheet } = useSheetStore();
 
 	return (
 		<div className="flex flex-row flex-wrap grow gap-2">
@@ -49,7 +49,10 @@ export default function ListFilledTemplates({
 								openSheet({
 									children: (
 										<DeleteWarningSheet
-											onDelete={() => deleteDataURLTemplate(template.id)}
+											onDelete={() => {
+												deleteDataURLTemplate(template.id);
+												closeSheet();
+											}}
 										/>
 									),
 								});
@@ -59,7 +62,10 @@ export default function ListFilledTemplates({
 							openDialog({
 								children: (
 									<DeleteWarningDialog
-										onDelete={() => deleteDataURLTemplate(template.id)}
+										onDelete={() => {
+											deleteDataURLTemplate(template.id);
+											closeDialog();
+										}}
 									/>
 								),
 							});
