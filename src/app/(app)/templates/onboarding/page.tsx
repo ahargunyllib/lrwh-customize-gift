@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function Page() {
 	return (
 		<section>
-			<div className="h-dvh flex flex-col items-center justify-center">
+			<div className="h-dvh flex flex-col items-center justify-center ">
 				<div className="space-y-8 px-6">
 					<div className="space-y-2 text-center">
 						<h1 className="text-2xl font-bold">Masuk</h1>

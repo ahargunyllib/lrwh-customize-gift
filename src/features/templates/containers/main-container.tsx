@@ -28,7 +28,7 @@ export default function MainContainer() {
 	}, [productVariants]);
 
 	return (
-		<section className="relative">
+		<section className="relative overflow-hidden">
 			<Header />
 
 			<main className="px-6 md:px-14 py-6 flex flex-col gap-6">
