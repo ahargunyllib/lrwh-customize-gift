@@ -9,6 +9,7 @@ import SendSheetButton from "@/features/templates/components/send-sheet-button";
 import { useTemplatesStore } from "@/features/templates/stores/use-templates-store";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { cn } from "@/shared/lib/utils";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import Header from "../components/header";
 
@@ -17,15 +18,25 @@ export default function MainContainer() {
 		order: { productVariants },
 	} = useTemplatesStore();
 
+	const searchParams = useSearchParams();
+	const productVariantId = searchParams.get("productVariantId");
+
 	const [selectedProductVariant, setSelectedProductVariant] = useState(
-		productVariants[0],
+		productVariants.find((pv) => pv.id === productVariantId) ||
+			productVariants[0],
 	);
 
 	const hasFillAllTemplates = useMemo(() => {
+		if (productVariantId) {
+			const pv = productVariants.find((pv) => pv.id === productVariantId);
+			if (!pv) return false;
+			return pv.templates.every((template) => template.dataURL);
+		}
+
 		return productVariants.every((productVariant) =>
 			productVariant.templates.every((template) => template.dataURL),
 		);
-	}, [productVariants]);
+	}, [productVariants, productVariantId]);
 
 	return (
 		<section className="relative overflow-hidden">
@@ -55,6 +66,26 @@ export default function MainContainer() {
 					>
 						<TabsList className="bg-white text-[#98A2B3] rounded-md p-1 h-fit space-x-2">
 							{productVariants.map((productVariant) => {
+								if (productVariantId) {
+									if (productVariant.id !== productVariantId) return;
+
+									const countFilledTemplates = productVariant.templates.filter(
+										(template) => template.dataURL,
+									).length;
+									const totalTemplates = productVariant.templates.length;
+
+									return (
+										<TabsTrigger
+											key={productVariant.id}
+											value={productVariant.id}
+											className="data-[state=active]:bg-[#2854AD] data-[state=active]:text-white data-[state=active]:shadow-none text-xs font-medium text-[#98A2B3] rounded-sm px-3 py-1.5 transition-colors duration-200"
+										>
+											{productVariant.product.name} - {productVariant.name} (
+											{countFilledTemplates}/{totalTemplates})
+										</TabsTrigger>
+									);
+								}
+
 								const countFilledTemplates = productVariant.templates.filter(
 									(template) => template.dataURL,
 								).length;

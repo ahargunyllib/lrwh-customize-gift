@@ -17,6 +17,8 @@ export const useOnboardingForm = () => {
 		useVerifyOrderByUsernameAndOrderNumberMutation();
 	const searchParams = useSearchParams();
 
+	const productVariantId = searchParams.get("productVariantId");
+
 	const form = useForm<VerifyOrderByUsernameAndOrderNumberRequest>({
 		resolver: zodResolver(VerifyOrderByUsernameAndOrderNumberSchema),
 		defaultValues: {
@@ -43,7 +45,9 @@ export const useOnboardingForm = () => {
 				const { order } = res.data;
 				updateOrder(order);
 
-				router.push("/templates");
+				router.push(
+					`/templates?productVariantId=${productVariantId || order.productVariants[0]?.id}`,
+				); // Redirect to the first product variant if none is specified
 			},
 		});
 	});
