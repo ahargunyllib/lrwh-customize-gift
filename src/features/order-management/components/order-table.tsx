@@ -27,6 +27,7 @@ import { ChevronDownIcon, ChevronRightIcon, EyeIcon } from "lucide-react";
 import Image from "next/image";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "../../../shared/components/ui/badge";
 import {
 	Dialog,
 	DialogContent,
@@ -131,6 +132,27 @@ export default function OrderTable({ data }: Props) {
 							minute: "2-digit",
 						})}
 					</span>
+				);
+			},
+		},
+		{
+			header: "Status",
+			cell(props) {
+				const { products } = props.row.original;
+				const countHavingImages = products.filter((p) => p.imageUrl).length;
+				const hasAllImages = countHavingImages === products.length;
+				return (
+					<Badge
+						variant={
+							hasAllImages
+								? "default"
+								: countHavingImages === 0
+									? "destructive"
+									: "secondary"
+						}
+					>
+						{countHavingImages}/{products.length} Images
+					</Badge>
 				);
 			},
 		},
