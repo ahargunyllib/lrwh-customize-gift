@@ -17,6 +17,8 @@ type Props = {
 	currentPage: number;
 	totalPages: number;
 	limit: number;
+	setPage: (page: number) => void;
+	setLimit: (limit: number) => void;
 	paginationItemsToDisplay?: number;
 };
 
@@ -24,6 +26,8 @@ export default function DataTablePagination({
 	currentPage,
 	totalPages,
 	limit,
+	setPage,
+	setLimit,
 	paginationItemsToDisplay = 5,
 }: Props) {
 	const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
@@ -40,9 +44,7 @@ export default function DataTablePagination({
 					variant="ghost"
 					onClick={() => {
 						if (currentPage > 1) {
-							const url = new URL(window.location.href);
-							url.searchParams.set("page", String(currentPage - 1));
-							window.location.href = url.toString();
+							setPage(currentPage - 1);
 						}
 					}}
 				>
@@ -61,9 +63,7 @@ export default function DataTablePagination({
 									: "text-muted-foreground",
 							)}
 							onClick={() => {
-								const url = new URL(window.location.href);
-								url.searchParams.set("page", String(page));
-								window.location.href = url.toString();
+								setPage(page);
 							}}
 						>
 							{page}
@@ -76,9 +76,7 @@ export default function DataTablePagination({
 					variant="ghost"
 					onClick={() => {
 						if (currentPage < totalPages) {
-							const url = new URL(window.location.href);
-							url.searchParams.set("page", String(currentPage + 1));
-							window.location.href = url.toString();
+							setPage(currentPage + 1);
 						}
 					}}
 				>
@@ -100,10 +98,8 @@ export default function DataTablePagination({
 							<DropdownMenuItem
 								key={limit}
 								onClick={() => {
-									const url = new URL(window.location.href);
-									url.searchParams.set("limit", String(limit));
-									url.searchParams.set("page", "1");
-									window.location.href = url.toString();
+									setLimit(limit);
+									setPage(1);
 								}}
 								className="cursor-pointer"
 							>

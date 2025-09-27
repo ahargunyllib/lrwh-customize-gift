@@ -2,21 +2,26 @@
 
 import DataTablePagination from "@/shared/components/data-table-pagination";
 import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { useGetOrdersQuery } from "@/shared/repository/order/query";
-import { useSearchParams } from "next/navigation";
+import { parseAsInteger, useQueryState } from "nuqs";
 import OrderTable from "../components/order-table";
 import AddOrderDialogContainer from "./add-order-dialog-container";
 
 export default function OrdersTableContainer() {
-	const searchParams = useSearchParams();
+	const [search, setSearch] = useQueryState("search", { defaultValue: "" });
+	const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+	const [limit, setLimit] = useQueryState(
+		"limit",
+		parseAsInteger.withDefault(10),
+	);
 
-	const search = searchParams.get("search") || "";
-	const page = Number(searchParams.get("page")) || 1;
-	const limit = Number(searchParams.get("limit")) || 10;
+	const debouncedSearch = useDebounce(search, 300);
 
 	const { data: res, isLoading } = useGetOrdersQuery({
-		search,
+		search: debouncedSearch,
 		page,
 		limit,
 	});
@@ -26,7 +31,12 @@ export default function OrdersTableContainer() {
 	return (
 		<div className="rounded-md border">
 			<div className="flex justify-between items-center px-2 py-4">
-				<div className="invisible">{/* <SearchFilter /> */}</div>
+				<Input
+					placeholder="Search"
+					value={search || ""}
+					onChange={(e) => setSearch(e.target.value)}
+					className="max-w-sm"
+				/>
 
 				<Button
 					variant="outline"
@@ -49,6 +59,8 @@ export default function OrdersTableContainer() {
 							currentPage={page}
 							totalPages={res.data.meta.pagination.total_page}
 							limit={limit}
+							setPage={setPage}
+							setLimit={setLimit}
 						/>
 					</>
 				) : (
