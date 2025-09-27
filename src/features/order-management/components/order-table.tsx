@@ -26,6 +26,7 @@ import {
 import {
 	ChevronDownIcon,
 	ChevronRightIcon,
+	CopyIcon,
 	DownloadIcon,
 	EyeIcon,
 } from "lucide-react";
@@ -279,41 +280,70 @@ export default function OrderTable({ data }: Props) {
 																	</p>
 																</div>
 															</div>
-															{variant.imageUrl ? (
-																<Dialog>
-																	<DialogTrigger asChild>
-																		<Button variant="outline" size="icon">
-																			<EyeIcon />
-																		</Button>
-																	</DialogTrigger>
-																	<DialogContent>
-																		<DialogHeader>
-																			<DialogTitle>Image Preview</DialogTitle>
-																			<DialogDescription>
-																				View the image associated with this
-																				order.
-																			</DialogDescription>
-																		</DialogHeader>
-																		<Image
-																			src={variant.imageUrl}
-																			alt="Order Image"
-																			width={500}
-																			height={500}
-																			className="object-cover border"
-																		/>
-																		<DialogFooter>
-																			<Button
-																				onClick={() =>
-																					downloadImage(variant.imageUrl)
-																				}
-																				variant="outline"
-																			>
-																				Download Image
+															<div className="flex flex-row items-center gap-x-2">
+																<Button
+																	size="icon"
+																	variant="outline"
+																	onClick={() => {
+																		const url = new URL(
+																			`${window.location.host}/templates/onboarding`,
+																		);
+																		url.searchParams.set(
+																			"username",
+																			row.original.username,
+																		);
+																		url.searchParams.set(
+																			"orderNumber",
+																			row.original.orderNumber,
+																		);
+																		url.searchParams.set(
+																			"productVariantId",
+																			variant.productVariant.id,
+																		);
+																		navigator.clipboard.writeText(
+																			url.toString(),
+																		);
+																		toast.success("Link copied to clipboard.");
+																	}}
+																>
+																	<CopyIcon />
+																</Button>
+																{variant.imageUrl ? (
+																	<Dialog>
+																		<DialogTrigger asChild>
+																			<Button variant="outline" size="icon">
+																				<EyeIcon />
 																			</Button>
-																		</DialogFooter>
-																	</DialogContent>
-																</Dialog>
-															) : null}
+																		</DialogTrigger>
+																		<DialogContent>
+																			<DialogHeader>
+																				<DialogTitle>Image Preview</DialogTitle>
+																				<DialogDescription>
+																					View the image associated with this
+																					order.
+																				</DialogDescription>
+																			</DialogHeader>
+																			<Image
+																				src={variant.imageUrl}
+																				alt="Order Image"
+																				width={500}
+																				height={500}
+																				className="object-cover border"
+																			/>
+																			<DialogFooter>
+																				<Button
+																					onClick={() =>
+																						downloadImage(variant.imageUrl)
+																					}
+																					variant="outline"
+																				>
+																					Download Image
+																				</Button>
+																			</DialogFooter>
+																		</DialogContent>
+																	</Dialog>
+																) : null}
+															</div>
 														</div>
 													);
 												})}
