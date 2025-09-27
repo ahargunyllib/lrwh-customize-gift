@@ -32,7 +32,6 @@ export default function CreateProductFormDialog() {
 		defaultValues: {
 			name: "",
 			description: "",
-			shopeeUrl: "",
 		},
 	});
 

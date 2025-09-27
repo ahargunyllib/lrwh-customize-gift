@@ -41,7 +41,7 @@ export default function UpdateProductFormDialog({
 		defaultValues: {
 			name: product.name,
 			description: product.description || "",
-			shopeeUrl: product.shopeeUrl || "",
+			shopeeUrl: product.shopeeUrl || undefined,
 		},
 	});
 
