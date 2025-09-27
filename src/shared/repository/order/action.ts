@@ -471,6 +471,46 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 	// 1) Decode & validate all templates
 	const decoded = await Promise.all(
 		templates.map(async (t) => {
+			// cant submit if already has image
+			const { data: existing, error: fetchErr } = await tryCatch(
+				db
+					.select()
+					.from(orderProductVariantsTable)
+					.where(
+						and(
+							eq(orderProductVariantsTable.id, t.orderProductVariantId),
+							eq(orderProductVariantsTable.orderId, orderId),
+						),
+					),
+			);
+			if (fetchErr) {
+				console.error(
+					`Failed to fetch existing variant ${t.orderProductVariantId}: ${fetchErr.message}`,
+				);
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: fetchErr.message,
+					message: "Failed to fetch existing variant",
+				};
+			}
+			if (existing.length === 0) {
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: "Variant not found",
+					message: "Variant not found",
+				};
+			}
+			if (existing[0].imageUrl) {
+				return {
+					success: false as const,
+					orderProductVariantId: t.orderProductVariantId,
+					error: "Image already submitted",
+					message: "Image already submitted",
+				};
+			}
+
 			const { data: parsed, error: parseErr } = await tryCatch(
 				Promise.resolve(parseDataUrl(t.dataURL)),
 			);
