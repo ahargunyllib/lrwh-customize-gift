@@ -290,7 +290,7 @@ export const verifyOrderByUsernameAndOrderNumber = async (
 export const createOrder = async ({
 	orderNumber,
 	username,
-	productVariantIds,
+	productVariants,
 }: CreateOrderRequest) => {
 	const { error } = await tryCatch(
 		db.transaction(async (tx) => {
@@ -313,10 +313,12 @@ export const createOrder = async ({
 
 			const { error: fetchError } = await tryCatch(
 				tx.insert(orderProductVariantsTable).values(
-					productVariantIds.map((productVariantId) => ({
-						orderId: createdOrder[0].id,
-						productVariantId,
-					})),
+					productVariants.flatMap(({ productVariantId, quantity }) =>
+						Array.from({ length: quantity }, () => ({
+							orderId: createdOrder[0].id,
+							productVariantId,
+						})),
+					),
 				),
 			);
 			if (fetchError) {
@@ -343,7 +345,7 @@ export const createOrder = async ({
 
 export const updateOrder = async (
 	{ id }: UpdateOrderParams,
-	{ orderNumber, username, productVariantIds }: UpdateOrderRequest,
+	{ orderNumber, username, productVariants }: UpdateOrderRequest,
 ) => {
 	const { data: existingOrder, error: fetchError } = await tryCatch(
 		db.select().from(ordersTable).where(eq(ordersTable.id, id)),
@@ -395,10 +397,12 @@ export const updateOrder = async (
 
 			const { error: insertError } = await tryCatch(
 				tx.insert(orderProductVariantsTable).values(
-					productVariantIds.map((productVariantId) => ({
-						orderId: id,
-						productVariantId,
-					})),
+					productVariants.flatMap(({ productVariantId, quantity }) =>
+						Array.from({ length: quantity }, () => ({
+							orderId: id,
+							productVariantId,
+						})),
+					),
 				),
 			);
 			if (insertError) {

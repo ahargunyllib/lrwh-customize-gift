@@ -19,7 +19,7 @@ export const useCreateOrderForm = () => {
 		defaultValues: {
 			orderNumber: "",
 			username: "",
-			productVariantIds: [],
+			productVariants: [],
 		},
 	});
 

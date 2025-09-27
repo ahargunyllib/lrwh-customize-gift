@@ -24,6 +24,7 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import type { Product, ProductVariant } from "@/shared/types";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import { useCreateOrderForm } from "../hooks/use-create-order-form";
 
@@ -36,9 +37,9 @@ type Props = {
 export default function AddOrderDialog({ products }: Props) {
 	const form = useCreateOrderForm();
 
-	const productVariantIdsArray = useFieldArray({
+	const productVariantsArray = useFieldArray({
 		control: form.control,
-		name: "productVariantIds" as never, // TypeScript workaround for field array name
+		name: "productVariants",
 	});
 
 	return (
@@ -87,50 +88,105 @@ export default function AddOrderDialog({ products }: Props) {
 								variant="outline"
 								size="sm"
 								onClick={() => {
-									productVariantIdsArray.append(undefined);
+									productVariantsArray.append({
+										productVariantId: products[0]?.variants[0]?.id || "",
+										quantity: 1,
+									});
 								}}
 							>
 								Add Variant
 							</Button>
 						</div>
-						{productVariantIdsArray.fields.length === 0 && (
+						{productVariantsArray.fields.length === 0 && (
 							<p className="text-sm text-gray-500 text-center">
 								No product variants added. Click "Add Variant" to include
 								products.
 							</p>
 						)}
-						{productVariantIdsArray.fields.map((field, index) => (
-							<FormField
-								control={form.control}
-								key={field.id}
-								name={`productVariantIds.${index}`}
-								render={({ field: variantField }) => {
-									return (
-										<FormItem>
-											<Select
-												onValueChange={variantField.onChange}
-												value={variantField.value}
-											>
-												<FormControl>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Select a product variant" />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													{products.map((product) =>
-														product.variants.map((variant) => (
-															<SelectItem key={variant.id} value={variant.id}>
-																{`${product.name} - ${variant.name}`}
-															</SelectItem>
-														)),
-													)}
-												</SelectContent>
-											</Select>
+						{productVariantsArray.fields.map((field, index) => (
+							<div key={field.id} className="flex flex-row items-center gap-2">
+								<FormField
+									control={form.control}
+									name={`productVariants.${index}.productVariantId`}
+									render={({ field: productVariantField }) => {
+										return (
+											<FormItem className="flex-1">
+												<Select
+													onValueChange={(value) => {
+														productVariantField.onChange(value);
+													}}
+													value={productVariantField.value}
+												>
+													<FormControl>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="Select a product variant" />
+														</SelectTrigger>
+													</FormControl>
+													<SelectContent>
+														{products.map((product) =>
+															product.variants.map((variant) => (
+																<SelectItem key={variant.id} value={variant.id}>
+																	{`${product.name} - ${variant.name}`}
+																</SelectItem>
+															)),
+														)}
+													</SelectContent>
+												</Select>
+											</FormItem>
+										);
+									}}
+								/>
+								<FormField
+									control={form.control}
+									name={`productVariants.${index}.quantity`}
+									render={({ field: quantityField }) => (
+										<FormItem className="shrink">
+											<FormControl>
+												<div className="flex flex-row items-center gap-2">
+													<Button
+														type="button"
+														variant="outline"
+														size="icon"
+														onClick={() => {
+															const newValue = Math.max(
+																1,
+																(quantityField.value || 1) - 1,
+															);
+															quantityField.onChange(newValue);
+														}}
+													>
+														<MinusIcon className="size-4" />
+													</Button>
+													<Input
+														type="number"
+														min={1}
+														className="text-center w-16"
+														value={quantityField.value}
+														onChange={(e) => {
+															const value = Number.parseInt(e.target.value, 10);
+															quantityField.onChange(
+																Number.isNaN(value) ? 1 : value,
+															);
+														}}
+													/>
+													<Button
+														type="button"
+														variant="outline"
+														size="icon"
+														onClick={() => {
+															const newValue = (quantityField.value || 1) + 1;
+															quantityField.onChange(newValue);
+														}}
+													>
+														<PlusIcon className="size-4" />
+													</Button>
+												</div>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
-									);
-								}}
-							/>
+									)}
+								/>
+							</div>
 						))}
 					</div>
 					<DialogFooter>
