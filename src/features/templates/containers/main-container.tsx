@@ -39,7 +39,7 @@ export default function MainContainer() {
 	}, [productVariants, productVariantId]);
 
 	return (
-		<section className="relative overflow-hidden">
+		<section className="relative overflow-hidden min-h-dvh">
 			<Header />
 
 			<main className="px-6 md:px-14 py-6 flex flex-col gap-6">
