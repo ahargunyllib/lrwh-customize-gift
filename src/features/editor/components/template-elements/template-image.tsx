@@ -372,6 +372,168 @@ export default function TemplateImage({
 		originalDimensions,
 	]);
 
+	// Handle crop area touch dragging
+	const handleCropTouchStart = (e: React.TouchEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		const touch = e.touches[0];
+		setIsDraggingCrop(true);
+		setDragStartPos({ x: touch.clientX, y: touch.clientY });
+		setInitialCropArea({ ...cropArea });
+	};
+
+	// Handle crop resize touch
+	const handleCropResizeTouchStart = (
+		e: React.TouchEvent,
+		direction: string,
+	) => {
+		e.preventDefault();
+		e.stopPropagation();
+		const touch = e.touches[0];
+		setIsResizingCrop(true);
+		setResizeDirection(direction);
+		setDragStartPos({ x: touch.clientX, y: touch.clientY });
+		setInitialCropArea({ ...cropArea });
+	};
+
+	// Add touch event handlers for crop dragging
+	useEffect(() => {
+		if (!isDraggingCrop || !originalDimensions) return;
+
+		const handleTouchMove = (e: TouchEvent) => {
+			e.preventDefault();
+			const touch = e.touches[0];
+			const deltaX = (touch.clientX - dragStartPos.x) / imageDisplayScale;
+			const deltaY = (touch.clientY - dragStartPos.y) / imageDisplayScale;
+
+			const newX = Math.max(
+				0,
+				Math.min(
+					originalDimensions.width - initialCropArea.width,
+					initialCropArea.x + deltaX,
+				),
+			);
+			const newY = Math.max(
+				0,
+				Math.min(
+					originalDimensions.height - initialCropArea.height,
+					initialCropArea.y + deltaY,
+				),
+			);
+
+			setCropArea({
+				...initialCropArea,
+				x: newX,
+				y: newY,
+			});
+		};
+
+		const handleTouchEnd = () => {
+			setIsDraggingCrop(false);
+		};
+
+		document.addEventListener("touchmove", handleTouchMove, { passive: false });
+		document.addEventListener("touchend", handleTouchEnd);
+
+		return () => {
+			document.removeEventListener("touchmove", handleTouchMove);
+			document.removeEventListener("touchend", handleTouchEnd);
+		};
+	}, [
+		isDraggingCrop,
+		dragStartPos,
+		initialCropArea,
+		imageDisplayScale,
+		originalDimensions,
+	]);
+
+	// Add touch event handlers for crop resizing
+	useEffect(() => {
+		if (!isResizingCrop || !originalDimensions) return;
+
+		const handleTouchMove = (e: TouchEvent) => {
+			e.preventDefault();
+			const touch = e.touches[0];
+			const deltaX = (touch.clientX - dragStartPos.x) / imageDisplayScale;
+			const deltaY = (touch.clientY - dragStartPos.y) / imageDisplayScale;
+
+			const newCropArea = { ...initialCropArea };
+
+			// Calculate new dimensions based on resize direction
+			switch (resizeDirection) {
+				case "nw":
+					newCropArea.width = Math.max(20, initialCropArea.width - deltaX);
+					newCropArea.height = newCropArea.width / cropAspectRatio;
+					newCropArea.x =
+						initialCropArea.x + initialCropArea.width - newCropArea.width;
+					newCropArea.y =
+						initialCropArea.y + initialCropArea.height - newCropArea.height;
+					break;
+				case "ne":
+					newCropArea.width = Math.max(20, initialCropArea.width + deltaX);
+					newCropArea.height = newCropArea.width / cropAspectRatio;
+					newCropArea.x = initialCropArea.x;
+					newCropArea.y =
+						initialCropArea.y + initialCropArea.height - newCropArea.height;
+					break;
+				case "sw":
+					newCropArea.width = Math.max(20, initialCropArea.width - deltaX);
+					newCropArea.height = newCropArea.width / cropAspectRatio;
+					newCropArea.x =
+						initialCropArea.x + initialCropArea.width - newCropArea.width;
+					newCropArea.y = initialCropArea.y;
+					break;
+				case "se":
+					newCropArea.width = Math.max(20, initialCropArea.width + deltaX);
+					newCropArea.height = newCropArea.width / cropAspectRatio;
+					newCropArea.x = initialCropArea.x;
+					newCropArea.y = initialCropArea.y;
+					break;
+			}
+
+			// Constrain to image boundaries
+			newCropArea.x = Math.max(
+				0,
+				Math.min(originalDimensions.width - newCropArea.width, newCropArea.x),
+			);
+			newCropArea.y = Math.max(
+				0,
+				Math.min(originalDimensions.height - newCropArea.height, newCropArea.y),
+			);
+			newCropArea.width = Math.min(
+				originalDimensions.width - newCropArea.x,
+				newCropArea.width,
+			);
+			newCropArea.height = Math.min(
+				originalDimensions.height - newCropArea.y,
+				newCropArea.height,
+			);
+
+			setCropArea(newCropArea);
+		};
+
+		const handleTouchEnd = () => {
+			setIsResizingCrop(false);
+			setResizeDirection("");
+		};
+
+		document.addEventListener("touchmove", handleTouchMove, { passive: false });
+		document.addEventListener("touchend", handleTouchEnd);
+
+		return () => {
+			document.removeEventListener("touchmove", handleTouchMove);
+			document.removeEventListener("touchend", handleTouchEnd);
+		};
+	}, [
+		isResizingCrop,
+		dragStartPos,
+		initialCropArea,
+		imageDisplayScale,
+		originalDimensions,
+		resizeDirection,
+		cropAspectRatio,
+	]);
+
 	// Apply crop and exit crop mode
 	const applyCrop = () => {
 		if (!originalDimensions) return;
@@ -771,6 +933,8 @@ export default function TemplateImage({
 					applyCrop={applyCrop}
 					onCropMouseDown={handleCropMouseDown}
 					onCropResizeMouseDown={handleCropResizeMouseDown}
+					onCropTouchStart={handleCropTouchStart}
+					onCropResizeTouchStart={handleCropResizeTouchStart}
 				/>
 			)}
 		</>
