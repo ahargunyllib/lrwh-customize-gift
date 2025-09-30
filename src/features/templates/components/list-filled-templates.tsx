@@ -33,9 +33,12 @@ export default function ListFilledTemplates({
 	const { openSheet, closeSheet } = useSheetStore();
 
 	return (
-		<div className="flex flex-row flex-wrap grow gap-2">
+		<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2">
 			{selectedProductVariant.templates.map((template) => (
-				<div key={template.id} className="flex flex-col gap-2 items-center">
+				<div
+					key={template.id}
+					className="flex flex-col gap-2 items-center border"
+				>
 					<img
 						src={template.dataURL || "https://placekitten.com/300/200"}
 						alt="Template Preview"

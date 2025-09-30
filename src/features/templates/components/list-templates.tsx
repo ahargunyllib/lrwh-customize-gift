@@ -74,13 +74,13 @@ export default function ListTemplates({
 
 	return (
 		<>
-			<div className="flex flex-row flex-wrap grow gap-2">
+			<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-2">
 				{res?.data?.templates.map((template) => (
 					<Link
 						key={template.id}
 						href={`/templates/${template.id}?orderProductVariantId=${firstEmptyTemplate.id}`}
 					>
-						<div className="h-fit flex flex-col items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg">
+						<div className="h-fit flex flex-col items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg border">
 							<div className="h-40 flex items-center justify-center">
 								{renderTemplatePreview(template, {
 									width: template.width,

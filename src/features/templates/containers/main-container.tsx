@@ -110,12 +110,12 @@ export default function MainContainer() {
 					</Tabs>
 				</div>
 
-				<div className="flex flex-col md:grid md:grid-cols-5 md:grid-rows-5 gap-6">
+				<div className="flex flex-col md:grid md:grid-cols-5 gap-6">
 					{!hasFillAllTemplates && <HelpCard />}
 
 					<div
 						className={cn(
-							"col-start-3 xl:col-start-2 col-end-6 row-start-1 row-end-8 bg-white rounded-xl px-6 py-5 space-y-4 flex flex-col",
+							"col-start-3 xl:col-start-2 col-end-6 bg-white rounded-xl px-6 py-5 space-y-4 flex flex-col h-fit",
 							hasFillAllTemplates ? "col-start-1 xl:col-start-1" : "",
 						)}
 					>

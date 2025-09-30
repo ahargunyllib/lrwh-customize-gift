@@ -67,7 +67,7 @@ export default function HelpCard() {
 			</AccordionItem>
 		</Accordion>
 	) : (
-		<div className="col-start-1 col-end-3 xl:col-end-2 row-start-1 row-end-6 bg-white rounded-xl px-6 py-5 space-y-4">
+		<div className="col-start-1 col-end-3 xl:col-end-2 bg-white rounded-xl px-6 py-5 space-y-4 h-fit">
 			<h2 className="text-sm font-bold text-[#1D2939]">
 				Informasi Pengisian Template
 			</h2>
