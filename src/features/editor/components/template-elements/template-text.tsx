@@ -62,7 +62,7 @@ export default function TemplateText({
 	const {
 		backgroundColor,
 		borderRadius,
-		padding = 8,
+		padding = 0,
 		letterSpacing,
 		curved = false,
 		curveRadius = 200,
@@ -139,7 +139,7 @@ export default function TemplateText({
 		return path;
 	};
 
-	// Get clip-path to crop the parts outside canvas
+	// Get clip-path to crop the parts outside canvas - improved for curved text
 	const getClipPath = () => {
 		if (!canvasWidth || !canvasHeight) return undefined;
 
@@ -148,11 +148,27 @@ export default function TemplateText({
 		const textW = text.width || 200;
 		const textH = text.height || 100;
 
+		// For curved text, we need more generous clipping bounds
+		// because the curve might extend beyond the element bounds
+		let effectiveX = textX;
+		let effectiveY = textY;
+		let effectiveW = textW;
+		let effectiveH = textH;
+
+		if (curved) {
+			// Expand bounds to account for curve overflow
+			const curveExtension = curveRadius * curveIntensity * 0.5;
+			effectiveX = textX - curveExtension;
+			effectiveY = textY - curveExtension;
+			effectiveW = textW + curveExtension * 2;
+			effectiveH = textH + curveExtension * 2;
+		}
+
 		// Calculate the visible rectangle relative to the text element
-		const clipLeft = Math.max(0, -textX);
-		const clipTop = Math.max(0, -textY);
-		const clipRight = Math.min(textW, canvasWidth - textX);
-		const clipBottom = Math.min(textH, canvasHeight - textY);
+		const clipLeft = Math.max(0, -effectiveX);
+		const clipTop = Math.max(0, -effectiveY);
+		const clipRight = Math.min(effectiveW, canvasWidth - effectiveX);
+		const clipBottom = Math.min(effectiveH, canvasHeight - effectiveY);
 
 		// If text is completely outside canvas
 		if (clipRight <= clipLeft || clipBottom <= clipTop) {
@@ -160,17 +176,23 @@ export default function TemplateText({
 		}
 
 		// Convert to percentages for clip-path
-		const leftPercent = (clipLeft / textW) * 100;
-		const topPercent = (clipTop / textH) * 100;
-		const rightPercent = ((textW - clipRight) / textW) * 100;
-		const bottomPercent = ((textH - clipBottom) / textH) * 100;
+		const leftPercent = Math.max(0, (clipLeft / effectiveW) * 100);
+		const topPercent = Math.max(0, (clipTop / effectiveH) * 100);
+		const rightPercent = Math.max(
+			0,
+			((effectiveW - clipRight) / effectiveW) * 100,
+		);
+		const bottomPercent = Math.max(
+			0,
+			((effectiveH - clipBottom) / effectiveH) * 100,
+		);
 
 		// Only apply clip-path if there's actual cropping needed
 		if (
 			clipLeft > 0 ||
 			clipTop > 0 ||
-			clipRight < textW ||
-			clipBottom < textH
+			clipRight < effectiveW ||
+			clipBottom < effectiveH
 		) {
 			return `inset(${topPercent}% ${rightPercent}% ${bottomPercent}% ${leftPercent}%)`;
 		}
@@ -252,26 +274,30 @@ export default function TemplateText({
 		transform: `rotate(${text.rotate}deg)`,
 		transformOrigin: "center center",
 		backgroundColor: backgroundColor || "transparent",
-		borderRadius: borderRadius || 0,
-		border: isActive ? "2px solid #3b82f6" : "2px solid transparent",
+		borderRadius: (borderRadius || 0) * scale, // Scale border radius
+		border: isActive
+			? `${2 * scale}px solid #3b82f6`
+			: `${2 * scale}px solid transparent`, // Scale border
 		cursor: text.draggable && !isEditing ? "move" : "default",
 		boxSizing: "border-box",
 		clipPath: getClipPath(), // Apply cropping
 		overflow: "hidden", // Ensure content doesn't overflow
 		zIndex: layerIndex,
+		// Add padding scaling
+		padding: `${(Number(padding) || 0) * scale}px`,
 	});
 
 	const getTextStyle = (): React.CSSProperties => ({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: fontSizeNum,
+		fontSize: fontSizeNum * scale,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: padding || 8,
+		padding: 0,
 		margin: 0,
 		border: "none",
 		outline: "none",
@@ -280,7 +306,10 @@ export default function TemplateText({
 		overflow: "hidden",
 		wordWrap: "break-word",
 		whiteSpace: "pre-wrap",
-		letterSpacing: letterSpacing || "normal",
+		letterSpacing:
+			(letterSpacing || "normal") === "normal"
+				? "normal"
+				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
 		textStroke: textStroke || WebkitTextStroke || undefined,
 		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
@@ -291,20 +320,23 @@ export default function TemplateText({
 		width: "100%",
 		height: "100%",
 		fontFamily: text.style.fontFamily,
-		fontSize: fontSizeNum,
+		fontSize: fontSizeNum * scale,
 		fontWeight: text.style.fontWeight,
 		color: text.style.color,
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: curved ? 0 : padding || 8,
+		padding: curved ? 0 : 0,
 		margin: 0,
 		border: "none",
 		outline: "none",
 		background: "transparent",
 		wordWrap: "break-word",
 		whiteSpace: curved ? "nowrap" : "pre-wrap",
-		letterSpacing: letterSpacing || "normal",
+		letterSpacing:
+			(letterSpacing || "normal") === "normal"
+				? "normal"
+				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
 		overflow: "hidden",
 		textStroke: textStroke || WebkitTextStroke || undefined,
@@ -447,7 +479,7 @@ export default function TemplateText({
 		isSnapping,
 	]);
 
-	// Render curved text using SVG
+	// Render curved text using SVG with proper scaling
 	const renderCurvedText = () => {
 		if (!curved || !text.content.trim()) return null;
 
@@ -457,6 +489,11 @@ export default function TemplateText({
 			curveRadius,
 			curveDirection,
 		);
+
+		// Calculate scaled stroke width
+		const scaledStrokeWidth = text.style.outlineWidth
+			? Number.parseFloat(String(text.style.outlineWidth)) * scale
+			: scale;
 
 		return (
 			<svg
@@ -478,18 +515,19 @@ export default function TemplateText({
 					style={
 						{
 							fontFamily: text.style.fontFamily,
-							fontSize: fontSizeNum,
+							fontSize: fontSizeNum * scale, // Scale font size for SVG
 							fontWeight: text.style.fontWeight,
 							fill: text.style.color,
-							letterSpacing: letterSpacing || "normal",
+							letterSpacing:
+								(letterSpacing || "normal") === "normal"
+									? "normal"
+									: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`, // Scale letter spacing
 							stroke:
 								textStroke || WebkitTextStroke
 									? text.style.outlineColor || "#000000"
 									: "none",
 							strokeWidth:
-								textStroke || WebkitTextStroke
-									? text.style.outlineWidth || 1
-									: 0,
+								textStroke || WebkitTextStroke ? scaledStrokeWidth : 0,
 							paintOrder: "stroke fill",
 						} as React.CSSProperties
 					}
@@ -503,6 +541,10 @@ export default function TemplateText({
 			</svg>
 		);
 	};
+
+	// Scale resize handle size based on scale
+	const handleSize = Math.max(12 * scale, 8); // Minimum 8px, scales with zoom
+	const handleBorder = Math.max(1 * scale, 1); // Minimum 1px border
 
 	return (
 		<>
@@ -542,8 +584,7 @@ export default function TemplateText({
 						onChange={handleInputChange}
 						onBlur={onInputBlur}
 						onKeyDown={onInputKeyDown}
-						// biome-ignore lint/a11y/noAutofocus: <explanation>
-						autoFocus
+						onDoubleClick={(e) => e.stopPropagation()}
 						style={{
 							...getTextStyle(),
 							zIndex: layerIndex,
@@ -552,7 +593,7 @@ export default function TemplateText({
 					/>
 				) : (
 					<>
-						{curved ? (
+						{curved && !isActive ? (
 							renderCurvedText()
 						) : (
 							<div style={getDisplayStyle()}>{text.content}</div>
@@ -560,34 +601,112 @@ export default function TemplateText({
 					</>
 				)}
 
-				{/* Resize Handles - Only show when element is visible enough */}
+				{/* Resize Handles - Properly scaled */}
 				{isActive && !isEditing && (
 					<>
-						{/* Horizontal edge */}
+						{/* Horizontal edges */}
 						<div
-							className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-w-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								left: `-${handleSize / 2}px`,
+								top: "50%",
+								transform: "translateY(-50%)",
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "w-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "w")}
 						/>
 						<div
-							className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-e-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								right: `-${handleSize / 2}px`,
+								top: "50%",
+								transform: "translateY(-50%)",
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "e-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "e")}
 						/>
 
-						{/* Corner */}
+						{/* Vertical edges */}
 						<div
-							className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-nw-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								left: "50%",
+								top: `-${handleSize / 2}px`,
+								transform: "translateX(-50%)",
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "n-resize",
+							}}
+							onMouseDown={(e) => handleResizeMouseDown(e, "n")}
+						/>
+						<div
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								left: "50%",
+								bottom: `-${handleSize / 2}px`,
+								transform: "translateX(-50%)",
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "s-resize",
+							}}
+							onMouseDown={(e) => handleResizeMouseDown(e, "s")}
+						/>
+
+						{/* Corners */}
+						<div
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								left: `-${handleSize / 2}px`,
+								top: `-${handleSize / 2}px`,
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "nw-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
 						/>
 						<div
-							className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-ne-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								right: `-${handleSize / 2}px`,
+								top: `-${handleSize / 2}px`,
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "ne-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
 						/>
 						<div
-							className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-sw-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								left: `-${handleSize / 2}px`,
+								bottom: `-${handleSize / 2}px`,
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "sw-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
 						/>
 						<div
-							className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border border-white cursor-se-resize"
+							className="absolute bg-blue-500 border border-white rounded-full"
+							style={{
+								right: `-${handleSize / 2}px`,
+								bottom: `-${handleSize / 2}px`,
+								width: `${handleSize}px`,
+								height: `${handleSize}px`,
+								borderWidth: `${handleBorder}px`,
+								cursor: "se-resize",
+							}}
 							onMouseDown={(e) => handleResizeMouseDown(e, "se")}
 						/>
 					</>
