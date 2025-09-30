@@ -40,6 +40,7 @@ export function useCanvasDrop({
 				width: 200,
 				height: 200,
 				draggable: true,
+				zIndex: 0,
 			};
 
 			setTemplate((prev) => ({ ...prev, images: [...prev.images, newImage] }));
