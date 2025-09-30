@@ -33,6 +33,8 @@ export default function ImagesTab() {
 							position: { x: 0, y: 0 },
 							width: 0,
 							height: 0,
+							zIndex: 0,
+							draggable: false,
 						}}
 						onChange={handleBackgroundChange}
 						onDelete={removeBackground}
