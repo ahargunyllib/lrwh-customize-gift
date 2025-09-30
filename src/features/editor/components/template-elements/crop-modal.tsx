@@ -11,6 +11,8 @@ export const CropModal = ({
 	applyCrop,
 	onCropMouseDown,
 	onCropResizeMouseDown,
+	onCropTouchStart,
+	onCropResizeTouchStart,
 }: {
 	isOpen: boolean;
 	onClose: () => void;
@@ -21,6 +23,8 @@ export const CropModal = ({
 	applyCrop: () => void;
 	onCropMouseDown: (e: React.MouseEvent) => void;
 	onCropResizeMouseDown: (e: React.MouseEvent, direction: string) => void;
+	onCropTouchStart: (e: React.TouchEvent) => void;
+	onCropResizeTouchStart: (e: React.TouchEvent, direction: string) => void;
 }) => {
 	if (!isOpen) return null;
 
@@ -107,7 +111,7 @@ export const CropModal = ({
 				</div>
 
 				{/* Image container with crop overlay */}
-				<div className="flex-1 flex items-center justify-center  bg-gray-100">
+				<div className="flex-1 flex items-center justify-center bg-gray-100">
 					<div
 						className="relative bg-white rounded-lg shadow-inner overflow-hidden"
 						style={{
@@ -170,7 +174,7 @@ export const CropModal = ({
 
 							{/* Crop selection area */}
 							<div
-								className="absolute border-2 border-blue-500 cursor-move shadow-lg"
+								className="absolute border-2 border-blue-500 cursor-move shadow-lg touch-none"
 								style={{
 									left: cropArea.x * imageDisplayScale,
 									top: cropArea.y * imageDisplayScale,
@@ -181,23 +185,28 @@ export const CropModal = ({
 										"0 0 0 1px rgba(255,255,255,0.5), 0 4px 12px rgba(0,0,0,0.15)",
 								}}
 								onMouseDown={onCropMouseDown}
+								onTouchStart={onCropTouchStart}
 							>
 								{/* Corner resize handles */}
 								<div
-									className="absolute -top-2 -left-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-nw-resize hover:bg-blue-50 transition-colors"
+									className="absolute -top-2 -left-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-nw-resize hover:bg-blue-50 transition-colors touch-none"
 									onMouseDown={(e) => onCropResizeMouseDown(e, "nw")}
+									onTouchStart={(e) => onCropResizeTouchStart(e, "nw")}
 								/>
 								<div
-									className="absolute -top-2 -right-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-ne-resize hover:bg-blue-50 transition-colors"
+									className="absolute -top-2 -right-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-ne-resize hover:bg-blue-50 transition-colors touch-none"
 									onMouseDown={(e) => onCropResizeMouseDown(e, "ne")}
+									onTouchStart={(e) => onCropResizeTouchStart(e, "ne")}
 								/>
 								<div
-									className="absolute -bottom-2 -left-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-sw-resize hover:bg-blue-50 transition-colors"
+									className="absolute -bottom-2 -left-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-sw-resize hover:bg-blue-50 transition-colors touch-none"
 									onMouseDown={(e) => onCropResizeMouseDown(e, "sw")}
+									onTouchStart={(e) => onCropResizeTouchStart(e, "sw")}
 								/>
 								<div
-									className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-se-resize hover:bg-blue-50 transition-colors"
+									className="absolute -bottom-2 -right-2 w-5 h-5 bg-white border-2 border-blue-500 rounded-full shadow-md cursor-se-resize hover:bg-blue-50 transition-colors touch-none"
 									onMouseDown={(e) => onCropResizeMouseDown(e, "se")}
+									onTouchStart={(e) => onCropResizeTouchStart(e, "se")}
 								/>
 
 								{/* Grid lines for rule of thirds */}
