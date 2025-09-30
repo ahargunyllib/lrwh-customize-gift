@@ -46,7 +46,13 @@ export const getOrders = async (
 						)
 					: undefined,
 			)
-			.orderBy(desc(ordersTable.createdAt))
+			.orderBy(
+				query.sortBy
+					? query.sortOrder === "asc"
+						? ordersTable[query.sortBy]
+						: desc(ordersTable[query.sortBy])
+					: desc(ordersTable.createdAt),
+			)
 			.limit(query.limit || 10)
 			.offset(((query.page || 1) - 1) * (query.limit || 10)),
 	);

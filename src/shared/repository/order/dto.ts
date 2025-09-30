@@ -6,6 +6,8 @@ export type GetOrdersQuery = {
 	search?: string;
 	page?: number;
 	limit?: number;
+	sortBy?: "createdAt" | "orderNumber" | "username";
+	sortOrder?: "asc" | "desc";
 };
 
 export type GetOrdersResponse = {

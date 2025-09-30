@@ -10,6 +10,7 @@ import {
 	TableRow,
 } from "@/shared/components/ui/table";
 import { tryCatch } from "@/shared/lib/try-catch";
+import { cn } from "@/shared/lib/utils";
 import type {
 	Order,
 	OrderProductVariant,
@@ -18,6 +19,8 @@ import type {
 } from "@/shared/types";
 import {
 	type ColumnDef,
+	type OnChangeFn,
+	type SortingState,
 	flexRender,
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -29,6 +32,7 @@ import {
 	CopyIcon,
 	DownloadIcon,
 	EyeIcon,
+	FilterIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { Fragment, useState } from "react";
@@ -62,9 +66,15 @@ type Props = {
 			imageUrl: OrderProductVariant["imageUrl"];
 		}[];
 	}[];
+	sorting?: SortingState;
+	onSortingChangeAction?: OnChangeFn<SortingState>;
 };
 
-export default function OrderTable({ data }: Props) {
+export default function OrderTable({
+	data,
+	sorting,
+	onSortingChangeAction,
+}: Props) {
 	const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
 	const toggleRowExpansion = (rowId: string) => {
@@ -143,6 +153,7 @@ export default function OrderTable({ data }: Props) {
 		},
 		{
 			header: "Status",
+			enableSorting: false,
 			cell(props) {
 				const { products } = props.row.original;
 				const countHavingImages = products.filter((p) => p.imageUrl).length;
@@ -184,6 +195,11 @@ export default function OrderTable({ data }: Props) {
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		manualSorting: true, //use pre-sorted row model instead of sorted row model
+		state: {
+			sorting,
+		},
+		onSortingChange: onSortingChangeAction,
 	});
 
 	return (
@@ -195,12 +211,25 @@ export default function OrderTable({ data }: Props) {
 							return (
 								<TableHead
 									key={header.id}
-									className="font-semibold text-gray-900"
+									className={cn(
+										"font-semibold text-gray-900",
+										header.column.getCanSort() && "cursor-pointer select-none",
+									)}
 									style={{
 										width: header.column.columnDef.size || "auto",
 										minWidth: header.column.columnDef.size || "auto",
 										maxWidth: header.column.columnDef.size || "auto",
 									}}
+									onClick={header.column.getToggleSortingHandler()}
+									title={
+										header.column.getCanSort()
+											? header.column.getNextSortingOrder() === "asc"
+												? "Sort ascending"
+												: header.column.getNextSortingOrder() === "desc"
+													? "Sort descending"
+													: "Clear sort"
+											: undefined
+									}
 								>
 									{header.isPlaceholder
 										? null
@@ -208,6 +237,10 @@ export default function OrderTable({ data }: Props) {
 												header.column.columnDef.header,
 												header.getContext(),
 											)}
+									{{
+										asc: " 🔼",
+										desc: " 🔽",
+									}[header.column.getIsSorted() as string] ?? null}
 								</TableHead>
 							);
 						})}
