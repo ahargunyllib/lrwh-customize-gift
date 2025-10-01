@@ -1,5 +1,6 @@
 import OnboardingForm from "@/features/templates/components/onboarding-form";
 import Image from "next/image";
+import { Suspense } from "react";
 
 export default function Page() {
 	return (
@@ -13,7 +14,9 @@ export default function Page() {
 						</p>
 					</div>
 
-					<OnboardingForm />
+					<Suspense>
+						<OnboardingForm />
+					</Suspense>
 				</div>
 			</div>
 			<div className="absolute top-0 left-0 min-h-dvh bg-white w-screen z-[-1] overflow-hidden">
