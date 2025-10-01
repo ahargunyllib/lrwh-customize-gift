@@ -319,7 +319,7 @@ export default function OrderTable({
 																	variant="outline"
 																	onClick={() => {
 																		const url = new URL(
-																			`${window.location.host}/templates/onboarding`,
+																			`${window.location.origin}/templates/onboarding`,
 																		);
 																		url.searchParams.set(
 																			"username",
