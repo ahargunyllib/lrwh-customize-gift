@@ -290,11 +290,14 @@ export default function OrderTable({
 														>
 															<div className="flex items-center space-x-4">
 																{variant.imageUrl ? (
-																	<img
-																		src={variant.imageUrl}
-																		alt={variant.name}
-																		className="w-16 h-16 object-cover rounded-md border"
-																	/>
+																	<div className="relative w-16 h-16 rounded-md border">
+																		<Image
+																			src={variant.imageUrl}
+																			alt={variant.name}
+																			fill
+																			className="object-cover"
+																		/>
+																	</div>
 																) : (
 																	<div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
 																		<span className="text-gray-500 text-xs">
