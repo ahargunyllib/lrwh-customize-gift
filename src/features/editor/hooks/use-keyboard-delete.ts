@@ -1,11 +1,12 @@
 "use client";
+import type { ActiveElement } from "@/shared/types/element";
 import type { TemplateData } from "@/shared/types/template";
 import { useEffect } from "react";
 
 interface Params {
-	activeElement: string | null;
+	activeElement: ActiveElement | null;
 	editingTextId: string | null;
-	setActiveElement: (id: string | null) => void;
+	setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement | null>>;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 	allowDelete?: boolean;
 }
@@ -35,12 +36,12 @@ export function useKeyboardDelete({
 				return;
 
 			setTemplate((prev) => {
-				const imgIdx = prev.images.findIndex((i) => i.id === activeElement);
+				const imgIdx = prev.images.findIndex((i) => i.id === activeElement.id);
 				if (imgIdx >= 0) {
 					const images = prev.images.toSpliced(imgIdx, 1);
 					return { ...prev, images };
 				}
-				const txtIdx = prev.texts.findIndex((t) => t.id === activeElement);
+				const txtIdx = prev.texts.findIndex((t) => t.id === activeElement.id);
 				if (txtIdx >= 0) {
 					const texts = prev.texts.toSpliced(txtIdx, 1);
 					return { ...prev, texts };

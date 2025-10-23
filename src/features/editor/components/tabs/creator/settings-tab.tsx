@@ -89,9 +89,11 @@ export default function SettingsTab() {
 					<div className="pt-3">
 						<Label className="text-sm">Quick Alignment</Label>
 						<ElementControls
-							onCenterX={() => triggerElementCenter(activeElement, "x")}
-							onCenterY={() => triggerElementCenter(activeElement, "y")}
-							onCenterBoth={() => triggerElementCenter(activeElement, "both")}
+							onCenterX={() => triggerElementCenter(activeElement.id, "x")}
+							onCenterY={() => triggerElementCenter(activeElement.id, "y")}
+							onCenterBoth={() =>
+								triggerElementCenter(activeElement.id, "both")
+							}
 						/>
 					</div>
 
@@ -99,7 +101,7 @@ export default function SettingsTab() {
 						variant="destructive"
 						size="sm"
 						onClick={() => {
-							deleteElement(activeElement);
+							deleteElement(activeElement.id);
 							setActiveElement(null);
 						}}
 						className="w-full"

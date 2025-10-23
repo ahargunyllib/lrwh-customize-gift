@@ -1,5 +1,6 @@
 "use client";
 
+import type { ActiveElement } from "@/shared/types/element";
 import type {
 	ImageElement,
 	TemplateData,
@@ -9,7 +10,7 @@ import { useEffect, useState } from "react";
 
 interface UseAlignmentGuidesProps {
 	template: TemplateData;
-	activeElement: string | null;
+	activeElement: ActiveElement;
 	scale: number;
 }
 
@@ -87,8 +88,12 @@ export function useAlignmentGuides({
 			return;
 		}
 
-		const activeImage = template.images.find((img) => img.id === activeElement);
-		const activeText = template.texts.find((txt) => txt.id === activeElement);
+		const activeImage = template.images.find(
+			(img) => img.id === activeElement.id,
+		);
+		const activeText = template.texts.find(
+			(txt) => txt.id === activeElement.id,
+		);
 
 		if (!activeImage && !activeText) {
 			setGuides([]);
@@ -120,8 +125,8 @@ export function useAlignmentGuides({
 		}
 
 		const otherElements: Array<ImageElement | TextElement> = [
-			...template.images.filter((img) => img.id !== activeElement),
-			...template.texts.filter((txt) => txt.id !== activeElement),
+			...template.images.filter((img) => img.id !== activeElement.id),
+			...template.texts.filter((txt) => txt.id !== activeElement.id),
 		];
 
 		// biome-ignore lint/complexity/noForEach: <explanation>
@@ -205,8 +210,12 @@ export function useAlignmentGuides({
 	const centerElement = (axis: "x" | "y" | "both") => {
 		if (!activeElement) return;
 
-		const activeImage = template.images.find((img) => img.id === activeElement);
-		const activeText = template.texts.find((txt) => txt.id === activeElement);
+		const activeImage = template.images.find(
+			(img) => img.id === activeElement.id,
+		);
+		const activeText = template.texts.find(
+			(txt) => txt.id === activeElement.id,
+		);
 
 		if (!activeImage && !activeText) return;
 

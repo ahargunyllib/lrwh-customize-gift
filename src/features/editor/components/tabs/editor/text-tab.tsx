@@ -14,14 +14,14 @@ export default function TextTab() {
 					<TextEditor
 						key={txt.id}
 						text={txt}
-						isActive={activeElement === txt.id}
+						isActive={activeElement?.id === txt.id}
 						onChange={(v) => updateText(txt.id, { content: v })}
 						onStyleChange={(prop, val) =>
 							updateText(txt.id, {
 								style: { ...txt.style, [prop]: val },
 							})
 						}
-						onSelect={() => setActiveElement(txt.id)}
+						onSelect={() => setActiveElement({ id: txt.id, type: "text" })}
 					/>
 				))}
 			</div>

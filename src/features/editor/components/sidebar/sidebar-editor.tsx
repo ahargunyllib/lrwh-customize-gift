@@ -7,14 +7,28 @@ import {
 	TabsTrigger,
 } from "@/shared/components/ui/tabs";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
-import { ImageIcon, Layout, Menu, Type, X } from "lucide-react";
-import { Fragment, useState } from "react";
+import { ImageIcon, Menu, Type, X } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { useTemplateContext } from "../../containers/template-editor";
 import ImagesTab from "../tabs/editor/images-tab";
 import TextTab from "../tabs/editor/text-tab";
 
+type TabValue = "image" | "text";
+
 export default function EditorSidebar() {
+	const { activeElement } = useTemplateContext();
 	const isMobile = useIsMobile();
-	const [open, setOpen] = useState(false); // default tertutup
+	const [open, setOpen] = useState(false);
+
+	const incomingTab: TabValue = useMemo(
+		() => (activeElement?.type === "text" ? "text" : "image"),
+		[activeElement?.type],
+	);
+	const [tab, setTab] = useState<TabValue>(incomingTab);
+
+	useEffect(() => {
+		setTab(incomingTab);
+	}, [incomingTab]);
 
 	const onClose = () => setOpen(false);
 	const toggleSidebar = () => setOpen((prev) => !prev);
@@ -33,9 +47,13 @@ export default function EditorSidebar() {
 				</Button>
 			</div>
 
-			<Tabs defaultValue="images" className="w-full">
+			<Tabs
+				value={tab}
+				onValueChange={(v) => setTab(v as TabValue)}
+				className="w-full"
+			>
 				<TabsList className="grid w-full grid-cols-2">
-					<TabsTrigger value="images">
+					<TabsTrigger value="image">
 						<ImageIcon className="h-4 w-4 mr-1" />
 						Images
 					</TabsTrigger>
@@ -45,7 +63,7 @@ export default function EditorSidebar() {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="images">
+				<TabsContent value="image">
 					<ImagesTab />
 				</TabsContent>
 				<TabsContent value="text">
@@ -57,7 +75,6 @@ export default function EditorSidebar() {
 
 	return (
 		<Fragment>
-			{/* Hamburger trigger */}
 			<Button
 				variant="outline"
 				size="icon"
@@ -67,7 +84,6 @@ export default function EditorSidebar() {
 				<Menu className="h-5 w-5" />
 			</Button>
 
-			{/* Overlay (hanya tampil ketika terbuka) */}
 			{open && (
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 				<div
@@ -77,7 +93,6 @@ export default function EditorSidebar() {
 				/>
 			)}
 
-			{/* Sidebar */}
 			{Panel}
 		</Fragment>
 	);

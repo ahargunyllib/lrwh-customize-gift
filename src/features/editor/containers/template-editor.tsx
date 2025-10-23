@@ -36,6 +36,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import EditorCanvas from "../components/editor-canvas";
 import ImageMobileEditor from "../components/mobile-editor/image-mobile-editor";
@@ -178,6 +179,7 @@ function ConfirmationDialog({
 	const {
 		order: { productVariants },
 	} = useTemplatesStore();
+	const { setActiveElement } = useTemplateContext();
 
 	const hasMultipleProducts = useMemo(() => {
 		return (
@@ -201,33 +203,37 @@ function ConfirmationDialog({
 		router.back();
 	}, [canvasRef, saveTemplate, orderProductVariantId]);
 
+	const nextPaint = () =>
+		new Promise<void>((r) => requestAnimationFrame(() => r()));
+
 	const onOpenChange = async (open: boolean) => {
+		flushSync(() => {
+			setActiveElement(null);
+		});
+
 		if (!open) {
-			// Reset the canvas state when dialog is closed
 			const previewImage = document.getElementById(
 				"preview",
-			) as HTMLImageElement;
-			if (previewImage) {
-				previewImage.src = "";
-			}
-
+			) as HTMLImageElement | null;
+			if (previewImage) previewImage.src = "";
 			setIsOpen(false);
 			return;
 		}
 
-		// Generate preview image when dialog is opened
-		if (canvasRef.current) {
-			html2canvas(canvasRef.current, { backgroundColor: null }).then(
-				(canvas) => {
-					const previewImage = document.getElementById(
-						"preview",
-					) as HTMLImageElement;
-					previewImage.src = canvas.toDataURL("image/png");
-				},
-			);
-		}
+		flushSync(() => {
+			setIsOpen(true);
+		});
+		await nextPaint();
 
-		setIsOpen(open);
+		if (canvasRef.current) {
+			const canvas = await html2canvas(canvasRef.current, {
+				backgroundColor: null,
+			});
+			const previewImage = document.getElementById(
+				"preview",
+			) as HTMLImageElement | null;
+			if (previewImage) previewImage.src = canvas.toDataURL("image/png");
+		}
 	};
 
 	if (isMobile) {

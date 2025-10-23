@@ -6,10 +6,11 @@ import {
 	TabsTrigger,
 } from "@/shared/components/ui/tabs";
 import { ImagePlus, Layout, Type, X } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/shared/components/ui/button";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
+import { useTemplateContext } from "../../containers/template-creator";
 import ImagesTab from "../tabs/creator/images-tab";
 import SettingsTab from "../tabs/creator/settings-tab";
 import ShapesLinesTab from "../tabs/creator/shapes-lines-tab";
@@ -19,9 +20,21 @@ interface Props {
 	open: boolean;
 	onClose: () => void;
 }
+type TabValue = "image" | "text" | "settings";
 
 export default function Sidebar({ open, onClose }: Props) {
 	const isMobile = useIsMobile();
+	const { activeElement } = useTemplateContext();
+
+	const incomingTab: TabValue = useMemo(
+		() => (activeElement?.type === "text" ? "text" : "image"),
+		[activeElement?.type],
+	);
+	const [tab, setTab] = useState<TabValue>(incomingTab);
+
+	useEffect(() => {
+		setTab(incomingTab);
+	}, [incomingTab]);
 
 	const Panel = (
 		<div
@@ -40,13 +53,17 @@ export default function Sidebar({ open, onClose }: Props) {
 				</div>
 			)}
 
-			<Tabs defaultValue="settings" className="w-full">
+			<Tabs
+				value={tab}
+				className="w-full"
+				onValueChange={(v) => setTab(v as TabValue)}
+			>
 				<TabsList className="grid w-full grid-cols-3 gap-4">
 					<TabsTrigger value="settings">
 						<Layout className="h-4 w-4 mr-1" />
 						Settings
 					</TabsTrigger>
-					<TabsTrigger value="images">
+					<TabsTrigger value="image">
 						<ImagePlus className="h-4 w-4 mr-1" />
 						Images
 					</TabsTrigger>
@@ -60,7 +77,7 @@ export default function Sidebar({ open, onClose }: Props) {
 					<SettingsTab />
 					<ShapesLinesTab />
 				</TabsContent>
-				<TabsContent value="images">
+				<TabsContent value="image">
 					<ImagesTab />
 				</TabsContent>
 				<TabsContent value="text">

@@ -6,6 +6,7 @@ import { useElementMove } from "@/features/editor/hooks/use-element-move";
 import { useImageReplace } from "@/features/editor/hooks/use-image-replace";
 import { useKeyboardDelete } from "@/features/editor/hooks/use-keyboard-delete";
 import { validateTextElement } from "@/shared/lib/elements";
+import type { ActiveElement } from "@/shared/types/element";
 import type { TemplateData } from "@/shared/types/template";
 import { Printer } from "lucide-react";
 import type React from "react";
@@ -24,8 +25,8 @@ import TemplateText from "./template-elements/template-text";
 
 interface EditorCanvasProps {
 	template: TemplateData;
-	activeElement: string | null;
-	setActiveElement: (id: string | null) => void;
+	activeElement: ActiveElement;
+	setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement>>;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 	scale: number;
 	isCustomizing?: boolean;
@@ -181,10 +182,10 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						<TemplateImage
 							key={image.id}
 							image={image}
-							isActive={activeElement === image.id}
+							isActive={activeElement?.id === image.id}
 							onClick={(e) => {
 								e.stopPropagation();
-								setActiveElement(image.id);
+								setActiveElement({ id: image.id, type: "image" });
 							}}
 							scale={scale}
 							isCustomizing={isCustomizing}
@@ -203,11 +204,11 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						<TemplateText
 							key={text.id}
 							text={text}
-							isActive={activeElement === text.id}
+							isActive={activeElement?.id === text.id}
 							isEditing={editingTextId === text.id}
 							onClick={(e) => {
 								e.stopPropagation();
-								setActiveElement(text.id);
+								setActiveElement({ id: text.id, type: "text" });
 							}}
 							onDoubleClick={() => setEditingTextId(text.id)}
 							onInputChange={(e) =>
@@ -243,10 +244,10 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						<TemplateShape
 							key={shape.id}
 							element={shape}
-							isElementActive={activeElement === shape.id}
+							isElementActive={activeElement?.id === shape.id}
 							toggleActive={(e) => {
 								e.stopPropagation();
-								setActiveElement(shape.id);
+								setActiveElement({ id: shape.id, type: "shape" });
 							}}
 							scale={scale}
 							isCustomizing={isCustomizing}
@@ -269,10 +270,10 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						<TemplateLine
 							key={line.id}
 							element={line}
-							isElementActive={activeElement === line.id}
+							isElementActive={activeElement?.id === line.id}
 							toggleActive={(e) => {
 								e.stopPropagation();
-								setActiveElement(line.id);
+								setActiveElement({ id: line.id, type: "line" });
 							}}
 							scale={scale}
 							isCustomizing={isCustomizing}
