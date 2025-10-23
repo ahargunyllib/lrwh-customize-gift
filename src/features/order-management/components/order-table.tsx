@@ -317,33 +317,6 @@ export default function OrderTable({
 																</div>
 															</div>
 															<div className="flex flex-row items-center gap-x-2">
-																<Button
-																	size="icon"
-																	variant="outline"
-																	onClick={() => {
-																		const url = new URL(
-																			`${window.location.origin}/templates/onboarding`,
-																		);
-																		url.searchParams.set(
-																			"username",
-																			row.original.username,
-																		);
-																		url.searchParams.set(
-																			"orderNumber",
-																			row.original.orderNumber,
-																		);
-																		url.searchParams.set(
-																			"productVariantId",
-																			variant.productVariant.id,
-																		);
-																		navigator.clipboard.writeText(
-																			url.toString(),
-																		);
-																		toast.success("Link copied to clipboard.");
-																	}}
-																>
-																	<CopyIcon />
-																</Button>
 																{variant.imageUrl ? (
 																	<Dialog>
 																		<DialogTrigger asChild>
@@ -378,7 +351,37 @@ export default function OrderTable({
 																			</DialogFooter>
 																		</DialogContent>
 																	</Dialog>
-																) : null}
+																) : (
+																	<Button
+																		size="icon"
+																		variant="outline"
+																		onClick={() => {
+																			const url = new URL(
+																				`${window.location.origin}/templates/onboarding`,
+																			);
+																			url.searchParams.set(
+																				"username",
+																				row.original.username,
+																			);
+																			url.searchParams.set(
+																				"orderNumber",
+																				row.original.orderNumber,
+																			);
+																			url.searchParams.set(
+																				"productVariantId",
+																				variant.productVariant.id,
+																			);
+																			navigator.clipboard.writeText(
+																				url.toString(),
+																			);
+																			toast.success(
+																				"Link copied to clipboard.",
+																			);
+																		}}
+																	>
+																		<CopyIcon />
+																	</Button>
+																)}
 															</div>
 														</div>
 													);
