@@ -85,8 +85,6 @@ export default function TemplateEditor({
 	// Pass handleZoom to useCanvasGesture
 	const { canvasOffset } = useCanvasGesture(handleZoom);
 
-	const [sidebarOpen, setSidebarOpen] = useState(false);
-
 	const {
 		order: { username, orderNumber },
 	} = useTemplatesStore();
@@ -119,26 +117,10 @@ export default function TemplateEditor({
 							<h1 className="text-xl font-medium">Template Editor Admin</h1>
 						</div>
 
-						<Button
-							onClick={async () => {
-								// Download preview image
-								if (!canvasRef.current) return;
-								// canvasRef.current.
-								const canvas = await html2canvas(canvasRef.current, {
-									backgroundColor: null,
-								});
-								const dataURL = canvas.toDataURL("image/png");
-
-								const link = document.createElement("a");
-								link.href = dataURL;
-								link.download = "template-preview.png";
-								document.body.appendChild(link);
-								link.click();
-								document.body.removeChild(link);
-							}}
-						>
-							Download Preview
-						</Button>
+						<DownloadPreviewButton
+							canvasRef={canvasRef}
+							resetZoom={resetZoom}
+						/>
 					</header>
 				)}
 
@@ -187,6 +169,45 @@ export default function TemplateEditor({
 				</div>
 			</div>
 		</TemplateCtx.Provider>
+	);
+}
+
+function DownloadPreviewButton({
+	canvasRef,
+	resetZoom,
+}: {
+	canvasRef: React.RefObject<HTMLDivElement>;
+	resetZoom: () => void;
+}) {
+	const { setActiveElement } = useTemplateContext();
+
+	return (
+		<Button
+			onClick={async () => {
+				flushSync(() => {
+					resetZoom();
+					setActiveElement(null);
+				});
+
+				await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+				// Download preview image
+				if (!canvasRef.current) return;
+				const canvas = await html2canvas(canvasRef.current, {
+					backgroundColor: null,
+				});
+				const dataURL = canvas.toDataURL("image/png");
+
+				const link = document.createElement("a");
+				link.href = dataURL;
+				link.download = "template-preview.png";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}}
+		>
+			Download Preview
+		</Button>
 	);
 }
 
