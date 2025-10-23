@@ -5,8 +5,9 @@ import type React from "react";
 
 import { useBackgroundCanvas } from "@/features/editor/hooks/use-background-canvas";
 import { Button } from "@/shared/components/ui/button";
+import { useScrollToActive } from "@/shared/hooks/use-scroll-to-active";
 import { ImagePlus } from "lucide-react";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import ImageCard from "../../card/image-card";
 import ImageUploader from "../../image-uploader";
 
@@ -18,6 +19,16 @@ export default function ImagesTab() {
 		useBackgroundCanvas(setTemplate);
 
 	const backgroundImageRef = useRef<HTMLInputElement>(null);
+
+	const activeImageId = useMemo(
+		() => (activeElement?.type === "image" ? activeElement.id : undefined),
+		[activeElement],
+	);
+
+	const { getRef } = useScrollToActive<HTMLDivElement>({
+		activeId: activeImageId,
+		deps: [template.images.length],
+	});
 
 	return (
 		<div className="space-y-4 pt-4">
@@ -78,12 +89,14 @@ export default function ImagesTab() {
 
 			<div className="space-y-3">
 				{template.images.map((img) => (
-					<ImageCard
-						key={img.id}
-						img={img}
-						selected={activeElement === img.id}
-						onSelect={() => setActiveElement(img.id)}
-					/>
+					<div key={img.id} ref={getRef(img.id)}>
+						<ImageCard
+							key={img.id}
+							img={img}
+							selected={activeElement?.id === img.id}
+							onSelect={() => setActiveElement({ id: img.id, type: "image" })}
+						/>
+					</div>
 				))}
 
 				{template.images.length === 0 && (

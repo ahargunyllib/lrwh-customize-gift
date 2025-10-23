@@ -16,11 +16,11 @@ export default function ImageMobileEditor() {
 	const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file && activeElement) {
-			handleReplace(activeElement, file);
+			handleReplace(activeElement.id, file);
 		}
 	};
 
-	if (!activeElement) return null;
+	if (activeElement?.type !== "image") return null;
 
 	return (
 		<div

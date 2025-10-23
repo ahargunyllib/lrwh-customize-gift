@@ -18,10 +18,12 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@/shared/components/ui/tabs";
+import { useScrollToActive } from "@/shared/hooks/use-scroll-to-active";
 import { cn } from "@/shared/lib/utils";
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
 import { Minus, Square, Trash2 } from "lucide-react";
+import { useMemo } from "react";
 
 export default function ShapesLinesTab() {
 	const tabsContentList = [
@@ -85,8 +87,10 @@ function LinesTabContent() {
 						type="single"
 						className="space-y-2"
 						collapsible
-						value={activeElement || undefined}
-						onValueChange={setActiveElement}
+						value={activeElement?.id || undefined}
+						onValueChange={(value) =>
+							setActiveElement({ id: value, type: "line" })
+						}
 					>
 						{lines.map((line, idx) => (
 							<AccordionItem
@@ -94,11 +98,11 @@ function LinesTabContent() {
 								value={line.id}
 								className={cn(
 									"border-2 last:border-b-2 rounded-md",
-									activeElement === line.id && "border-black",
+									activeElement?.id === line.id && "border-black",
 								)}
 								onClick={(e) => {
 									e.stopPropagation();
-									setActiveElement(line.id);
+									setActiveElement({ id: line.id, type: "line" });
 								}}
 							>
 								<div>
@@ -138,6 +142,16 @@ function ShapeTabContent() {
 	} = useTemplateContext();
 	const shapes = template.shapes;
 
+	const activeShapeId = useMemo(
+		() => (activeElement?.type === "shape" ? activeElement.id : undefined),
+		[activeElement],
+	);
+
+	const { getRef } = useScrollToActive({
+		activeId: activeShapeId,
+		deps: [template.shapes.length],
+	});
+
 	return (
 		<>
 			<ShapeSelector />
@@ -154,8 +168,10 @@ function ShapeTabContent() {
 						type="single"
 						collapsible
 						className="space-y-2"
-						value={activeElement || undefined}
-						onValueChange={setActiveElement}
+						value={activeElement?.id || undefined}
+						onValueChange={(value) =>
+							setActiveElement({ id: value, type: "shape" })
+						}
 					>
 						{shapes.map((shape, idx) => (
 							<AccordionItem
@@ -163,11 +179,11 @@ function ShapeTabContent() {
 								value={shape.id}
 								className={cn(
 									"border-2 last:border-b-2 rounded-md",
-									activeElement === shape.id && "border-black",
+									activeElement?.id === shape.id && "border-black",
 								)}
 								onClick={(e) => {
 									e.stopPropagation();
-									setActiveElement(shape.id);
+									setActiveElement({ id: shape.id, type: "shape" });
 								}}
 							>
 								<div>

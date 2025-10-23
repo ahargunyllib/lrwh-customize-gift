@@ -1,4 +1,5 @@
 "use client";
+import type { ActiveElement } from "@/shared/types/element";
 import type { ImageElement, TemplateData } from "@/shared/types/template";
 import type { DragEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -7,7 +8,7 @@ interface Params {
 	isCustomizing: boolean;
 	scale: number;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
-	setActiveElement: (id: string | null) => void;
+	setActiveElement: React.Dispatch<React.SetStateAction<ActiveElement>>;
 }
 
 export function useCanvasDrop({
@@ -44,7 +45,7 @@ export function useCanvasDrop({
 			};
 
 			setTemplate((prev) => ({ ...prev, images: [...prev.images, newImage] }));
-			setActiveElement(newImage.id);
+			setActiveElement({ id: newImage.id, type: "image" });
 		};
 		reader.readAsDataURL(file);
 	};

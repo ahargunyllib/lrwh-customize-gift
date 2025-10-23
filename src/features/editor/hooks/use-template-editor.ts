@@ -1,5 +1,6 @@
 "use client";
 import { scaleTemplate } from "@/shared/lib/template";
+import type { ActiveElement } from "@/shared/types/element";
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
 import type {
@@ -94,7 +95,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 		getLayerIndex(id) === getLayerLength() - 1;
 	const isOnBottomLayer = (id: string) => getLayerIndex(id) === 0;
 
-	const [activeElement, setActiveElement] = useState<string | null>(null);
+	const [activeElement, setActiveElement] = useState<ActiveElement>(null);
 
 	const addImage = (): string => {
 		const id = uuidv4();
@@ -114,7 +115,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			images: [...p.images, img],
 			layer: [...p.layer, id],
 		}));
-		setActiveElement(id);
+		setActiveElement({ id, type: "image" });
 		return id;
 	};
 
@@ -143,7 +144,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			texts: [...p.texts, txt],
 			layer: [...p.layer, id],
 		}));
-		setActiveElement(id);
+		setActiveElement({ id, type: "text" });
 		return id;
 	};
 
@@ -170,7 +171,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			console.log(p);
 			return { ...p, shapes: [...p.shapes, shape], layer: [...p.layer, id] };
 		});
-		setActiveElement(id);
+		setActiveElement({ id, type });
 		return id;
 	};
 	const updateShape = (id: string, payload: Partial<ShapeElement>) =>
@@ -202,7 +203,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			],
 			layer: [...p.layer, id],
 		}));
-		setActiveElement(id);
+		setActiveElement({ id, type });
 		return id;
 	};
 	const updateLine = (id: string, payload: Partial<LineElement>) =>
