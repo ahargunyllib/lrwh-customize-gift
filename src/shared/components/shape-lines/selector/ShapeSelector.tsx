@@ -10,9 +10,9 @@ export default function ShapeSelector() {
 			{shapeVariants.map((variant) => (
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 				<div
-					key={variant.type}
+					key={variant.variant}
 					className="rounded-md cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
-					onClick={() => addShape(variant.type)}
+					onClick={() => addShape(variant.variant)}
 				>
 					<div className="flex items-center gap-4 p-1">
 						<div className="flex-shrink-0 w-16 h-8 flex items-center justify-center bg-gray-200 rounded">

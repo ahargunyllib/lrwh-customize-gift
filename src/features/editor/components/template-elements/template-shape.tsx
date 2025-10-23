@@ -97,7 +97,7 @@ export default function TemplateShape(props: Props) {
 		>
 			<div className="w-full h-full">
 				{/* Rectangle */}
-				{props.element.type === "rectangle" && (
+				{props.element.variant === "rectangle" && (
 					<div
 						className="w-full h-full"
 						style={{
@@ -109,7 +109,7 @@ export default function TemplateShape(props: Props) {
 					/>
 				)}
 				{/* Circle */}
-				{props.element.type === "circle" && (
+				{props.element.variant === "circle" && (
 					<div
 						className="w-full h-full rounded-full"
 						style={{
@@ -120,7 +120,7 @@ export default function TemplateShape(props: Props) {
 					/>
 				)}
 				{/* Triangle */}
-				{props.element.type === "triangle" && (
+				{props.element.variant === "triangle" && (
 					<div
 						className="w-0 h-0"
 						style={{

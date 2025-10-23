@@ -4,7 +4,8 @@ export type TShapeElement = "rectangle" | "circle" | "triangle";
 
 export interface ShapeElement {
 	id: string;
-	type: TShapeElement;
+	type: "shape";
+	variant: TShapeElement;
 	width: number;
 	height: number;
 	draggable?: boolean;
