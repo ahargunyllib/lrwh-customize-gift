@@ -98,21 +98,48 @@ export default function TemplateEditor({
 			}}
 		>
 			<div className="flex h-screen flex-col">
-				<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
-					{username && orderNumber && (
+				{username && orderNumber ? (
+					<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
 						<div className="space-y-1">
 							<h1 className="text-xl font-medium">Hai, {username}!</h1>
 							<p className="text-xs text-[#98A2B3]">Order ID : {orderNumber}</p>
 						</div>
-					)}
 
-					{orderProductVariantId && (
-						<ConfirmationDialog
-							canvasRef={canvasRef}
-							orderProductVariantId={orderProductVariantId}
-						/>
-					)}
-				</header>
+						{orderProductVariantId && (
+							<ConfirmationDialog
+								canvasRef={canvasRef}
+								orderProductVariantId={orderProductVariantId}
+							/>
+						)}
+					</header>
+				) : (
+					<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
+						<div className="space-y-1">
+							<h1 className="text-xl font-medium">Template Editor Admin</h1>
+						</div>
+
+						<Button
+							onClick={async () => {
+								// Download preview image
+								if (!canvasRef.current) return;
+								// canvasRef.current.
+								const canvas = await html2canvas(canvasRef.current, {
+									backgroundColor: null,
+								});
+								const dataURL = canvas.toDataURL("image/png");
+
+								const link = document.createElement("a");
+								link.href = dataURL;
+								link.download = "template-preview.png";
+								document.body.appendChild(link);
+								link.click();
+								document.body.removeChild(link);
+							}}
+						>
+							Download Preview
+						</Button>
+					</header>
+				)}
 
 				{/* Body */}
 				<div className="flex flex-1 overflow-hidden relative">
