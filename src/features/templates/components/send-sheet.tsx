@@ -12,7 +12,7 @@ import { useSheetStore } from "@/shared/hooks/use-sheet";
 import { useSubmitOrderMutation } from "@/shared/repository/order/query";
 import { LoaderIcon } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTemplatesStore } from "../stores/use-templates-store";
 
