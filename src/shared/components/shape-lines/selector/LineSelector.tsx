@@ -10,10 +10,10 @@ export default function LineSelector() {
 			{lineVariants.map((variant) => (
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 				<div
-					key={variant.type}
+					key={variant.variant}
 					className="rounded-md cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-200"
 					onClick={() => {
-						addLine(variant.type);
+						addLine(variant.variant);
 					}}
 				>
 					<div className="flex items-center gap-4 p-1">

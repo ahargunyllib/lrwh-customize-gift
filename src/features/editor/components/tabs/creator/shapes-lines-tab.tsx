@@ -23,29 +23,47 @@ import { cn } from "@/shared/lib/utils";
 import type { LineElement } from "@/shared/types/element/line";
 import type { ShapeElement } from "@/shared/types/element/shape";
 import { Minus, Square, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+type TabValue = "shape" | "line";
 
 export default function ShapesLinesTab() {
 	const tabsContentList = [
 		{
-			value: "shapes",
+			value: "shape",
 			comp: ShapeTabContent,
 		},
 		{
-			value: "lines",
+			value: "line",
 			comp: LinesTabContent,
 		},
 	];
 
+	const { activeElement } = useTemplateContext();
+
+	const incomingTab: TabValue = useMemo(
+		() => (activeElement?.type === "shape" ? "shape" : "line"),
+		[activeElement?.type],
+	);
+	const [tab, setTab] = useState<TabValue>(incomingTab);
+
+	useEffect(() => {
+		setTab(incomingTab);
+	}, [incomingTab]);
+
 	return (
 		<div className="mt-6">
-			<Tabs defaultValue="shapes" className="w-full">
+			<Tabs
+				value={tab}
+				className="w-full"
+				onValueChange={(v) => setTab(v as TabValue)}
+			>
 				<TabsList className="">
-					<TabsTrigger value="shapes">
+					<TabsTrigger value="shape">
 						<Square className="h-4 w-4 mr-1" />
 						Shapes
 					</TabsTrigger>
-					<TabsTrigger value="lines">
+					<TabsTrigger value="line">
 						<Minus className="h-4 w-4 mr-1" />
 						Lines
 					</TabsTrigger>
@@ -71,6 +89,16 @@ function LinesTabContent() {
 		totalElements,
 	} = useTemplateContext();
 	const lines = template.lines;
+
+	const activeLineId = useMemo(
+		() => (activeElement?.type === "line" ? activeElement.id : undefined),
+		[activeElement],
+	);
+
+	const { getRef } = useScrollToActive({
+		activeId: activeLineId,
+		deps: [template.lines.length],
+	});
 	return (
 		<>
 			<LineSelector />
@@ -94,6 +122,7 @@ function LinesTabContent() {
 					>
 						{lines.map((line, idx) => (
 							<AccordionItem
+								ref={getRef(line.id)}
 								key={line.id}
 								value={line.id}
 								className={cn(
@@ -175,6 +204,7 @@ function ShapeTabContent() {
 					>
 						{shapes.map((shape, idx) => (
 							<AccordionItem
+								ref={getRef(shape.id)}
 								key={shape.id}
 								value={shape.id}
 								className={cn(
@@ -227,7 +257,7 @@ function ElementAccordionTrigger({
 	return (
 		<div className="flex items-center gap-3 flex-1">
 			<div className="flex-shrink-0 w-8 h-6 flex items-center justify-center">
-				{getShapeIcon(element.type)}
+				{getShapeIcon(element.variant)}
 			</div>
 			<div className="flex-1 text-left">
 				<span className="font-medium text-sm">
