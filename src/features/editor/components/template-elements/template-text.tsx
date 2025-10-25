@@ -84,7 +84,6 @@ export default function TemplateText({
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
 
-	// Create curved text path with consistent positioning
 	const createCurvedTextPath = (
 		textContent: string,
 		radius: number,
@@ -207,17 +206,20 @@ export default function TemplateText({
 			hiddenTextarea.style.height = "auto";
 			const newHeight = hiddenTextarea.scrollHeight;
 
+			const minHeight = Math.max(
+				newHeight + (Number(padding) || 0) * 2,
+				fontSizeNum * 2,
+			);
+
 			setTemplate((prev) => ({
 				...prev,
 				texts: prev.texts.map((t) =>
-					t.id === text.id
-						? { ...t, height: Math.max(newHeight, fontSizeNum * 1.5) }
-						: t,
+					t.id === text.id ? { ...t, height: minHeight } : t,
 				),
 			}));
 		} else if (curved) {
 			// For curved text, set a minimum height based on font size and curve
-			const minHeight = fontSizeNum * 2 + curveRadius * curveIntensity * 0.3;
+			const minHeight = fontSizeNum * 2.5 + curveRadius * curveIntensity * 0.3;
 			setTemplate((prev) => ({
 				...prev,
 				texts: prev.texts.map((t) =>
@@ -253,17 +255,19 @@ export default function TemplateText({
 			const textarea = textareaRef.current;
 			textarea.style.height = "auto";
 			const newHeight = textarea.scrollHeight;
-			textarea.style.height = `${newHeight}px`;
+
+			const totalHeight = newHeight + (Number(padding) || 0) * 2;
+			textarea.style.height = `${totalHeight}px`;
 
 			// Update template height to match textarea
 			setTemplate((prev) => ({
 				...prev,
 				texts: prev.texts.map((t) =>
-					t.id === text.id ? { ...t, height: newHeight } : t,
+					t.id === text.id ? { ...t, height: totalHeight } : t,
 				),
 			}));
 		}
-	}, [text.content, isEditing, text.id, setTemplate, curved]);
+	}, [text.content, isEditing, text.id, setTemplate, curved, padding]);
 
 	const getContainerStyle = (): React.CSSProperties => ({
 		position: "absolute",
@@ -274,17 +278,20 @@ export default function TemplateText({
 		transform: `rotate(${text.rotate}deg)`,
 		transformOrigin: "center center",
 		backgroundColor: backgroundColor || "transparent",
-		borderRadius: (borderRadius || 0) * scale, // Scale border radius
+		borderRadius: (borderRadius || 0) * scale,
 		border: isActive
 			? `${2 * scale}px solid #3b82f6`
-			: `${2 * scale}px solid transparent`, // Scale border
+			: `${2 * scale}px solid transparent`,
 		cursor: text.draggable && !isEditing ? "move" : "default",
 		boxSizing: "border-box",
-		clipPath: getClipPath(), // Apply cropping
-		overflow: "hidden", // Ensure content doesn't overflow
+		clipPath: getClipPath(),
+		overflow: "hidden",
 		zIndex: layerIndex,
-		// Add padding scaling
 		padding: `${(Number(padding) || 0) * scale}px`,
+		display: "flex",
+		alignItems: "flex-start",
+		justifyContent: "flex-start",
+		paddingBottom: 0,
 	});
 
 	const getTextStyle = (): React.CSSProperties => ({
@@ -314,6 +321,7 @@ export default function TemplateText({
 		textStroke: textStroke || WebkitTextStroke || undefined,
 		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 		zIndex: layerIndex,
+		display: "block",
 	});
 
 	const getDisplayStyle = (): React.CSSProperties => ({
@@ -326,7 +334,7 @@ export default function TemplateText({
 		lineHeight: text.style.lineHeight || "1.4",
 		textAlign: (text.style.textAlign ||
 			"left") as React.CSSProperties["textAlign"],
-		padding: curved ? 0 : 0,
+		padding: 0,
 		margin: 0,
 		border: "none",
 		outline: "none",
@@ -515,13 +523,13 @@ export default function TemplateText({
 					style={
 						{
 							fontFamily: text.style.fontFamily,
-							fontSize: fontSizeNum * scale, // Scale font size for SVG
+							fontSize: fontSizeNum * scale,
 							fontWeight: text.style.fontWeight,
 							fill: text.style.color,
 							letterSpacing:
 								(letterSpacing || "normal") === "normal"
 									? "normal"
-									: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`, // Scale letter spacing
+									: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 							stroke:
 								textStroke || WebkitTextStroke
 									? text.style.outlineColor || "#000000"
@@ -588,7 +596,7 @@ export default function TemplateText({
 						style={{
 							...getTextStyle(),
 							zIndex: layerIndex,
-							display: curved ? "none" : "block", // Hide textarea when curved
+							display: curved ? "none" : "block",
 						}}
 					/>
 				) : (
