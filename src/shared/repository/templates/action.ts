@@ -200,6 +200,7 @@ export const updateTemplate = async (
 		texts: req.texts,
 		shapes: req.shapes,
 		lines: req.lines,
+		layer: req.layer,
 	};
 
 	const queryBuilder = sql`
