@@ -129,7 +129,7 @@ export default function TemplateLine(props: Props) {
 	const startTip = element.startTip || "none";
 	const endTip = element.endTip || "none";
 
-	const lineStyle = element.type || "line-medium";
+	const lineStyle = element.variant || "line-medium";
 	const styleInfo = LINE_STYLES[lineStyle] || LINE_STYLES["line-medium"];
 
 	// Scale

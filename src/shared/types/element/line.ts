@@ -21,7 +21,8 @@ export type LineTip = (typeof LINE_TIP)[keyof typeof LINE_TIP];
 
 export interface LineElement {
 	id: string;
-	type: TLineElement;
+	type: "line";
+	variant: TLineElement;
 	draggable?: boolean;
 	strokeColor: string;
 	strokeWidth: number;

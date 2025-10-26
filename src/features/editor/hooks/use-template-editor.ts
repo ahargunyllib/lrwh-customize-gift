@@ -149,11 +149,12 @@ export function useTemplateEditor(initial?: TemplateData) {
 	};
 
 	/* Start Shape Element */
-	const addShape = (type: ShapeElement["type"]) => {
+	const addShape = (variant: ShapeElement["variant"]) => {
 		const id = uuidv4();
 		const shape: ShapeElement = {
 			id,
-			type,
+			type: "shape",
+			variant: variant,
 			width: 100,
 			height: 100,
 			position: { x: template.width / 2 - 50, y: template.height / 2 - 50 },
@@ -171,7 +172,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			console.log(p);
 			return { ...p, shapes: [...p.shapes, shape], layer: [...p.layer, id] };
 		});
-		setActiveElement({ id, type });
+		setActiveElement({ id, type: "shape" });
 		return id;
 	};
 	const updateShape = (id: string, payload: Partial<ShapeElement>) =>
@@ -181,9 +182,9 @@ export function useTemplateEditor(initial?: TemplateData) {
 		}));
 	/* End Shape Element */
 	/* Start Line Element */
-	const addLine = (type: LineElement["type"]) => {
+	const addLine = (variant: LineElement["variant"]) => {
 		const id = uuidv4();
-		const line: LineElement = getLineConfig(type);
+		const line: LineElement = getLineConfig(variant);
 		setTemplate((p) => ({
 			...p,
 			lines: [
@@ -203,7 +204,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 			],
 			layer: [...p.layer, id],
 		}));
-		setActiveElement({ id, type });
+		setActiveElement({ id, type: "line" });
 		return id;
 	};
 	const updateLine = (id: string, payload: Partial<LineElement>) =>

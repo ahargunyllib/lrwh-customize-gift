@@ -3,20 +3,20 @@ import type { ShapeElement } from "@/shared/types/element/shape";
 import { Circle, Square } from "lucide-react";
 
 export interface ShapeVariant {
-	type: ShapeElement["type"];
+	variant: ShapeElement["variant"];
 	name: string;
 	description: string;
 	icon: React.ReactNode;
 }
 export const shapeVariants: ShapeVariant[] = [
 	{
-		type: "circle",
+		variant: "circle",
 		name: "Circle",
 		description: "",
 		icon: <Circle className="w-5 h-5 text-gray-700" />,
 	},
 	{
-		type: "rectangle",
+		variant: "rectangle",
 		name: "Rectangle",
 		description: "",
 		icon: <Square className="w-5 h-5 text-gray-700" />,
@@ -24,32 +24,32 @@ export const shapeVariants: ShapeVariant[] = [
 ];
 
 export interface LineVariant {
-	type: LineElement["type"];
+	variant: LineElement["variant"];
 	name: string;
 	description: string;
 	preview: React.ReactNode;
 }
 export const lineVariants: LineVariant[] = [
 	{
-		type: "line-thin",
+		variant: "line-thin",
 		name: "Thin Line",
 		description: "1px solid line",
 		preview: <div className="w-12 h-0.5 bg-gray-700" />,
 	},
 	{
-		type: "line-medium",
+		variant: "line-medium",
 		name: "Medium Line",
 		description: "2px solid line",
 		preview: <div className="w-12 h-1 bg-gray-700" />,
 	},
 	{
-		type: "line-thick",
+		variant: "line-thick",
 		name: "Thick Line",
 		description: "4px solid line",
 		preview: <div className="w-12 h-1.5 bg-gray-700" />,
 	},
 	{
-		type: "line-dashed",
+		variant: "line-dashed",
 		name: "Dashed Line",
 		description: "2px dashed line",
 		preview: (
@@ -57,7 +57,7 @@ export const lineVariants: LineVariant[] = [
 		),
 	},
 	{
-		type: "line-dotted",
+		variant: "line-dotted",
 		name: "Dotted Line",
 		description: "2px dotted line",
 		preview: (
@@ -70,7 +70,7 @@ export const lineVariants: LineVariant[] = [
 		),
 	},
 	{
-		type: "line-arrow",
+		variant: "line-arrow",
 		name: "Arrow Line",
 		description: "Line with arrow",
 		preview: (
@@ -81,7 +81,7 @@ export const lineVariants: LineVariant[] = [
 		),
 	},
 	{
-		type: "line-rounded",
+		variant: "line-rounded",
 		name: "Rounded Line",
 		description: "Line with rounded tips",
 		preview: (
@@ -93,13 +93,13 @@ export const lineVariants: LineVariant[] = [
 ];
 
 export const getShapeIcon = (
-	type: ShapeElement["type"] | LineElement["type"],
+	variant: ShapeElement["variant"] | LineElement["variant"],
 ) => {
-	if (type.startsWith("line-")) {
-		const variant = lineVariants.find((v) => v.type === type);
-		return variant?.preview ?? <div className="w-4 h-0.5 bg-current" />;
+	if (variant?.startsWith("line-")) {
+		const lineVariant = lineVariants.find((v) => v.variant === variant);
+		return lineVariant?.preview ?? <div className="w-4 h-0.5 bg-current" />;
 	}
 
-	const variant = shapeVariants.find((v) => v.type === type);
-	return variant?.icon ?? <Square className="w-4 h-4 text-current" />;
+	const shapeVariant = shapeVariants.find((v) => v.variant === variant);
+	return shapeVariant?.icon ?? <Square className="w-4 h-4 text-current" />;
 };
