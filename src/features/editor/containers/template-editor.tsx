@@ -86,6 +86,8 @@ export default function TemplateEditor({
 	const { canvasOffset } = useCanvasGesture(handleZoom);
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+	const onClose = () => setSidebarOpen(false);
 
 	const {
 		order: { username, orderNumber },
@@ -117,7 +119,11 @@ export default function TemplateEditor({
 
 				{/* Body */}
 				<div className="flex flex-1 overflow-hidden relative">
-					<EditorSidebar />
+					<EditorSidebar
+						toggleSidebar={toggleSidebar}
+						isOpen={sidebarOpen}
+						closeSidebar={onClose}
+					/>
 
 					{/* Canvas */}
 					<div
@@ -149,7 +155,7 @@ export default function TemplateEditor({
 							/>
 						</div>
 
-						<ImageMobileEditor />
+						<ImageMobileEditor toggleSidebar={toggleSidebar} />
 
 						<ZoomControl
 							zoomIn={zoomIn}
