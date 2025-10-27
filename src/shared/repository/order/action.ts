@@ -560,7 +560,7 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			}
 
 			const hash = sha256(buf);
-			const key = `orders_${orderId}_${t.orderProductVariantId}_${hash}.png`;
+			const key = `${orderId}_${hash}.png`;
 
 			return {
 				success: true as const,
