@@ -34,6 +34,7 @@ async function runMiddleware(
 
 export const config = {
 	matcher: [
+		"/",
 		"/editor/:path*",
 		"/design-system",
 		"/api/:path*",
