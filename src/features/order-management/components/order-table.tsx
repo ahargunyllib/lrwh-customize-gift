@@ -163,10 +163,10 @@ export default function OrderTable({
 						<Badge
 							variant={
 								hasAllImages
-									? "default"
+									? "completed"
 									: countHavingImages === 0
 										? "destructive"
-										: "secondary"
+										: "progress"
 							}
 						>
 							{countHavingImages}/{products.length} Images
