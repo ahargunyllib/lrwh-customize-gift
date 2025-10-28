@@ -10,7 +10,7 @@ export default function SendDialogButton() {
 
 	return (
 		<Button
-			className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit hidden sm:flex"
+			className="gap-2 font-medium text-xs bg-[#2854AD] hover:bg-[#2854AD]/80 text-white shadow-none px-4 py-3 rounded-md h-fit hidden sm:flex"
 			onClick={() => {
 				openDialog({
 					children: <SendDialog />,

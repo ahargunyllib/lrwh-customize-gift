@@ -11,7 +11,7 @@ export default function SendSheetButton() {
 	return (
 		<Button
 			size="lg"
-			className="gap-2 font-medium text-xs text-white bg-black px-4 py-3 rounded-md h-fit w-full"
+			className="gap-2 font-medium text-xs bg-[#2854AD] hover:bg-[#2854AD]/80 text-white shadow-none px-4 py-3 rounded-md h-fit w-full"
 			onClick={() => {
 				openSheet({
 					children: <SendSheet />,
