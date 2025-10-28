@@ -5,7 +5,7 @@ export const ordersTable = pgTable("orders", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	orderNumber: varchar("order_number", { length: 255 }).notNull(),
 	username: varchar({ length: 255 }).notNull(),
-	status: varchar("status", { length: 50 }).notNull().default("progress"),
+	status: varchar("status", { length: 50 }).notNull().default("no-images"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
