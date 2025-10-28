@@ -108,6 +108,7 @@ export default function TemplateEditor({
 							<ConfirmationDialog
 								canvasRef={canvasRef}
 								orderProductVariantId={orderProductVariantId}
+								resetZoom={resetZoom}
 							/>
 						)}
 					</header>
@@ -214,9 +215,11 @@ function DownloadPreviewButton({
 function ConfirmationDialog({
 	canvasRef,
 	orderProductVariantId,
+	resetZoom,
 }: {
 	canvasRef: React.RefObject<HTMLDivElement>;
 	orderProductVariantId: string;
+	resetZoom: () => void;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -256,6 +259,7 @@ function ConfirmationDialog({
 
 	const onOpenChange = async (open: boolean) => {
 		flushSync(() => {
+			resetZoom();
 			setActiveElement(null);
 		});
 
