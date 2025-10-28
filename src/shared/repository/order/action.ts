@@ -639,7 +639,7 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 	}
 
 	// 3) DB updates in a transaction
-	const { error: txErr } = await tryCatch(
+	const { data: finalStatus, error: txErr } = await tryCatch(
 		db.transaction(async (tx) => {
 			for (const item of validItems) {
 				const fileUrl = keyToUrl.get(item.key);
@@ -709,6 +709,10 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 				tx.rollback();
 				return;
 			}
+
+			const remainingCount = totalProducts - productsWithImages;
+
+			return { status: newStatus, remainingCount };
 		}),
 	);
 
@@ -723,5 +727,9 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 	return {
 		success: true,
 		message: "Files uploaded and order updated successfully",
+		data: {
+			status: finalStatus?.status,
+			remainingCount: finalStatus?.remainingCount,
+		},
 	};
 };
