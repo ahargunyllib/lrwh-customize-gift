@@ -34,23 +34,25 @@ import type {
 export const getOrders = async (
 	query: GetOrdersQuery,
 ): Promise<ApiResponse<GetOrdersResponse>> => {
+	// Build filter array conditionally to avoid passing undefined to and()
+	const filters = [];
+	if (query.search) {
+		filters.push(
+			or(
+				ilike(ordersTable.orderNumber, `%${query.search}%`),
+				ilike(ordersTable.username, `%${query.search}%`),
+			),
+		);
+	}
+	if (query.status && query.status !== "all") {
+		filters.push(eq(ordersTable.status, query.status));
+	}
+
 	const { data: orders, error } = await tryCatch(
 		db
 			.select()
 			.from(ordersTable)
-			.where(
-				and(
-					query.search
-						? or(
-								ilike(ordersTable.orderNumber, `%${query.search}%`),
-								ilike(ordersTable.username, `%${query.search}%`),
-							)
-						: undefined,
-					query.status && query.status !== "all"
-						? eq(ordersTable.status, query.status)
-						: undefined,
-				),
-			)
+			.where(filters.length > 0 ? and(...filters) : undefined)
 			.orderBy(
 				query.sortBy
 					? query.sortOrder === "asc"
@@ -73,19 +75,7 @@ export const getOrders = async (
 		db
 			.select({ count: count(ordersTable.id) })
 			.from(ordersTable)
-			.where(
-				and(
-					query.search
-						? or(
-								ilike(ordersTable.orderNumber, `%${query.search}%`),
-								ilike(ordersTable.username, `%${query.search}%`),
-							)
-						: undefined,
-					query.status && query.status !== "all"
-						? eq(ordersTable.status, query.status)
-						: undefined,
-				),
-			),
+			.where(filters.length > 0 ? and(...filters) : undefined),
 	);
 	if (countErr) {
 		return {
