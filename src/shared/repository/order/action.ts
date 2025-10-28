@@ -39,12 +39,17 @@ export const getOrders = async (
 			.select()
 			.from(ordersTable)
 			.where(
-				query.search
-					? or(
-							ilike(ordersTable.orderNumber, `%${query.search}%`),
-							ilike(ordersTable.username, `%${query.search}%`),
-						)
-					: undefined,
+				and(
+					query.search
+						? or(
+								ilike(ordersTable.orderNumber, `%${query.search}%`),
+								ilike(ordersTable.username, `%${query.search}%`),
+							)
+						: undefined,
+					query.status && query.status !== "all"
+						? eq(ordersTable.status, query.status)
+						: undefined,
+				),
 			)
 			.orderBy(
 				query.sortBy
@@ -69,12 +74,17 @@ export const getOrders = async (
 			.select({ count: count(ordersTable.id) })
 			.from(ordersTable)
 			.where(
-				query.search
-					? or(
-							ilike(ordersTable.orderNumber, `%${query.search}%`),
-							ilike(ordersTable.username, `%${query.search}%`),
-						)
-					: undefined,
+				and(
+					query.search
+						? or(
+								ilike(ordersTable.orderNumber, `%${query.search}%`),
+								ilike(ordersTable.username, `%${query.search}%`),
+							)
+						: undefined,
+					query.status && query.status !== "all"
+						? eq(ordersTable.status, query.status)
+						: undefined,
+				),
 			),
 	);
 	if (countErr) {
@@ -667,6 +677,47 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 					tx.rollback();
 					return;
 				}
+			}
+
+			// 4) Calculate and update order status based on image completion
+			const { data: allOrderProducts, error: fetchAllErr } = await tryCatch(
+				tx
+					.select()
+					.from(orderProductVariantsTable)
+					.where(eq(orderProductVariantsTable.orderId, orderId)),
+			);
+			if (fetchAllErr) {
+				console.error(
+					`Failed to fetch all order products for status update: ${fetchAllErr.message}`,
+				);
+				tx.rollback();
+				return;
+			}
+
+			const totalProducts = allOrderProducts.length;
+			const productsWithImages = allOrderProducts.filter(
+				(p) => p.imageUrl,
+			).length;
+
+			let newStatus = "progress";
+			if (productsWithImages === totalProducts && totalProducts > 0) {
+				newStatus = "completed";
+			} else if (productsWithImages === 0) {
+				newStatus = "no-images";
+			}
+
+			const { error: statusUpdateErr } = await tryCatch(
+				tx
+					.update(ordersTable)
+					.set({ status: newStatus })
+					.where(eq(ordersTable.id, orderId)),
+			);
+			if (statusUpdateErr) {
+				console.error(
+					`Failed to update order status: ${statusUpdateErr.message}`,
+				);
+				tx.rollback();
+				return;
 			}
 		}),
 	);

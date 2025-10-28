@@ -8,6 +8,7 @@ export type GetOrdersQuery = {
 	limit?: number;
 	sortBy?: "createdAt" | "orderNumber" | "username";
 	sortOrder?: "asc" | "desc";
+	status?: "all" | "completed" | "progress" | "no-images";
 };
 
 export type GetOrdersResponse = {
