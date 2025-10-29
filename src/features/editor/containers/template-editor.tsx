@@ -294,7 +294,7 @@ function ConfirmationDialog({
 				<SheetTrigger asChild>
 					<Button variant="outline">Simpan</Button>
 				</SheetTrigger>
-				<SheetContent side="bottom">
+				<SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
 					<SheetHeader className="gap-4 sm:text-center">
 						<SheetTitle className="text-center text-[#1D2939] font-bold">
 							Ini Preview Template kamu
@@ -304,8 +304,12 @@ function ConfirmationDialog({
 							tombol di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
 						</SheetDescription>
 					</SheetHeader>
-					<div className="flex flex-col items-center justify-center">
-						<img id="preview" alt="Preview" className="border" />
+					<div className="flex flex-col items-center justify-center py-4">
+						<img
+							id="preview"
+							alt="Preview"
+							className="border max-w-full max-h-[50vh] object-contain"
+						/>
 					</div>
 					<SheetFooter className="flex flex-row gap-2">
 						<SheetClose asChild>
@@ -333,7 +337,10 @@ function ConfirmationDialog({
 			<DialogTrigger asChild>
 				<Button variant="outline">Simpan</Button>
 			</DialogTrigger>
-			<DialogContent showCloseButton={false}>
+			<DialogContent
+				showCloseButton={false}
+				className="max-w-[90vw] md:max-w-2xl max-h-[90vh] overflow-y-auto"
+			>
 				<DialogHeader className="gap-4 sm:text-center">
 					<DialogTitle className="text-center text-[#1D2939] font-bold">
 						Ini Preview Template kamu
@@ -343,8 +350,12 @@ function ConfirmationDialog({
 						di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
 					</DialogDescription>
 				</DialogHeader>
-				<div className="flex flex-col items-center justify-center">
-					<img id="preview" alt="Preview" className="border" />
+				<div className="flex flex-col items-center justify-center py-4">
+					<img
+						id="preview"
+						alt="Preview"
+						className="border max-w-full max-h-[60vh] object-contain"
+					/>
 				</div>
 				<DialogFooter className="flex flex-row gap-2">
 					<DialogClose asChild>
