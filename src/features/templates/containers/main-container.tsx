@@ -6,17 +6,22 @@ import ListFilledTemplates from "@/features/templates/components/list-filled-tem
 import ListTemplates from "@/features/templates/components/list-templates";
 import SendDialogButton from "@/features/templates/components/send-dialog-button";
 import SendSheetButton from "@/features/templates/components/send-sheet-button";
+import { useFirstVisitStore } from "@/features/templates/stores/use-first-visit-store";
 import { useTemplatesStore } from "@/features/templates/stores/use-templates-store";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { cn } from "@/shared/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import FirstVisitDialog from "../components/first-visit-dialog";
 import Header from "../components/header";
 
 export default function MainContainer() {
 	const {
 		order: { productVariants },
 	} = useTemplatesStore();
+	const { hasVisitedTemplates, setVisited } = useFirstVisitStore();
+	const { openDialog } = useDialogStore();
 
 	const searchParams = useSearchParams();
 	const productVariantId = searchParams.get("productVariantId");
@@ -25,6 +30,15 @@ export default function MainContainer() {
 		productVariants.find((pv) => pv.id === productVariantId) ||
 			productVariants[0],
 	);
+
+	useEffect(() => {
+		if (!hasVisitedTemplates) {
+			openDialog({
+				children: <FirstVisitDialog />,
+			});
+			setVisited();
+		}
+	}, [hasVisitedTemplates, openDialog, setVisited]);
 
 	const hasFillAllTemplates = useMemo(() => {
 		if (productVariantId) {
