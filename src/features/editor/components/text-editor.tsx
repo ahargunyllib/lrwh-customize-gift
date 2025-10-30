@@ -13,7 +13,9 @@ import {
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { fontArray } from "@/shared/lib/font";
+import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
+import { useState } from "react";
 
 interface TextEditorProps {
 	text: TextElement;
@@ -41,11 +43,15 @@ export default function TextEditor({
 			onClick={onSelect}
 		>
 			<div className="space-y-3">
+				{/* Min max validation error */}
 				<Textarea
 					value={text.content}
-					onChange={handleInputChange}
-					className="resize-none"
+					onChange={(e) => {
+						handleInputChange(e);
+					}}
+					className={cn("resize-none")}
 					rows={2}
+					maxLength={text.textLimit}
 				/>
 
 				{isActive && (
@@ -147,6 +153,22 @@ export default function TextEditor({
 								</SelectContent>
 							</Select>
 						</div>
+
+						{text.textLimit !== undefined && (
+							<div className="space-y-1">
+								<Label htmlFor={`limit-${text.id}`} className="text-xs">
+									Limit Karakter
+								</Label>
+								<Input
+									id={`limit-${text.id}`}
+									type="number"
+									value={text.textLimit}
+									onChange={(e) => onStyleChange("textLimit", e.target.value)}
+									className="h-8"
+									disabled
+								/>
+							</div>
+						)}
 					</div>
 				)}
 			</div>

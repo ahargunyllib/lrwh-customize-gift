@@ -581,6 +581,7 @@ export default function TemplateText({
 					pointerEvents: "none",
 					width: (text.width || 200) * scale,
 				}}
+				maxLength={text.textLimit}
 				readOnly
 			/>
 
@@ -611,6 +612,7 @@ export default function TemplateText({
 							zIndex: layerIndex,
 							display: "block",
 						}}
+						maxLength={text.textLimit}
 					/>
 				) : (
 					<>

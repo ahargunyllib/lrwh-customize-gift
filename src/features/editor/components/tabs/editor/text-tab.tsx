@@ -5,7 +5,6 @@ import { useTemplateContext } from "@/features/editor/containers/template-editor
 export default function TextTab() {
 	const { template, activeElement, setActiveElement, updateText } =
 		useTemplateContext();
-
 	return (
 		<div className="space-y-4 pt-4">
 			<h3 className="font-medium">Edit Text</h3>

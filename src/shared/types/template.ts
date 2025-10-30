@@ -43,6 +43,7 @@ export interface TextElement {
 	draggable?: boolean;
 	zIndex?: number;
 	rotate?: number;
+	textLimit?: number;
 
 	style: {
 		fontFamily: string;
