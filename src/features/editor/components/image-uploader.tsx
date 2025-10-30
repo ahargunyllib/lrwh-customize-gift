@@ -63,6 +63,11 @@ export default function ImageUploader({
 					// biome-ignore lint/a11y/noRedundantAlt: <explanation>
 					alt="Template image"
 					className="w-full h-full object-cover"
+					style={{
+						filter: image.grayscalePercent
+							? `grayscale(${image.grayscalePercent}%)`
+							: "none",
+					}}
 				/>
 				<div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
 					<Button

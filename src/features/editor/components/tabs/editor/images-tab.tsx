@@ -1,6 +1,8 @@
 "use client";
 import ImageUploader from "@/features/editor/components/image-uploader";
 import { useTemplateContext } from "@/features/editor/containers/template-editor";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 
 export default function ImagesTab() {
 	const { template, updateImage } = useTemplateContext();
@@ -16,11 +18,30 @@ export default function ImagesTab() {
 			<h3 className="font-medium">Replace Images</h3>
 			<div className="space-y-3">
 				{template.images.map((img) => (
-					<ImageUploader
-						key={img.id}
-						image={img}
-						onChange={(file) => handleReplace(img, file)}
-					/>
+					<div key={img.id}>
+						<ImageUploader
+							image={img}
+							onChange={(file) => handleReplace(img, file)}
+						/>
+						<div className="flex items-center gap-2 mt-1">
+							<Label className="text-xs w-20">Grayscale</Label>
+							<Input
+								type="range"
+								min={0}
+								max={100}
+								className="h-7 px-2 text-xs"
+								value={img.grayscalePercent ?? 0}
+								onChange={(e) =>
+									updateImage(img.id, {
+										grayscalePercent: Number(e.target.value),
+									})
+								}
+							/>
+							<span className="text-xs text-gray-500 min-w-[35px]">
+								{img.grayscalePercent ?? 0}%
+							</span>
+						</div>
+					</div>
 				))}
 			</div>
 
