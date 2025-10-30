@@ -233,7 +233,6 @@ export default function TemplateImage({
 		}
 	};
 
-	// Get current image style for display
 	const getImageStyle = (): React.CSSProperties => {
 		const clipPath = getClipPath();
 		const imageOffset = image.imageOffset || { x: 0, y: 0 };
@@ -242,7 +241,9 @@ export default function TemplateImage({
 
 		return {
 			clipPath,
-			filter: image.grayscale ? "grayscale(1)" : "none",
+			filter: image.grayscalePercent
+				? `grayscale(${image.grayscalePercent}%)`
+				: "none",
 			transform: `translate(${imageOffset.x * scale}px, ${imageOffset.y * scale}px) scale(${scaleX}, ${scaleY})`,
 			transformOrigin: "0 0",
 			width: originalDimensions?.width || "auto",
@@ -252,7 +253,6 @@ export default function TemplateImage({
 			transition: "var(--transition-editor)",
 		};
 	};
-
 	// Get clip-path for normal display
 	const getClipPath = () => {
 		if (!canvasWidth || !canvasHeight) return undefined;

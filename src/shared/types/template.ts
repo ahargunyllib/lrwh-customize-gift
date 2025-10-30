@@ -18,6 +18,7 @@ export interface ImageElement {
 	draggable: boolean;
 	borderRadius?: number;
 	grayscale?: boolean;
+	grayscalePercent?: number;
 	imageOffset?: { x: number; y: number };
 	scaleX?: number;
 	scaleY?: number;

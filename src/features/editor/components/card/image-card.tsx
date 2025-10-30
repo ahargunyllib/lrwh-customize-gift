@@ -44,8 +44,10 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 					<div
 						className="h-16 w-16 overflow-hidden border"
 						style={{
-							borderRadius: img.borderRadius ?? 0,
-							filter: img.grayscale ? "grayscale(1)" : "none",
+							borderRadius: `${img.borderRadius ?? 0}%`,
+							filter: img.grayscalePercent
+								? `grayscale(${img.grayscalePercent}%)`
+								: "none",
 						}}
 					>
 						<img
@@ -197,16 +199,22 @@ export default function ImageCard({ img, selected, onSelect }: Props) {
 								/>
 							</div>
 							<div className="flex items-center gap-2 mt-1">
-								<Switch
-									checked={img.grayscale ?? false}
-									onCheckedChange={(val) =>
-										updateImage(img.id, { grayscale: val })
+								<Label className="text-xs w-20">Grayscale</Label>
+								<Input
+									type="range"
+									min={0}
+									max={100}
+									className="h-7 px-2 text-xs"
+									value={img.grayscalePercent ?? 0}
+									onChange={(e) =>
+										updateImage(img.id, {
+											grayscalePercent: Number(e.target.value),
+										})
 									}
-									id={`grayscale-${img.id}`}
 								/>
-								<Label htmlFor={`grayscale-${img.id}`} className="text-xs">
-									Grayscale
-								</Label>
+								<span className="text-xs text-gray-500 min-w-[35px]">
+									{img.grayscalePercent ?? 0}%
+								</span>
 							</div>
 						</div>
 						<ZIndexControls element={img} />
