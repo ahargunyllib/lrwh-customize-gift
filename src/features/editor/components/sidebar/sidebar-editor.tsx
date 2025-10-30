@@ -15,10 +15,17 @@ import TextTab from "../tabs/editor/text-tab";
 
 type TabValue = "image" | "text";
 
-export default function EditorSidebar() {
+export default function EditorSidebar({
+	isOpen,
+	toggleSidebar,
+	closeSidebar,
+}: {
+	isOpen: boolean;
+	toggleSidebar: () => void;
+	closeSidebar: () => void;
+}) {
 	const { activeElement } = useTemplateContext();
 	const isMobile = useIsMobile();
-	const [open, setOpen] = useState(false);
 
 	const incomingTab: TabValue = useMemo(
 		() => (activeElement?.type === "text" ? "text" : "image"),
@@ -30,19 +37,16 @@ export default function EditorSidebar() {
 		setTab(incomingTab);
 	}, [incomingTab]);
 
-	const onClose = () => setOpen(false);
-	const toggleSidebar = () => setOpen((prev) => !prev);
-
 	const Panel = (
 		<div
 			className={`bg-gray-50 p-4 overflow-y-auto h-full w-72 md:w-64
       fixed top-0 left-0 z-50 shadow-xl transition-transform duration-300 ease-in-out
-      ${open ? "translate-x-0" : "-translate-x-full"}
+      ${isOpen ? "translate-x-0" : "-translate-x-full"}
       md:border-r md:shadow-none`}
 		>
 			<div className="flex items-center justify-between mb-4">
 				<h2 className="font-semibold">Template Editor</h2>
-				<Button variant="ghost" size="icon" onClick={onClose}>
+				<Button variant="ghost" size="icon" onClick={closeSidebar}>
 					<X className="h-5 w-5" />
 				</Button>
 			</div>
@@ -75,21 +79,21 @@ export default function EditorSidebar() {
 
 	return (
 		<Fragment>
-			<Button
+			{/* <Button
 				variant="outline"
 				size="icon"
 				className="fixed top-4 left-4 z-50"
 				onClick={toggleSidebar}
 			>
 				<Menu className="h-5 w-5" />
-			</Button>
+			</Button> */}
 
-			{open && (
+			{isOpen && (
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 				<div
 					className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
 					aria-hidden="true"
-					onClick={onClose}
+					onClick={closeSidebar}
 				/>
 			)}
 

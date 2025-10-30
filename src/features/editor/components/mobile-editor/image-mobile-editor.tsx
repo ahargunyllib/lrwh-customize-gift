@@ -1,8 +1,14 @@
-import { ImageUpscale, SquareRoundCorner } from "lucide-react";
-import { useRef } from "react";
+import { Separator } from "@/shared/components/ui/separator";
+import { ImageUpscale, Pen, SquareRoundCorner } from "lucide-react";
+import { useRef, useState } from "react";
 import { useTemplateContext } from "../../containers/template-editor";
+import SidebarEditor from "../sidebar/sidebar-editor";
 
-export default function ImageMobileEditor() {
+export default function ImageMobileEditor({
+	toggleSidebar,
+}: {
+	toggleSidebar: () => void;
+}) {
 	const { updateImage, activeElement } = useTemplateContext();
 	const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -20,14 +26,12 @@ export default function ImageMobileEditor() {
 		}
 	};
 
-	if (activeElement?.type !== "image") return null;
-
 	return (
 		<div
 			className="fixed left-1/2 bottom-4 z-10 flex flex-row gap-2 bg-white rounded-lg shadow-lg p-2"
 			style={{ transform: "translateX(-50%)" }}
 		>
-			<div>
+			<div className="flex gap-4">
 				<input
 					type="file"
 					accept="image/*"
@@ -37,16 +41,23 @@ export default function ImageMobileEditor() {
 				/>
 				{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 				<button
-					onClick={() => inputRef.current?.click()}
-					className="flex items-center flex-col"
+					onClick={toggleSidebar}
+					className="flex items-center flex-col gap-2"
 				>
-					<ImageUpscale className="h-5 w-5" />
-					<span className="text-[10px] text-center">
-						Ganti
-						<br />
-						Gambar
-					</span>
+					<Pen className="h-6 w-6" />
 				</button>
+				{activeElement?.type === "image" && (
+					<>
+						<Separator orientation="vertical" />
+						{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+						<button
+							onClick={() => inputRef.current?.click()}
+							className="flex items-center flex-col gap-2"
+						>
+							<ImageUpscale className="h-6 w-6" />
+						</button>
+					</>
+				)}
 			</div>
 		</div>
 	);

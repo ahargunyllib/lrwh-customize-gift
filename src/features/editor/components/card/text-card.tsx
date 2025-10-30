@@ -22,6 +22,7 @@ import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
 import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
+import { useState } from "react";
 import { useTemplateContext } from "../../containers/template-creator";
 
 interface Props {
@@ -32,6 +33,11 @@ interface Props {
 
 export default function TextCard({ txt, selected, onSelect }: Props) {
 	const { updateText, deleteElement } = useTemplateContext();
+
+	// enable if textLimit is not undefined or 0
+	const [enableTextLimit, setEnableTextLimit] = useState(
+		txt.textLimit !== undefined && txt.textLimit !== 0,
+	);
 
 	return (
 		<Card
@@ -374,6 +380,41 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						onValueChange={([val]) => updateText(txt.id, { rotate: val })}
 					/>
 				</div>
+
+				<div className="flex flex-col gap-1 mt-4 border-t pt-2">
+					{/* Text Input Limit */}
+					<div className="space-y-0.5 col-span-2 flex justify-between gap-1">
+						<Label className="text-sm">Enable Text Limit</Label>
+						<Switch
+							checked={enableTextLimit}
+							onCheckedChange={() => {
+								setEnableTextLimit(!enableTextLimit);
+								updateText(txt.id, {
+									textLimit: enableTextLimit ? txt.textLimit : undefined,
+								});
+							}}
+						/>
+					</div>
+
+					{enableTextLimit && (
+						<div className="space-y-0.5 col-span-2">
+							<Label className="text-xs">Text Limit</Label>
+							<Input
+								type="number"
+								min={1}
+								value={txt.textLimit}
+								onChange={(e) =>
+									updateText(txt.id, {
+										textLimit: Number(e.target.value),
+									})
+								}
+								className="h-8"
+								onClick={(e) => e.stopPropagation()}
+							/>
+						</div>
+					)}
+				</div>
+
 				{/* Curve Settings */}
 				<div className="space-y-2 col-span-2 border-t pt-2">
 					<Label className="text-sm font-medium">Curve Text</Label>
@@ -486,7 +527,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					)}
 				</div>
 
-				{/* Editable (Draggable false) */}
+				{/* Editable (Draggable false)
 				<div className="flex items-center justify-between pt-1">
 					<Label className="text-xs">Fix Position</Label>
 					<Switch
@@ -497,7 +538,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							})
 						}
 					/>
-				</div>
+				</div> */}
 
 				{/* Text Align */}
 				<div className="space-y-0.5 col-span-2">
