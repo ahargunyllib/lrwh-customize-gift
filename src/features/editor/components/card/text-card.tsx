@@ -388,9 +388,11 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						<Switch
 							checked={enableTextLimit}
 							onCheckedChange={() => {
-								setEnableTextLimit(!enableTextLimit);
-								updateText(txt.id, {
-									textLimit: enableTextLimit ? txt.textLimit : undefined,
+								setEnableTextLimit((prev) => {
+									updateText(txt.id, {
+										textLimit: !prev ? (txt.textLimit ?? undefined) : undefined,
+									});
+									return !prev;
 								});
 							}}
 						/>
