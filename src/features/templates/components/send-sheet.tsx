@@ -12,12 +12,14 @@ import { useSheetStore } from "@/shared/hooks/use-sheet";
 import { useSubmitOrderMutation } from "@/shared/repository/order/query";
 import { LoaderIcon } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTemplatesStore } from "../stores/use-templates-store";
+import OrderCompletedSheet from "./order-completed-sheet";
+import OrderIncompleteSheet from "./order-incomplete-sheet";
 
 export default function SendSheet() {
-	const { closeSheet } = useSheetStore();
+	const { closeSheet, openSheet } = useSheetStore();
 	const { mutate: submitOrder, isPending } = useSubmitOrderMutation();
 	const {
 		order: { id, productVariants },
@@ -44,17 +46,31 @@ export default function SendSheet() {
 			},
 			{
 				onSuccess: (res) => {
-					closeSheet();
 					if (!res.success) {
+						closeSheet();
 						toast.error("Gagal mengirim template, silakan coba lagi.", {
 							description: res.message || "Terjadi kesalahan",
 						});
 						return;
 					}
 
-					toast.success("Template berhasil dikirim!");
-					deleteOrder();
-					router.replace("/templates/onboarding");
+					// Check if order is completed
+					if (res.data?.status === "completed") {
+						// Show completed sheet
+						openSheet({
+							children: <OrderCompletedSheet />,
+						});
+						return;
+					}
+
+					// Show incomplete sheet
+					openSheet({
+						children: (
+							<OrderIncompleteSheet
+								remainingCount={res.data?.remainingCount || 0}
+							/>
+						),
+					});
 				},
 			},
 		);
@@ -76,7 +92,7 @@ export default function SendSheet() {
 				</SheetTitle>
 				<SheetDescription className="text-center text-[#737373] text-sm">
 					Apakah kamu yakin templatenya sudah cocok? kalo udah oke bisa kirim ke
-					kami dan tunggu pesanan kamu sampe yaa
+					kami
 				</SheetDescription>
 			</SheetHeader>
 			<SheetFooter className="flex flex-row gap-2">

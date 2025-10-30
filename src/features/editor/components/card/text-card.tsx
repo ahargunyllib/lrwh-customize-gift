@@ -21,16 +21,7 @@ import {
 import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
-import {
-	AlignCenter,
-	AlignJustify,
-	AlignLeft,
-	AlignRight,
-	ArrowDown,
-	ArrowDownToLine,
-	ArrowUp,
-	ArrowUpToLine,
-} from "lucide-react";
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
 import { useTemplateContext } from "../../containers/template-creator";
 
 interface Props {
@@ -40,15 +31,7 @@ interface Props {
 }
 
 export default function TextCard({ txt, selected, onSelect }: Props) {
-	const {
-		updateText,
-		deleteElement,
-		bringForward,
-		bringToFront,
-		sendBackward,
-		sendToBack,
-		totalElements,
-	} = useTemplateContext();
+	const { updateText, deleteElement } = useTemplateContext();
 
 	return (
 		<Card
@@ -414,30 +397,46 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					{/* Curve Settings - only show when curve is enabled */}
 					{txt.style.curved && (
 						<>
-							<div className="space-y-0.5">
-								<Label className="text-xs">Curve Radius</Label>
-								<Input
-									type="number"
-									min={50}
-									max={1000}
-									value={txt.style.curveRadius ?? 200}
-									onChange={(e) =>
+							<div className="flex flex-col gap-1">
+								<div className="flex gap-1 items-center">
+									<Label className="text-xs w-20">Curve Radius</Label>
+									<Input
+										type="number"
+										className="h-7 px-2 text-xs"
+										min={-1000}
+										max={1000}
+										value={txt.style.curveRadius ?? 200}
+										onChange={(e) =>
+											updateText(txt.id, {
+												style: {
+													...txt.style,
+													curveRadius: Math.max(
+														50,
+														Number.parseInt(e.target.value),
+													),
+												},
+											})
+										}
+										onClick={(e) => e.stopPropagation()}
+									/>
+								</div>
+								<Slider
+									value={[txt.style.curveRadius ?? 200]}
+									min={-300}
+									max={300}
+									step={10}
+									onValueChange={([val]) =>
 										updateText(txt.id, {
 											style: {
 												...txt.style,
-												curveRadius: Math.max(
-													50,
-													Number.parseInt(e.target.value),
-												),
+												curveRadius: val,
 											},
 										})
 									}
-									onClick={(e) => e.stopPropagation()}
-									className="h-8"
 								/>
 							</div>
 
-							<div className="space-y-0.5">
+							{/* <div className="space-y-0.5">
 								<Label className="text-xs">Curve Direction</Label>
 								<Select
 									value={txt.style.curveDirection ?? "up"}
@@ -482,7 +481,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 									onClick={(e) => e.stopPropagation()}
 									className="h-8"
 								/>
-							</div>
+							</div> */}
 						</>
 					)}
 				</div>

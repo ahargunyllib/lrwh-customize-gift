@@ -101,21 +101,33 @@ export default function TemplateEditor({
 			}}
 		>
 			<div className="flex h-screen flex-col">
-				<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
-					{username && orderNumber && (
+				{username && orderNumber ? (
+					<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
 						<div className="space-y-1">
 							<h1 className="text-xl font-medium">Hai, {username}!</h1>
 							<p className="text-xs text-[#98A2B3]">Order ID : {orderNumber}</p>
 						</div>
-					)}
 
-					{orderProductVariantId && (
-						<ConfirmationDialog
+						{orderProductVariantId && (
+							<ConfirmationDialog
+								canvasRef={canvasRef}
+								orderProductVariantId={orderProductVariantId}
+								resetZoom={resetZoom}
+							/>
+						)}
+					</header>
+				) : (
+					<header className="bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
+						<div className="space-y-1">
+							<h1 className="text-xl font-medium">Template Editor Admin</h1>
+						</div>
+
+						<DownloadPreviewButton
 							canvasRef={canvasRef}
-							orderProductVariantId={orderProductVariantId}
+							resetZoom={resetZoom}
 						/>
-					)}
-				</header>
+					</header>
+				)}
 
 				{/* Body */}
 				<div className="flex flex-1 overflow-hidden relative">
@@ -169,12 +181,53 @@ export default function TemplateEditor({
 	);
 }
 
+function DownloadPreviewButton({
+	canvasRef,
+	resetZoom,
+}: {
+	canvasRef: React.RefObject<HTMLDivElement>;
+	resetZoom: () => void;
+}) {
+	const { setActiveElement } = useTemplateContext();
+
+	return (
+		<Button
+			onClick={async () => {
+				flushSync(() => {
+					resetZoom();
+					setActiveElement(null);
+				});
+
+				await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+				// Download preview image
+				if (!canvasRef.current) return;
+				const canvas = await html2canvas(canvasRef.current, {
+					backgroundColor: null,
+				});
+				const dataURL = canvas.toDataURL("image/png");
+
+				const link = document.createElement("a");
+				link.href = dataURL;
+				link.download = "template-preview.png";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}}
+		>
+			Download Preview
+		</Button>
+	);
+}
+
 function ConfirmationDialog({
 	canvasRef,
 	orderProductVariantId,
+	resetZoom,
 }: {
 	canvasRef: React.RefObject<HTMLDivElement>;
 	orderProductVariantId: string;
+	resetZoom: () => void;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -214,6 +267,7 @@ function ConfirmationDialog({
 
 	const onOpenChange = async (open: boolean) => {
 		flushSync(() => {
+			resetZoom();
 			setActiveElement(null);
 		});
 
@@ -248,7 +302,7 @@ function ConfirmationDialog({
 				<SheetTrigger asChild>
 					<Button variant="outline">Simpan</Button>
 				</SheetTrigger>
-				<SheetContent side="bottom">
+				<SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
 					<SheetHeader className="gap-4 sm:text-center">
 						<SheetTitle className="text-center text-[#1D2939] font-bold">
 							Ini Preview Template kamu
@@ -258,8 +312,12 @@ function ConfirmationDialog({
 							tombol di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
 						</SheetDescription>
 					</SheetHeader>
-					<div className="flex flex-col items-center justify-center">
-						<img id="preview" alt="Preview" className="border" />
+					<div className="flex flex-col items-center justify-center py-4">
+						<img
+							id="preview"
+							alt="Preview"
+							className="border max-w-full max-h-[50vh] object-contain"
+						/>
 					</div>
 					<SheetFooter className="flex flex-row gap-2">
 						<SheetClose asChild>
@@ -287,7 +345,10 @@ function ConfirmationDialog({
 			<DialogTrigger asChild>
 				<Button variant="outline">Simpan</Button>
 			</DialogTrigger>
-			<DialogContent showCloseButton={false}>
+			<DialogContent
+				showCloseButton={false}
+				className="max-w-[90vw] md:max-w-2xl max-h-[90vh] overflow-y-auto"
+			>
 				<DialogHeader className="gap-4 sm:text-center">
 					<DialogTitle className="text-center text-[#1D2939] font-bold">
 						Ini Preview Template kamu
@@ -297,8 +358,12 @@ function ConfirmationDialog({
 						di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
 					</DialogDescription>
 				</DialogHeader>
-				<div className="flex flex-col items-center justify-center">
-					<img id="preview" alt="Preview" className="border" />
+				<div className="flex flex-col items-center justify-center py-4">
+					<img
+						id="preview"
+						alt="Preview"
+						className="border max-w-full max-h-[60vh] object-contain"
+					/>
 				</div>
 				<DialogFooter className="flex flex-row gap-2">
 					<DialogClose asChild>

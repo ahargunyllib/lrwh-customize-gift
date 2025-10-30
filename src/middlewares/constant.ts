@@ -18,5 +18,6 @@ export const PROTECTED_ROUTES = [
 export const DEV_ONLY_ROUTES = ["/design-system"];
 
 export const ROUTE_REDIRECTS = {
+	"/": "/templates/onboarding",
 	"/dashboard": "/dashboard/profile",
 } as const;

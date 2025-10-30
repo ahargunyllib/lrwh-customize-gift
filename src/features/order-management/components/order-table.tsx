@@ -9,6 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/components/ui/table";
+import { useDialogStore } from "@/shared/hooks/use-dialog";
 import { tryCatch } from "@/shared/lib/try-catch";
 import { cn } from "@/shared/lib/utils";
 import type {
@@ -31,8 +32,10 @@ import {
 	ChevronRightIcon,
 	CopyIcon,
 	DownloadIcon,
+	EditIcon,
 	EyeIcon,
 	FilterIcon,
+	TrashIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { Fragment, useState } from "react";
@@ -47,6 +50,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "../../../shared/components/ui/dialog";
+import EditOrderDialogContainer from "../container/edit-order-dialog-container";
+import DeleteOrderDialog from "./delete-order-dialog";
 
 type Props = {
 	data: {
@@ -76,6 +81,7 @@ export default function OrderTable({
 	onSortingChangeAction,
 }: Props) {
 	const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+	const { openDialog } = useDialogStore();
 
 	const toggleRowExpansion = (rowId: string) => {
 		const newExpanded = new Set(expandedRows);
@@ -163,10 +169,10 @@ export default function OrderTable({
 						<Badge
 							variant={
 								hasAllImages
-									? "default"
+									? "completed"
 									: countHavingImages === 0
 										? "destructive"
-										: "secondary"
+										: "progress"
 							}
 						>
 							{countHavingImages}/{products.length} Images
@@ -184,6 +190,54 @@ export default function OrderTable({
 								<DownloadIcon className="h-4 w-4" />
 							</Button>
 						)}
+					</div>
+				);
+			},
+		},
+		{
+			header: "Actions",
+			enableSorting: false,
+			cell: (props) => {
+				const { products } = props.row.original;
+				const countHavingImages = products.filter((p) => p.imageUrl).length;
+				const hasNoImages = countHavingImages === 0;
+
+				if (!hasNoImages) return null;
+
+				const order = props.row.original;
+
+				return (
+					<div className="flex flex-row items-center gap-2">
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={() => {
+								openDialog({
+									children: <EditOrderDialogContainer order={order} />,
+								});
+							}}
+						>
+							<EditIcon className="h-4 w-4" />
+						</Button>
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={() => {
+								openDialog({
+									children: (
+										<DeleteOrderDialog
+											order={{
+												id: order.id,
+												orderNumber: order.orderNumber,
+												username: order.username,
+											}}
+										/>
+									),
+								});
+							}}
+						>
+							<TrashIcon className="h-4 w-4" />
+						</Button>
 					</div>
 				);
 			},
@@ -317,33 +371,6 @@ export default function OrderTable({
 																</div>
 															</div>
 															<div className="flex flex-row items-center gap-x-2">
-																<Button
-																	size="icon"
-																	variant="outline"
-																	onClick={() => {
-																		const url = new URL(
-																			`${window.location.origin}/templates/onboarding`,
-																		);
-																		url.searchParams.set(
-																			"username",
-																			row.original.username,
-																		);
-																		url.searchParams.set(
-																			"orderNumber",
-																			row.original.orderNumber,
-																		);
-																		url.searchParams.set(
-																			"productVariantId",
-																			variant.productVariant.id,
-																		);
-																		navigator.clipboard.writeText(
-																			url.toString(),
-																		);
-																		toast.success("Link copied to clipboard.");
-																	}}
-																>
-																	<CopyIcon />
-																</Button>
 																{variant.imageUrl ? (
 																	<Dialog>
 																		<DialogTrigger asChild>
@@ -378,7 +405,37 @@ export default function OrderTable({
 																			</DialogFooter>
 																		</DialogContent>
 																	</Dialog>
-																) : null}
+																) : (
+																	<Button
+																		size="icon"
+																		variant="outline"
+																		onClick={() => {
+																			const url = new URL(
+																				`${window.location.origin}/templates/onboarding`,
+																			);
+																			url.searchParams.set(
+																				"username",
+																				row.original.username,
+																			);
+																			url.searchParams.set(
+																				"orderNumber",
+																				row.original.orderNumber,
+																			);
+																			url.searchParams.set(
+																				"productVariantId",
+																				variant.productVariant.id,
+																			);
+																			navigator.clipboard.writeText(
+																				url.toString(),
+																			);
+																			toast.success(
+																				"Link copied to clipboard.",
+																			);
+																		}}
+																	>
+																		<CopyIcon />
+																	</Button>
+																)}
 															</div>
 														</div>
 													);

@@ -15,9 +15,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTemplatesStore } from "../stores/use-templates-store";
+import OrderCompletedDialog from "./order-completed-dialog";
+import OrderIncompleteDialog from "./order-incomplete-dialog";
 
 export default function SendDialog() {
-	const { closeDialog } = useDialogStore();
+	const { closeDialog, openDialog } = useDialogStore();
 	const { mutate: submitOrder, isPending } = useSubmitOrderMutation();
 	const {
 		order: { id, productVariants },
@@ -44,17 +46,31 @@ export default function SendDialog() {
 			},
 			{
 				onSuccess: (res) => {
-					closeDialog();
 					if (!res.success) {
+						closeDialog();
 						toast.error("Gagal mengirim template, silakan coba lagi.", {
 							description: res.message || "Terjadi kesalahan",
 						});
 						return;
 					}
 
-					toast.success("Template berhasil dikirim!");
-					deleteOrder();
-					router.replace("/templates/onboarding");
+					// Check if order is completed
+					if (res.data?.status === "completed") {
+						// Show completed dialog
+						openDialog({
+							children: <OrderCompletedDialog />,
+						});
+						return;
+					}
+
+					// Show incomplete dialog
+					openDialog({
+						children: (
+							<OrderIncompleteDialog
+								remainingCount={res.data?.remainingCount || 0}
+							/>
+						),
+					});
 				},
 			},
 		);
@@ -76,7 +92,7 @@ export default function SendDialog() {
 				</DialogTitle>
 				<DialogDescription className="text-center text-[#737373] text-sm">
 					Apakah kamu yakin templatenya sudah cocok? kalo udah oke bisa kirim ke
-					kami dan tunggu pesanan kamu sampe yaa
+					kami
 				</DialogDescription>
 			</DialogHeader>
 			<DialogFooter className="flex flex-row gap-2">
