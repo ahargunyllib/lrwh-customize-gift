@@ -44,7 +44,7 @@ export default function ImageMobileEditor({
 					onClick={toggleSidebar}
 					className="flex items-center flex-col gap-2"
 				>
-					<Pen className="h-5 w-5" />
+					<Pen className="h-6 w-6" />
 				</button>
 				{activeElement?.type === "image" && (
 					<>
@@ -54,7 +54,7 @@ export default function ImageMobileEditor({
 							onClick={() => inputRef.current?.click()}
 							className="flex items-center flex-col gap-2"
 						>
-							<ImageUpscale className="h-5 w-5" />
+							<ImageUpscale className="h-6 w-6" />
 						</button>
 					</>
 				)}
