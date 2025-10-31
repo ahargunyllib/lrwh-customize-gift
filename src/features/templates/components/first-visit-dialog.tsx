@@ -27,6 +27,16 @@ export default function FirstVisitDialog() {
 					produk, desain template sesuai keinginan, dan kirim pesananmu!
 				</DialogDescription>
 			</DialogHeader>
+
+			<div className="relative aspect-video w-full">
+				<Image
+					src="/imgs/first-visit.jpeg"
+					alt="Welcome Image"
+					fill
+					className="object-contain"
+				/>
+			</div>
+
 			<DialogFooter className="flex flex-row gap-2">
 				<Button
 					onClick={handleContinue}
