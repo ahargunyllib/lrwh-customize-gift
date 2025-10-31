@@ -474,6 +474,24 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 export const submitOrder = async (req: SubmitOrderRequest) => {
 	const { orderId, templates } = req;
 
+	const { data: orderExists, error: orderFetchErr } = await tryCatch(
+		db.select().from(ordersTable).where(eq(ordersTable.id, orderId)),
+	);
+	if (orderFetchErr) {
+		return {
+			success: false,
+			error: orderFetchErr.message,
+			message: "Failed to fetch order",
+		};
+	}
+	if (orderExists.length === 0) {
+		return {
+			success: false,
+			error: "Order not found",
+			message: "Order not found",
+		};
+	}
+
 	// 1) Decode & validate all templates
 	const decoded = await Promise.all(
 		templates.map(async (t) => {
@@ -560,7 +578,7 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			}
 
 			const hash = sha256(buf);
-			const key = `${orderId}_${hash}.png`;
+			const key = `${orderExists[0].orderNumber}_${hash}.png`;
 
 			return {
 				success: true as const,
