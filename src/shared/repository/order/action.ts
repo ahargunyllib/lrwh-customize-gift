@@ -578,7 +578,7 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			}
 
 			const hash = sha256(buf);
-			const key = `${orderExists[0].orderNumber}_${hash}.png`;
+			const key = `${orderExists[0].orderNumber}_${orderExists[0].username}_${hash}.png`;
 
 			return {
 				success: true as const,
