@@ -49,7 +49,7 @@ export default function ImageUploader({
 	return (
 		<div className="space-y-2">
 			<div
-				className={`relative border rounded-md overflow-hidden h-24 ${
+				className={`relative border rounded-md overflow-hidden ${
 					isDragging
 						? "border-primary border-dashed bg-primary/5"
 						: "border-gray-200"
@@ -76,7 +76,7 @@ export default function ImageUploader({
 						onClick={() => document.getElementById(`file-${image.id}`)?.click()}
 					>
 						<Upload className="h-4 w-4 mr-1" />
-						Replace
+						Ganti Gambar
 					</Button>
 					{onDelete && (
 						<Button

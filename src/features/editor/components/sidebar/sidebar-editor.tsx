@@ -39,7 +39,7 @@ export default function EditorSidebar({
 
 	const Panel = (
 		<div
-			className={`bg-gray-50 p-4 overflow-y-auto h-full w-72 md:w-64
+			className={`bg-gray-50 p-4 overflow-y-auto h-full w-72 md:w-1/4
       fixed top-0 left-0 z-50 shadow-xl transition-transform duration-300 ease-in-out
       ${isOpen ? "translate-x-0" : "-translate-x-full"}
       md:border-r md:shadow-none`}
@@ -59,11 +59,11 @@ export default function EditorSidebar({
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="image">
 						<ImageIcon className="h-4 w-4 mr-1" />
-						Images
+						Gambar
 					</TabsTrigger>
 					<TabsTrigger value="text">
 						<Type className="h-4 w-4 mr-1" />
-						Text
+						Teks
 					</TabsTrigger>
 				</TabsList>
 

@@ -26,7 +26,6 @@ import { getTemplateForSize } from "@/shared/lib/template";
 import type { OrderProductVariant } from "@/shared/types";
 import type { TemplateData } from "@/shared/types/template";
 import html2canvas from "html2canvas-pro";
-import { ImageUpscale } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
 	createContext,
@@ -38,6 +37,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { toast } from "sonner";
+import { tryCatch } from "../../../shared/lib/try-catch";
 import EditorCanvas from "../components/editor-canvas";
 import ImageMobileEditor from "../components/mobile-editor/image-mobile-editor";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
@@ -250,9 +250,17 @@ function ConfirmationDialog({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const onSaveHandler = useCallback(async () => {
 		if (!canvasRef.current) return;
-		const canvas = await html2canvas(canvasRef.current, {
-			backgroundColor: null,
-		});
+		const { data: canvas, error } = await tryCatch(
+			html2canvas(canvasRef.current, {
+				backgroundColor: null,
+			}),
+		);
+		if (error) {
+			toast.error("Gagal menyimpan template, silakan coba lagi.", {
+				description: error.message || "Terjadi kesalahan",
+			});
+			return;
+		}
 		const dataURL = canvas.toDataURL("image/png");
 
 		saveTemplate(orderProductVariantId, dataURL);

@@ -35,11 +35,13 @@ export const useOnboardingForm = () => {
 		verifyOrderByUsernameAndOrderNumber(data, {
 			onSuccess: (res) => {
 				if (!res.success) {
-					toast.error(res.message);
+					toast.error("Gagal memverifikasi order, silahkan coba lagi.", {
+						description: res.message || "Terjadi kesalahan",
+					});
 					return;
 				}
 
-				toast.success("Order verified successfully!");
+				toast.success("Order berhasil diverifikasi!");
 				form.reset();
 
 				const { order } = res.data;
