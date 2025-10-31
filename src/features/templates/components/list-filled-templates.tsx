@@ -37,7 +37,7 @@ export default function ListFilledTemplates({
 			{selectedProductVariant.templates.map((template) => (
 				<div
 					key={template.id}
-					className="flex flex-col gap-2 items-center border"
+					className="flex flex-col gap-2 items-center border p-2 rounded-xl"
 				>
 					<img
 						src={template.dataURL || "https://placekitten.com/300/200"}
@@ -73,7 +73,7 @@ export default function ListFilledTemplates({
 								),
 							});
 						}}
-						className="text-destructive hover:text-destructive font-semibold hover:font-bold w-full"
+						className="text-destructive hover:text-destructive font-semibold hover:font-bold"
 					>
 						Hapus
 					</Button>
