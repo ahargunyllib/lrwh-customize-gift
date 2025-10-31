@@ -11,7 +11,7 @@ export default function Layout({ children }: Prop) {
 		<SidebarProvider className="py-2 pr-2 min-h-screen w-full flex flex-col gap-4 md:gap-1 md:flex-row">
 			<AppSidebar />
 			<Navbar />
-			<section className="p-4 w-full border rounded-xl">{children}</section>
+			<section className="flex-1">{children}</section>
 		</SidebarProvider>
 	);
 }
