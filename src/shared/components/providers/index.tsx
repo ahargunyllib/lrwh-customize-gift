@@ -22,7 +22,7 @@ export default function Provider({ children }: React.PropsWithChildren) {
 					{children}
 					<GlobalDialog />
 					<GlobalSheet />
-					<Toaster />
+					<Toaster position="top-center" />
 				</NuqsProvider>
 			</ReactQueryProvider>
 		</ThemeProvider>
