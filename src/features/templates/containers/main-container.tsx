@@ -168,7 +168,7 @@ export default function MainContainer() {
 			</main>
 
 			{hasFillAllTemplates && (
-				<div className="absolute inset-0 h-screen sm:hidden flex">
+				<div className="sm:hidden block">
 					<div className="fixed bottom-0 left-0 right-0 flex justify-center items-center p-4">
 						<SendSheetButton />
 					</div>
