@@ -50,8 +50,8 @@ export default function ImageMobileEditor({
 					className="hidden"
 					onChange={onFileChange}
 				/>
-				<Tooltip>
-					<Dialog>
+				<Dialog>
+					<Tooltip>
 						<TooltipTrigger asChild>
 							<DialogTrigger asChild>
 								<Button
@@ -64,32 +64,28 @@ export default function ImageMobileEditor({
 								</Button>
 							</DialogTrigger>
 						</TooltipTrigger>
-						<DialogTrigger>
-							<TooltipContent>
-								<span>Tips</span>
-							</TooltipContent>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Tips Menggunakan Editor</DialogTitle>
-							</DialogHeader>
-							<ul className="list-disc list-inside text-sm text-gray-600">
-								<li>Tekan lalu geser untuk memindahkan elemen.</li>
-								<li>Tekan dua kali pada elemen untuk mengeditnya.</li>
-								<li>
-									Tekan ikon pensil pada pojok bawah untuk membuka sidebar
-									editor.
-								</li>
-								<li>
-									Gunakan kontrol zoom untuk memperbesar atau memperkecil
-									canvas.
-								</li>
-							</ul>
-						</DialogContent>
-					</Dialog>
-				</Tooltip>
+						<TooltipContent>
+							<span>Tips</span>
+						</TooltipContent>
+					</Tooltip>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Tips Menggunakan Editor</DialogTitle>
+						</DialogHeader>
+						<ul className="list-disc list-inside text-sm text-gray-600">
+							<li>Tekan lalu geser untuk memindahkan elemen.</li>
+							<li>Tekan dua kali pada elemen untuk mengeditnya.</li>
+							<li>
+								Tekan ikon pensil pada pojok bawah untuk membuka sidebar editor.
+							</li>
+							<li>
+								Gunakan kontrol zoom untuk memperbesar atau memperkecil canvas.
+							</li>
+						</ul>
+					</DialogContent>
+				</Dialog>
 				<Tooltip>
-					<TooltipTrigger>
+					<TooltipTrigger asChild>
 						<Button
 							size="icon"
 							onClick={toggleSidebar}
@@ -106,7 +102,7 @@ export default function ImageMobileEditor({
 				</Tooltip>
 				{activeElement?.type === "image" && (
 					<Tooltip>
-						<TooltipTrigger>
+						<TooltipTrigger asChild>
 							<Button
 								size="icon"
 								onClick={() => inputRef.current?.click()}

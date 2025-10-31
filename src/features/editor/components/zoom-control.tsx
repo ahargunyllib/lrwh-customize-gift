@@ -20,7 +20,7 @@ export default function ZoomControl({
 	return (
 		<div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2">
 			<Tooltip>
-				<TooltipTrigger>
+				<TooltipTrigger asChild>
 					<Button
 						onClick={zoomIn}
 						variant="ghost"
@@ -36,7 +36,7 @@ export default function ZoomControl({
 				</TooltipContent>
 			</Tooltip>
 			<Tooltip>
-				<TooltipTrigger>
+				<TooltipTrigger asChild>
 					<Button
 						onClick={zoomOut}
 						variant="ghost"
@@ -52,7 +52,7 @@ export default function ZoomControl({
 				</TooltipContent>
 			</Tooltip>
 			<Tooltip>
-				<TooltipTrigger>
+				<TooltipTrigger asChild>
 					<Button
 						variant="ghost"
 						className="size-10"
