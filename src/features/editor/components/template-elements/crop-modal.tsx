@@ -1,4 +1,5 @@
 import type { CropArea, ImageElement } from "@/shared/types";
+import { Check, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../../shared/components/ui/button";
 
@@ -87,32 +88,33 @@ export const CropModal = ({
 				}}
 			>
 				{/* Header */}
-				<div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
-					<div>
+				<div className="flex flex-col gap-1 px-6 py-4 border-b border-gray-200 bg-gray-50">
+					<div className="flex justify-between gap-2 items-start">
 						<h3 className="text-gray-900 font-semibold text-sm md:text-lg">
 							Sesuaikan Pemotongan Gambar
 						</h3>
-						<p className="text-gray-600 text-xs md:text-sm">
-							Gunakan alat di bawah ini untuk menyesuaikan area pemotongan
-							gambar. Tarik dan ubah ukuran kotak pemotongan sesuai keinginan
-							Anda.
-						</p>
+						<div className="flex flex-row gap-3">
+							<Button
+								onClick={onClose}
+								size="icon"
+								variant="secondary"
+								className="px-4 py-2 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-sm text-[#344054]"
+							>
+								<X />
+							</Button>
+							<Button
+								onClick={applyCrop}
+								size="icon"
+								className="px-4 py-2 h-fit bg-[#2854AD] hover:bg-[#2854AD]/80 rounded-md shadow-none text-sm text-[#ffffff]"
+							>
+								<Check />
+							</Button>
+						</div>
 					</div>
-					<div className="flex gap-3">
-						<Button
-							onClick={onClose}
-							variant="secondary"
-							className="px-4 py-2 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-sm text-[#344054]"
-						>
-							Batal
-						</Button>
-						<Button
-							onClick={applyCrop}
-							className="px-4 py-2 h-fit bg-[#2854AD] hover:bg-[#2854AD]/80 rounded-md shadow-none text-sm text-[#ffffff]"
-						>
-							Terapkan Pemotongan
-						</Button>
-					</div>
+					<p className="text-gray-600 text-xs md:text-sm">
+						Gunakan alat di bawah ini untuk menyesuaikan area pemotongan gambar.
+						Tarik dan ubah ukuran kotak pemotongan sesuai keinginan Anda.
+					</p>
 				</div>
 
 				{/* Image container with crop overlay */}
