@@ -1,5 +1,6 @@
 import type { CropArea, ImageElement } from "@/shared/types";
 import { createPortal } from "react-dom";
+import { Button } from "../../../../shared/components/ui/button";
 
 export const CropModal = ({
 	isOpen,
@@ -68,13 +69,13 @@ export const CropModal = ({
 			{/* Backdrop */}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
-				className="fixed inset-0 bg-black bg-opacity-20 z-[9998] backdrop-blur-sm"
+				className="fixed inset-0 z-[9998] backdrop-blur-xs bg-black/30"
 				onClick={onClose}
 			/>
 
 			{/* Crop Modal */}
 			<div
-				className="fixed z-[9999] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+				className="fixed z-[9999] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-auto"
 				style={{
 					left: "50%",
 					top: "50%",
@@ -89,24 +90,28 @@ export const CropModal = ({
 				<div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
 					<div>
 						<h3 className="text-gray-900 font-semibold text-sm md:text-lg">
-							Adjust Image Crop
+							Sesuaikan Pemotongan Gambar
 						</h3>
+						<p className="text-gray-600 text-xs md:text-sm">
+							Gunakan alat di bawah ini untuk menyesuaikan area pemotongan
+							gambar. Tarik dan ubah ukuran kotak pemotongan sesuai keinginan
+							Anda.
+						</p>
 					</div>
 					<div className="flex gap-3">
-						<button
-							type="button"
+						<Button
 							onClick={onClose}
-							className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+							variant="secondary"
+							className="px-4 py-2 h-fit bg-[#F2F4F7] hover:bg-[#dcdcdf] rounded-md shadow-none text-sm text-[#344054]"
 						>
-							Cancel
-						</button>
-						<button
-							type="button"
+							Batal
+						</Button>
+						<Button
 							onClick={applyCrop}
-							className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+							className="px-4 py-2 h-fit bg-[#2854AD] hover:bg-[#2854AD]/80 rounded-md shadow-none text-sm text-[#ffffff]"
 						>
-							Apply Crop
-						</button>
+							Terapkan Pemotongan
+						</Button>
 					</div>
 				</div>
 
@@ -225,11 +230,11 @@ export const CropModal = ({
 				<div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
 					<div className="flex justify-between items-center text-sm text-gray-600">
 						<div>
-							Crop area: {Math.round(cropArea.width)} ×{" "}
+							Area potong: {Math.round(cropArea.width)} ×{" "}
 							{Math.round(cropArea.height)}px
 						</div>
 						<div>
-							Position: {Math.round(cropArea.x)}, {Math.round(cropArea.y)}
+							Posisi: {Math.round(cropArea.x)}, {Math.round(cropArea.y)}
 						</div>
 					</div>
 				</div>
