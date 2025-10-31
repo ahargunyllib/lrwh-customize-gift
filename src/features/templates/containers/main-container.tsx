@@ -78,7 +78,7 @@ export default function MainContainer() {
 						}}
 						className="overflow-auto"
 					>
-						<TabsList className="bg-white text-[#98A2B3] rounded-md p-1 h-fit space-x-2">
+						<TabsList className="bg-white text-[#98A2B3] rounded-md p-0 h-fit space-x-2">
 							{productVariants.map((productVariant) => {
 								if (productVariantId) {
 									if (productVariant.id !== productVariantId) return;
