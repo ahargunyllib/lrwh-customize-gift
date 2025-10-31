@@ -378,7 +378,7 @@ export default function OrderTable({
 																				<EyeIcon />
 																			</Button>
 																		</DialogTrigger>
-																		<DialogContent>
+																		<DialogContent className="max-h-[90%] overflow-auto">
 																			<DialogHeader>
 																				<DialogTitle>Image Preview</DialogTitle>
 																				<DialogDescription>
