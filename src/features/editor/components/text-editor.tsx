@@ -44,21 +44,24 @@ export default function TextEditor({
 		>
 			<div className="space-y-3">
 				{/* Min max validation error */}
-				<Textarea
-					value={text.content}
-					onChange={(e) => {
-						handleInputChange(e);
-					}}
-					className={cn("resize-none")}
-					rows={2}
-					maxLength={text.textLimit}
-				/>
+				<div>
+					<Label className="text-xs mb-1 block">Konten Teks</Label>
+					<Textarea
+						value={text.content}
+						onChange={(e) => {
+							handleInputChange(e);
+						}}
+						className={cn("resize-none")}
+						rows={2}
+						maxLength={text.textLimit}
+					/>
+				</div>
 
 				{isActive && (
-					<div className="grid grid-cols-2 gap-2">
+					<div className="flex flex-col gap-2">
 						<div className="space-y-1">
 							<Label htmlFor={`font-${text.id}`} className="text-xs">
-								Font
+								Jenis Font
 							</Label>
 							<Select
 								value={
@@ -78,7 +81,7 @@ export default function TextEditor({
 								}}
 							>
 								<SelectTrigger id={`font-${text.id}`} className="h-8">
-									<SelectValue placeholder="Font" />
+									<SelectValue placeholder="Jenis Font" />
 								</SelectTrigger>
 								<SelectContent>
 									{fontArray.map((font) => (
@@ -99,7 +102,7 @@ export default function TextEditor({
 
 						<div className="space-y-1">
 							<Label htmlFor={`size-${text.id}`} className="text-xs">
-								Size
+								Ukuran
 							</Label>
 							<Input
 								id={`size-${text.id}`}
@@ -118,7 +121,7 @@ export default function TextEditor({
 
 						<div className="space-y-1">
 							<Label htmlFor={`color-${text.id}`} className="text-xs">
-								Color
+								Warna
 							</Label>
 							<div className="flex h-8 items-center gap-2">
 								<input
@@ -137,7 +140,7 @@ export default function TextEditor({
 
 						<div className="space-y-1">
 							<Label htmlFor={`align-${text.id}`} className="text-xs">
-								Align
+								Penyelarasan
 							</Label>
 							<Select
 								value={text.style.textAlign}
@@ -147,9 +150,9 @@ export default function TextEditor({
 									<SelectValue placeholder="Align" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="left">Left</SelectItem>
-									<SelectItem value="center">Center</SelectItem>
-									<SelectItem value="right">Right</SelectItem>
+									<SelectItem value="left">Kiri</SelectItem>
+									<SelectItem value="center">Tengah</SelectItem>
+									<SelectItem value="right">Kanan</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>

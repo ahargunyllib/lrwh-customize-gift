@@ -1,8 +1,12 @@
-import { Separator } from "@/shared/components/ui/separator";
-import { ImageUpscale, Pen, SquareRoundCorner } from "lucide-react";
-import { useRef, useState } from "react";
+import { ImagesIcon, Pen } from "lucide-react";
+import { useRef } from "react";
+import { Button } from "../../../../shared/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "../../../../shared/components/ui/tooltip";
 import { useTemplateContext } from "../../containers/template-editor";
-import SidebarEditor from "../sidebar/sidebar-editor";
 
 export default function ImageMobileEditor({
 	toggleSidebar,
@@ -31,7 +35,7 @@ export default function ImageMobileEditor({
 			className="fixed left-1/2 bottom-4 z-10 flex flex-row gap-2 bg-white rounded-lg shadow-lg p-2"
 			style={{ transform: "translateX(-50%)" }}
 		>
-			<div className="flex gap-4">
+			<div className="flex gap-1">
 				<input
 					type="file"
 					accept="image/*"
@@ -39,24 +43,39 @@ export default function ImageMobileEditor({
 					className="hidden"
 					onChange={onFileChange}
 				/>
-				{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-				<button
-					onClick={toggleSidebar}
-					className="flex items-center flex-col gap-2"
-				>
-					<Pen className="h-6 w-6" />
-				</button>
-				{activeElement?.type === "image" && (
-					<>
-						<Separator orientation="vertical" />
-						{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-						<button
-							onClick={() => inputRef.current?.click()}
-							className="flex items-center flex-col gap-2"
+				<Tooltip>
+					<TooltipTrigger>
+						<Button
+							size="icon"
+							onClick={toggleSidebar}
+							variant="ghost"
+							className="size-10"
+							aria-label="Edit Konten"
 						>
-							<ImageUpscale className="h-6 w-6" />
-						</button>
-					</>
+							<Pen className="size-6" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<span>Edit Konten</span>
+					</TooltipContent>
+				</Tooltip>
+				{activeElement?.type === "image" && (
+					<Tooltip>
+						<TooltipTrigger>
+							<Button
+								size="icon"
+								onClick={() => inputRef.current?.click()}
+								variant="ghost"
+								className="size-10"
+								aria-label="Ganti Gambar"
+							>
+								<ImagesIcon className="size-6" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<span>Ganti Gambar</span>
+						</TooltipContent>
+					</Tooltip>
 				)}
 			</div>
 		</div>

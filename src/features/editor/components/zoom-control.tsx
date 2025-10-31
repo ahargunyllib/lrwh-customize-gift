@@ -1,4 +1,10 @@
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Button } from "../../../shared/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "../../../shared/components/ui/tooltip";
 
 interface ZoomControlProps {
 	zoomIn: () => void;
@@ -13,33 +19,54 @@ export default function ZoomControl({
 }: ZoomControlProps) {
 	return (
 		<div className="fixed bottom-4 right-4 z-10 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2">
-			<button
-				type="button"
-				onClick={zoomIn}
-				className="p-2 hover:bg-gray-100 rounded transition-colors"
-				title="Zoom In"
-				aria-label="Zoom In"
-			>
-				<ZoomIn size={20} />
-			</button>
-			<button
-				type="button"
-				onClick={zoomOut}
-				className="p-2 hover:bg-gray-100 rounded transition-colors"
-				title="Zoom Out"
-				aria-label="Zoom Out"
-			>
-				<ZoomOut size={20} />
-			</button>
-			<button
-				type="button"
-				onClick={resetZoom}
-				className="p-2 hover:bg-gray-100 rounded transition-colors"
-				title="Reset Zoom"
-				aria-label="Reset Zoom"
-			>
-				<RotateCcw size={20} />
-			</button>
+			<Tooltip>
+				<TooltipTrigger>
+					<Button
+						onClick={zoomIn}
+						variant="ghost"
+						className="size-10"
+						size="icon"
+						aria-label="Zoom In"
+					>
+						<ZoomIn className="size-6" />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span>Zoom In</span>
+				</TooltipContent>
+			</Tooltip>
+			<Tooltip>
+				<TooltipTrigger>
+					<Button
+						onClick={zoomOut}
+						variant="ghost"
+						className="size-10"
+						size="icon"
+						aria-label="Zoom Out"
+					>
+						<ZoomOut className="size-6" />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span>Zoom Out</span>
+				</TooltipContent>
+			</Tooltip>
+			<Tooltip>
+				<TooltipTrigger>
+					<Button
+						variant="ghost"
+						className="size-10"
+						size="icon"
+						aria-label="Reset Zoom"
+						onClick={resetZoom}
+					>
+						<RotateCcw className="size-6" />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<span>Reset Zoom</span>
+				</TooltipContent>
+			</Tooltip>
 		</div>
 	);
 }
