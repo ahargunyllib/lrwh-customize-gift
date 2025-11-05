@@ -20,10 +20,10 @@
 - [ ] Bakso Sapi
 - [ ] Blueberry
 - [ ] Cweyons
-- [ ] Gamja Flower
+- [x] [Gamja Flower](https://fonts.google.com/specimen/Gamja+Flower) (SIL Open Font License, Version 1.1)
 - [ ] Happy Font
 - [ ] Hey Tiny
-- [ ] Jua
+- [x] [Jua](https://fonts.google.com/specimen/Jua) (SIL Open Font License, Version 1.1)
 - [ ] Lazydog
 - [ ] Lion Cub
 - [ ] Lulu Font
