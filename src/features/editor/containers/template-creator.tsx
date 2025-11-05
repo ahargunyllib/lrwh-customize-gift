@@ -10,6 +10,7 @@ import {
 } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
+import RulerContainer from "../components/ruler/ruler-container";
 import Sidebar from "../components/sidebar/sidebar-creator";
 import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
@@ -100,15 +101,21 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 					transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
 				}}
 			>
-				<EditorCanvas
-					template={template}
-					setTemplate={setTemplate}
-					activeElement={activeElement}
-					setActiveElement={setActiveElement}
+				<RulerContainer
 					scale={scale}
-					isCustomizing={true}
-					getLayerIndex={getLayerIndex}
-				/>
+					canvasWidth={template.width}
+					canvasHeight={template.height}
+				>
+					<EditorCanvas
+						template={template}
+						setTemplate={setTemplate}
+						activeElement={activeElement}
+						setActiveElement={setActiveElement}
+						scale={scale}
+						isCustomizing={true}
+						getLayerIndex={getLayerIndex}
+					/>
+				</RulerContainer>
 			</div>
 
 			{/* Zoom control in out */}

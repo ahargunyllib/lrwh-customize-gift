@@ -40,7 +40,6 @@ import { toast } from "sonner";
 import { tryCatch } from "../../../shared/lib/try-catch";
 import EditorCanvas from "../components/editor-canvas";
 import ImageMobileEditor from "../components/mobile-editor/image-mobile-editor";
-import RulerContainer from "../components/ruler/ruler-container";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
 import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
@@ -156,22 +155,16 @@ export default function TemplateEditor({
 								transition: "transform 0.1s ease-out",
 							}}
 						>
-							<RulerContainer
-								scale={1}
-								canvasWidth={editor.template.width}
-								canvasHeight={editor.template.height}
-							>
-								<EditorCanvas
-									ref={canvasRef}
-									template={editor.template}
-									setTemplate={editor.setTemplate}
-									activeElement={editor.activeElement}
-									setActiveElement={editor.setActiveElement}
-									scale={1} // Always pass 1, scale is handled by CSS transform
-									allowDelete={false}
-									getLayerIndex={editor.getLayerIndex}
-								/>
-							</RulerContainer>
+							<EditorCanvas
+								ref={canvasRef}
+								template={editor.template}
+								setTemplate={editor.setTemplate}
+								activeElement={editor.activeElement}
+								setActiveElement={editor.setActiveElement}
+								scale={1} // Always pass 1, scale is handled by CSS transform
+								allowDelete={false}
+								getLayerIndex={editor.getLayerIndex}
+							/>
 						</div>
 
 						<ImageMobileEditor toggleSidebar={toggleSidebar} />
