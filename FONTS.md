@@ -46,17 +46,17 @@
 - [ ] Futura
 - [ ] Garamond
 - [ ] Helvetica
-- [ ] Josefin Sans
-- [ ] Lancelot
-- [ ] League Spartan
-- [ ] Libre Baskerville
-- [ ] Lora
-- [ ] Montserrat
-- [ ] Poppins
+- [x] [Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans) (SIL Open Font License, Version 1.1)
+- [x] [Lancelot](https://fonts.google.com/specimen/Lancelot) (SIL Open Font License, Version 1.1)
+- [x] [League Spartan](https://fonts.google.com/specimen/League+Spartan) (SIL Open Font License, Version 1.1)
+- [x] [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville) (SIL Open Font License, Version 1.1)
+- [x] [Lora](https://fonts.google.com/specimen/Lora) (SIL Open Font License, Version 1.1)
+- [x] [Montserrat](https://fonts.google.com/specimen/Montserrat) (SIL Open Font License, Version 1.1)
+- [x] [Poppins](https://fonts.google.com/specimen/Poppins) (SIL Open Font License, Version 1.1)
 - [ ] Source Serif Pro
 - [x] Times New Roman (system font)
 - [ ] Typo Formal
-- [ ] Work Sans
+- [x] [Work Sans](https://fonts.google.com/specimen/Work+Sans) (SIL Open Font License, Version 1.1)
 
 ## Unknown
 - [x] [29LT Makina](https://www.freefontdownload.org/en/29lt-makina-regular.font) (Personal Use)
