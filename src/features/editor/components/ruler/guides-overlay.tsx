@@ -26,15 +26,7 @@ export default function GuidesOverlay({
 	onRemove,
 }: GuidesOverlayProps) {
 	return (
-		<div
-			className="absolute pointer-events-none z-40"
-			style={{
-				width: canvasWidth * scale,
-				height: canvasHeight * scale,
-				transform: `scale(${scale})`,
-				transformOrigin: "center center",
-			}}
-		>
+		<div className="absolute inset-0 pointer-events-none z-40">
 			{guides.map((guide) => (
 				<GuideLine
 					key={guide.id}
@@ -42,7 +34,6 @@ export default function GuidesOverlay({
 					orientation={guide.orientation}
 					position={guide.position}
 					scale={scale}
-					renderScale={1}
 					canvasSize={
 						guide.orientation === "horizontal" ? canvasHeight : canvasWidth
 					}

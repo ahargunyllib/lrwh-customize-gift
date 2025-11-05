@@ -10,7 +10,6 @@ import {
 } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
-import GuidesOverlay from "../components/ruler/guides-overlay";
 import RulerSystem from "../components/ruler/ruler-system";
 import Sidebar from "../components/sidebar/sidebar-creator";
 import ZoomControl from "../components/zoom-control";
@@ -126,15 +125,9 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 					scale={scale}
 					isCustomizing={true}
 					getLayerIndex={getLayerIndex}
-				/>
-				{/* Guide lines overlay on canvas */}
-				<GuidesOverlay
-					guides={guides}
-					scale={scale}
-					canvasWidth={template.width}
-					canvasHeight={template.height}
-					onPositionChange={updateGuidePosition}
-					onRemove={removeGuide}
+					rulerGuides={guides}
+					onGuidePositionChange={updateGuidePosition}
+					onGuideRemove={removeGuide}
 				/>
 			</div>
 

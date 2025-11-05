@@ -17,6 +17,7 @@ import { useAlignmentGuides } from "../hooks/use-allignment-guides";
 import { useAutoTextHeight } from "../hooks/use-auto-text-height";
 import { useResizeImage } from "../hooks/use-resize-image";
 import { useResizeText } from "../hooks/use-resize-text";
+import GuidesOverlay from "./ruler/guides-overlay";
 import AlignmentGuides from "./template-elements/allignment-guides";
 import TemplateImage from "./template-elements/template-image";
 import TemplateLine from "./template-elements/template-line";
@@ -33,6 +34,13 @@ interface EditorCanvasProps {
 	initialTemplate?: TemplateData;
 	allowDelete?: boolean;
 	getLayerIndex: (id: string) => number;
+	rulerGuides?: Array<{
+		id: string;
+		orientation: "horizontal" | "vertical";
+		position: number;
+	}>;
+	onGuidePositionChange?: (id: string, position: number) => void;
+	onGuideRemove?: (id: string) => void;
 }
 
 const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
@@ -47,6 +55,9 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			initialTemplate,
 			allowDelete = true,
 			getLayerIndex,
+			rulerGuides = [],
+			onGuidePositionChange,
+			onGuideRemove,
 		},
 		ref,
 	) => {
@@ -177,6 +188,18 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 						canvasWidth={template.width}
 						canvasHeight={template.height}
 					/>
+
+					{/* Ruler guides */}
+					{rulerGuides.length > 0 && onGuidePositionChange && onGuideRemove && (
+						<GuidesOverlay
+							guides={rulerGuides}
+							scale={scale}
+							canvasWidth={template.width}
+							canvasHeight={template.height}
+							onPositionChange={onGuidePositionChange}
+							onRemove={onGuideRemove}
+						/>
+					)}
 
 					{template.images.map((image) => (
 						<TemplateImage
