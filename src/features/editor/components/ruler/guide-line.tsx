@@ -23,7 +23,6 @@ export default function GuideLine({
 	onRemove,
 }: GuideLineProps) {
 	const [isDragging, setIsDragging] = useState(false);
-	const [showLabel, setShowLabel] = useState(false);
 
 	useEffect(() => {
 		if (!isDragging) return;
@@ -78,33 +77,27 @@ export default function GuideLine({
 						e.stopPropagation();
 						setIsDragging(true);
 					}}
-					onMouseEnter={() => setShowLabel(true)}
-					onMouseLeave={() => !isDragging && setShowLabel(false)}
 				/>
-
-				{/* Position label */}
-				{(showLabel || isDragging) && (
-					<div
-						className="absolute left-2 px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
-						style={{
-							top: position * scale - 20,
+				<div
+					className="absolute left-2 px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
+					style={{
+						top: position * scale - 20,
+					}}
+				>
+					<span>
+						{displayPosition}px ({cmPosition}cm)
+					</span>
+					<button
+						type="button"
+						className="hover:bg-cyan-600 rounded p-0.5 transition-colors"
+						onClick={(e) => {
+							e.stopPropagation();
+							onRemove(id);
 						}}
 					>
-						<span>
-							{displayPosition}px ({cmPosition}cm)
-						</span>
-						<button
-							type="button"
-							className="hover:bg-cyan-600 rounded p-0.5 transition-colors"
-							onClick={(e) => {
-								e.stopPropagation();
-								onRemove(id);
-							}}
-						>
-							<X className="h-3 w-3" />
-						</button>
-					</div>
-				)}
+						<X className="h-3 w-3" />
+					</button>
+				</div>
 			</>
 		);
 	}
@@ -125,33 +118,28 @@ export default function GuideLine({
 					e.stopPropagation();
 					setIsDragging(true);
 				}}
-				onMouseEnter={() => setShowLabel(true)}
-				onMouseLeave={() => !isDragging && setShowLabel(false)}
 			/>
 
-			{/* Position label */}
-			{(showLabel || isDragging) && (
-				<div
-					className="absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
-					style={{
-						left: position * scale + 5,
+			<div
+				className="absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
+				style={{
+					left: position * scale + 5,
+				}}
+			>
+				<span>
+					{displayPosition}px ({cmPosition}cm)
+				</span>
+				<button
+					type="button"
+					className="hover:bg-pink-600 rounded p-0.5 transition-colors"
+					onClick={(e) => {
+						e.stopPropagation();
+						onRemove(id);
 					}}
 				>
-					<span>
-						{displayPosition}px ({cmPosition}cm)
-					</span>
-					<button
-						type="button"
-						className="hover:bg-pink-600 rounded p-0.5 transition-colors"
-						onClick={(e) => {
-							e.stopPropagation();
-							onRemove(id);
-						}}
-					>
-						<X className="h-3 w-3" />
-					</button>
-				</div>
-			)}
+					<X className="h-3 w-3" />
+				</button>
+			</div>
 		</>
 	);
 }
