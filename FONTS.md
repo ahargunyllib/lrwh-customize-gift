@@ -17,19 +17,19 @@
 - [ ] Sunset Hill
 
 ## Cartoon:
-- [ ] Bakso Sapi
-- [ ] Blueberry
-- [ ] Cweyons
+- [x] [Bakso Sapi](https://www.dafont.com/bakso-sapi.font) (100% Free)
+- [x] [Blueberry](https://www.dafont.com/blueberry-4.font) (Personal Use)
+- [x] [Cweyons](https://www.dafont.com/cweyons.font) (Personal Use)
 - [x] [Gamja Flower](https://fonts.google.com/specimen/Gamja+Flower) (SIL Open Font License, Version 1.1)
-- [ ] Happy Font
-- [ ] Hey Tiny
+- [x] [Happy Font](https://www.dafont.com/happy-3.font) (Personal Use)
+- [x] [Hey Tiny](https://www.dafont.com/hey-tiny.font) (Personal Use)
 - [x] [Jua](https://fonts.google.com/specimen/Jua) (SIL Open Font License, Version 1.1)
-- [ ] Lazydog
-- [ ] Lion Cub
-- [ ] Lulu Font
-- [ ] Marykate
-- [ ] Sunday Morning
-- [ ] Winkle
+- [x] [Lazydog](https://www.dafont.com/lazy-dog.font) (100% Free)
+- [x] [Lion Cub](https://www.dafont.com/lion-cub.font) (Personal Use)
+- [x] [Lulu Font](https://www.dafont.com/lulu.font) (Personal Use)
+- [x] [Marykate](https://www.freefontdownload.org/en/marykate-regular.font) (Personal Use)
+- [x] [Sunday Morning](https://www.dafont.com/sunday-morning-2.font) (Personal Use)
+- [x] [Winkle](https://www.dafont.com/winkle.font) (Personal Use)
 
 ## Elegant
 - [x] [Bright Retro](https://www.dafont.com/bright-2.font) (Personal Use)

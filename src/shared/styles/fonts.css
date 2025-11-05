@@ -266,3 +266,80 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: "Winkle";
+  src: url("/fonts/Winkle-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Sunday Morning";
+  src: url("/fonts/Sunday Morning.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Marykate";
+  src: url("/fonts/marykate-regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lulu Font";
+  src: url("/fonts/Lulu.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lion Cub";
+  src: url("/fonts/LionCub-Regular-2.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lazydog";
+  src: url("/fonts/lazy_dog.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hey Tiny";
+  src: url("/fonts/Hey Tiny DEMO.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Happy Font";
+  src: url("/fonts/Happy Personal Use.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Cweyons";
+  src: url("/fonts/Cweyons-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Blueberry";
+  src: url("/fonts/Blueberry Personal Use Only.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Bakso Sapi";
+  src: url("/fonts/BaksoSapi.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
