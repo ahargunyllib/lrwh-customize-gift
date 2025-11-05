@@ -34,6 +34,8 @@ export default function ImageMobileEditor({
 		const file = e.target.files?.[0];
 		if (file && activeElement) {
 			handleReplace(activeElement.id, file);
+			// Reset input value to allow selecting the same file again
+			e.target.value = "";
 		}
 	};
 
