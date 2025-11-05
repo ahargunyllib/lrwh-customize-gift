@@ -95,17 +95,16 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 			className="relative flex-1 bg-gray-100 flex items-center justify-center overflow-clip"
 			{...bindGesture}
 		>
-			<RulerContainer
-				scale={scale}
-				canvasWidth={template.width}
-				canvasHeight={template.height}
-				canvasOffset={canvasOffset}
+			<div
+				// Apply the canvas offset to the canvas container
+				style={{
+					transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+				}}
 			>
-				<div
-					// Apply the canvas offset to the canvas container only
-					style={{
-						transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
-					}}
+				<RulerContainer
+					scale={scale}
+					canvasWidth={template.width}
+					canvasHeight={template.height}
 				>
 					<EditorCanvas
 						template={template}
@@ -116,8 +115,8 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 						isCustomizing={true}
 						getLayerIndex={getLayerIndex}
 					/>
-				</div>
-			</RulerContainer>
+				</RulerContainer>
+			</div>
 
 			{/* Zoom control in out */}
 			<ZoomControl zoomIn={zoomIn} zoomOut={zoomOut} resetZoom={resetZoom} />

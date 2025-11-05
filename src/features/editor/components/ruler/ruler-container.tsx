@@ -10,7 +10,6 @@ interface RulerContainerProps {
 	canvasWidth: number;
 	canvasHeight: number;
 	children: React.ReactNode;
-	canvasOffset?: { x: number; y: number };
 }
 
 interface Guide {
@@ -24,7 +23,6 @@ export default function RulerContainer({
 	canvasWidth,
 	canvasHeight,
 	children,
-	canvasOffset = { x: 0, y: 0 },
 }: RulerContainerProps) {
 	const [guides, setGuides] = useState<Guide[]>([]);
 	const [isDraggingNew, setIsDraggingNew] = useState<{
@@ -33,6 +31,8 @@ export default function RulerContainer({
 	} | null>(null);
 
 	const rulerSize = 30;
+	const scaledWidth = canvasWidth * scale;
+	const scaledHeight = canvasHeight * scale;
 
 	// Handle drag from ruler to create new guide
 	const handleRulerDragStart = (
@@ -106,15 +106,15 @@ export default function RulerContainer({
 	]);
 
 	return (
-		<div className="relative w-full h-full">
-			{/* Corner square where rulers meet - positioned relative to viewport center */}
+		<div className="relative inline-block">
+			{/* Corner square where rulers meet */}
 			<div
 				className="absolute bg-gray-300 border-r border-b border-gray-400 z-50"
 				style={{
 					width: rulerSize,
 					height: rulerSize,
-					left: `calc(50% - ${(canvasWidth * scale) / 2}px - ${rulerSize}px + ${canvasOffset.x}px)`,
-					top: `calc(50% - ${(canvasHeight * scale) / 2}px - ${rulerSize}px + ${canvasOffset.y}px)`,
+					left: -rulerSize,
+					top: -rulerSize,
 				}}
 			/>
 
@@ -122,8 +122,9 @@ export default function RulerContainer({
 			<div
 				className="absolute z-50"
 				style={{
-					left: `calc(50% - ${(canvasWidth * scale) / 2}px + ${canvasOffset.x}px)`,
-					top: `calc(50% - ${(canvasHeight * scale) / 2}px - ${rulerSize}px + ${canvasOffset.y}px)`,
+					left: 0,
+					top: -rulerSize,
+					width: scaledWidth,
 				}}
 			>
 				<RulerBar
@@ -138,8 +139,9 @@ export default function RulerContainer({
 			<div
 				className="absolute z-50"
 				style={{
-					left: `calc(50% - ${(canvasWidth * scale) / 2}px - ${rulerSize}px + ${canvasOffset.x}px)`,
-					top: `calc(50% - ${(canvasHeight * scale) / 2}px + ${canvasOffset.y}px)`,
+					left: -rulerSize,
+					top: 0,
+					height: scaledHeight,
 				}}
 			>
 				<RulerBar
@@ -150,16 +152,11 @@ export default function RulerContainer({
 				/>
 			</div>
 
-			{/* Guide lines - positioned relative to canvas */}
-			<div
-				className="absolute pointer-events-none"
-				style={{
-					left: `calc(50% - ${(canvasWidth * scale) / 2}px + ${canvasOffset.x}px)`,
-					top: `calc(50% - ${(canvasHeight * scale) / 2}px + ${canvasOffset.y}px)`,
-					width: canvasWidth * scale,
-					height: canvasHeight * scale,
-				}}
-			>
+			{/* Canvas content */}
+			<div className="relative">
+				{children}
+
+				{/* Guide lines overlay on canvas */}
 				{guides.map((guide) => (
 					<GuideLine
 						key={guide.id}
@@ -175,9 +172,6 @@ export default function RulerContainer({
 					/>
 				))}
 			</div>
-
-			{/* Canvas content */}
-			{children}
 		</div>
 	);
 }
