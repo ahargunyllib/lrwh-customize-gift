@@ -1,9 +1,9 @@
 "use client";
 
-import { Ruler } from "lucide-react";
-import { useRef, useState } from "react";
-import HorizontalRuler from "./horizontal-ruler";
-import VerticalRuler from "./vertical-ruler";
+import { useCallback, useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import GuideLine from "./guide-line";
+import RulerBar from "./ruler-bar";
 
 interface RulerContainerProps {
 	scale: number;
@@ -12,119 +12,165 @@ interface RulerContainerProps {
 	children: React.ReactNode;
 }
 
+interface Guide {
+	id: string;
+	orientation: "horizontal" | "vertical";
+	position: number;
+}
+
 export default function RulerContainer({
 	scale,
 	canvasWidth,
 	canvasHeight,
 	children,
 }: RulerContainerProps) {
-	const [showRulers, setShowRulers] = useState(true);
-	const [showHorizontalRuler, setShowHorizontalRuler] = useState(false);
-	const [showVerticalRuler, setShowVerticalRuler] = useState(false);
-	const horizontalRulerRef = useRef<{
-		setPosition: (pos: number) => void;
-	}>(null);
-	const verticalRulerRef = useRef<{
-		setPosition: (pos: number) => void;
-	}>(null);
+	const [guides, setGuides] = useState<Guide[]>([]);
+	const [isDraggingNew, setIsDraggingNew] = useState<{
+		orientation: "horizontal" | "vertical";
+		id: string;
+	} | null>(null);
 
-	const handleAddHorizontalRuler = () => {
-		setShowHorizontalRuler(true);
-		// Set initial position to center
-		setTimeout(() => {
-			horizontalRulerRef.current?.setPosition(canvasHeight / 2);
-		}, 0);
+	const rulerSize = 30;
+
+	// Handle drag from ruler to create new guide
+	const handleRulerDragStart = (
+		e: React.MouseEvent,
+		orientation: "horizontal" | "vertical",
+	) => {
+		e.preventDefault();
+		const newGuide: Guide = {
+			id: uuidv4(),
+			orientation,
+			position: 0,
+		};
+
+		setGuides((prev) => [...prev, newGuide]);
+		setIsDraggingNew({ orientation, id: newGuide.id });
 	};
 
-	const handleAddVerticalRuler = () => {
-		setShowVerticalRuler(true);
-		// Set initial position to center
-		setTimeout(() => {
-			verticalRulerRef.current?.setPosition(canvasWidth / 2);
-		}, 0);
-	};
+	// Update guide position
+	const handleGuidePositionChange = useCallback(
+		(id: string, position: number) => {
+			setGuides((prev) =>
+				prev.map((guide) => (guide.id === id ? { ...guide, position } : guide)),
+			);
+		},
+		[],
+	);
 
-	const handleRemoveHorizontalRuler = () => {
-		setShowHorizontalRuler(false);
-	};
+	// Remove guide
+	const handleGuideRemove = useCallback((id: string) => {
+		setGuides((prev) => prev.filter((guide) => guide.id !== id));
+	}, []);
 
-	const handleRemoveVerticalRuler = () => {
-		setShowVerticalRuler(false);
-	};
+	// Handle mouse move for new guide being dragged from ruler
+	useEffect(() => {
+		if (!isDraggingNew) return;
+
+		const handleMouseMove = (e: MouseEvent) => {
+			const canvas = document.querySelector('[data-canvas="true"]');
+			if (canvas) {
+				const canvasRect = canvas.getBoundingClientRect();
+
+				if (isDraggingNew.orientation === "horizontal") {
+					const newY = (e.clientY - canvasRect.top) / scale;
+					const constrainedY = Math.max(0, Math.min(canvasHeight, newY));
+					handleGuidePositionChange(isDraggingNew.id, constrainedY);
+				} else {
+					const newX = (e.clientX - canvasRect.left) / scale;
+					const constrainedX = Math.max(0, Math.min(canvasWidth, newX));
+					handleGuidePositionChange(isDraggingNew.id, constrainedX);
+				}
+			}
+		};
+
+		const handleMouseUp = () => {
+			setIsDraggingNew(null);
+		};
+
+		document.addEventListener("mousemove", handleMouseMove);
+		document.addEventListener("mouseup", handleMouseUp);
+
+		return () => {
+			document.removeEventListener("mousemove", handleMouseMove);
+			document.removeEventListener("mouseup", handleMouseUp);
+		};
+	}, [
+		isDraggingNew,
+		scale,
+		canvasWidth,
+		canvasHeight,
+		handleGuidePositionChange,
+	]);
 
 	return (
 		<div className="relative">
-			{/* Control buttons */}
-			<div className="absolute -top-10 right-0 z-50 flex items-center gap-2">
-				{showRulers && (
-					<>
-						<button
-							type="button"
-							onClick={handleAddHorizontalRuler}
-							disabled={showHorizontalRuler}
-							className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-								showHorizontalRuler
-									? "bg-gray-200 text-gray-400 cursor-not-allowed"
-									: "bg-pink-500 text-white hover:bg-pink-600"
-							}`}
-							title="Add Horizontal Ruler"
-						>
-							<Ruler className="h-3.5 w-3.5" />
-							Horizontal
-						</button>
-						<button
-							type="button"
-							onClick={handleAddVerticalRuler}
-							disabled={showVerticalRuler}
-							className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-								showVerticalRuler
-									? "bg-gray-200 text-gray-400 cursor-not-allowed"
-									: "bg-cyan-500 text-white hover:bg-cyan-600"
-							}`}
-							title="Add Vertical Ruler"
-						>
-							<Ruler className="h-3.5 w-3.5 rotate-90" />
-							Vertical
-						</button>
-					</>
-				)}
-				<button
-					type="button"
-					onClick={() => setShowRulers(!showRulers)}
-					className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-						showRulers
-							? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-							: "bg-blue-500 text-white hover:bg-blue-600"
-					}`}
-					title={showRulers ? "Hide Ruler Controls" : "Show Ruler Controls"}
-				>
-					<Ruler className="h-3.5 w-3.5" />
-					{showRulers ? "Hide" : "Show"}
-				</button>
+			{/* Corner square where rulers meet */}
+			<div
+				className="absolute top-0 left-0 bg-gray-300 border-r border-b border-gray-400 z-50"
+				style={{
+					width: rulerSize,
+					height: rulerSize,
+				}}
+			/>
+
+			{/* Horizontal ruler bar (top) */}
+			<div
+				className="absolute z-50"
+				style={{
+					left: rulerSize,
+					top: 0,
+				}}
+			>
+				<RulerBar
+					orientation="horizontal"
+					length={canvasWidth}
+					scale={scale}
+					onDragStart={(e) => handleRulerDragStart(e, "horizontal")}
+				/>
 			</div>
 
-			{/* Canvas with rulers */}
-			<div className="relative">
+			{/* Vertical ruler bar (left) */}
+			<div
+				className="absolute z-50"
+				style={{
+					left: 0,
+					top: rulerSize,
+				}}
+			>
+				<RulerBar
+					orientation="vertical"
+					length={canvasHeight}
+					scale={scale}
+					onDragStart={(e) => handleRulerDragStart(e, "vertical")}
+				/>
+			</div>
+
+			{/* Canvas with offset for rulers */}
+			<div
+				className="relative"
+				style={{
+					marginLeft: rulerSize,
+					marginTop: rulerSize,
+				}}
+			>
 				{children}
 
-				{showRulers && showHorizontalRuler && (
-					<HorizontalRuler
-						ref={horizontalRulerRef}
+				{/* Guide lines */}
+				{guides.map((guide) => (
+					<GuideLine
+						key={guide.id}
+						id={guide.id}
+						orientation={guide.orientation}
+						position={guide.position}
 						scale={scale}
-						canvasWidth={canvasWidth}
-						canvasHeight={canvasHeight}
-						onRemove={handleRemoveHorizontalRuler}
+						canvasSize={
+							guide.orientation === "horizontal" ? canvasHeight : canvasWidth
+						}
+						onPositionChange={handleGuidePositionChange}
+						onRemove={handleGuideRemove}
 					/>
-				)}
-				{showRulers && showVerticalRuler && (
-					<VerticalRuler
-						ref={verticalRulerRef}
-						scale={scale}
-						canvasWidth={canvasWidth}
-						canvasHeight={canvasHeight}
-						onRemove={handleRemoveVerticalRuler}
-					/>
-				)}
+				))}
 			</div>
 		</div>
 	);
