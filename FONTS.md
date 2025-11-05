@@ -32,12 +32,12 @@
 - [ ] Winkle
 
 ## Elegant
-- [ ] Bright Retro
-- [ ] Margin
-- [ ] Quiche
-- [ ] Recoleta
-- [ ] Sergio Trendy
-- [ ] Tan Pearl
+- [x] [Bright Retro](https://www.dafont.com/bright-2.font) (Personal Use)
+- [x] [Margin](https://www.dafont.com/margin.font) (Personal Use)
+- [x] [Quiche](https://fonnts.com/quiche/) (May be Personal Use)
+- [x] [Recoleta](https://www.dafont.com/recoleta.font) (Personal Use)
+- [x] [Sergio Trendy](https://www.dafont.com/sergio-trendy.font) (Personal Use)
+- [x] [Tan Pearl](https://dafont.style/download/tan-pearl-font.html) (May be Personal Use)
 
 
 ## Serif

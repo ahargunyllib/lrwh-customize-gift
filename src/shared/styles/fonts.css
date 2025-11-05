@@ -224,3 +224,45 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: "Bright Retro";
+  src: url("/fonts/Bright DEMO.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Margin";
+  src: url("/fonts/Margin DEMO.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Quiche";
+  src: url("/fonts/Quiche-Flare-Reguler.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Recoleta";
+  src: url("/fonts/Recoleta-RegularDEMO.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Sergio Trendy";
+  src: url("/fonts/Sergio Trendy.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Tan Pearl";
+  src: url("/fonts/tan-pearl.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
