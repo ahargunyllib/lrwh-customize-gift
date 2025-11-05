@@ -8,6 +8,7 @@ interface GuideLineProps {
 	orientation: "horizontal" | "vertical";
 	position: number;
 	scale: number;
+	renderScale?: number;
 	canvasSize: number;
 	onPositionChange: (id: string, position: number) => void;
 	onRemove: (id: string) => void;
@@ -18,6 +19,7 @@ export default function GuideLine({
 	orientation,
 	position,
 	scale,
+	renderScale = scale,
 	canvasSize,
 	onPositionChange,
 	onRemove,
@@ -66,11 +68,11 @@ export default function GuideLine({
 			<>
 				{/* Guide line */}
 				<div
-					className={`absolute left-0 right-0 h-px bg-cyan-500 z-40 ${
+					className={`absolute left-0 right-0 h-px bg-cyan-500 z-40 pointer-events-auto ${
 						isDragging ? "cursor-grabbing" : "cursor-ns-resize"
 					}`}
 					style={{
-						top: position * scale,
+						top: position * renderScale,
 						boxShadow: "0 0 3px rgba(6, 182, 212, 0.6)",
 					}}
 					onMouseDown={(e) => {
@@ -85,9 +87,9 @@ export default function GuideLine({
 				{/* Position label */}
 				{(showLabel || isDragging) && (
 					<div
-						className="absolute left-2 px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded shadow-md z-50 flex items-center gap-1"
+						className="absolute left-2 px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
 						style={{
-							top: position * scale - 20,
+							top: position * renderScale - 20,
 						}}
 					>
 						<span>
@@ -113,11 +115,11 @@ export default function GuideLine({
 		<>
 			{/* Guide line */}
 			<div
-				className={`absolute top-0 bottom-0 w-px bg-pink-500 z-40 ${
+				className={`absolute top-0 bottom-0 w-px bg-pink-500 z-40 pointer-events-auto ${
 					isDragging ? "cursor-grabbing" : "cursor-ew-resize"
 				}`}
 				style={{
-					left: position * scale,
+					left: position * renderScale,
 					boxShadow: "0 0 3px rgba(236, 72, 153, 0.6)",
 				}}
 				onMouseDown={(e) => {
@@ -132,9 +134,9 @@ export default function GuideLine({
 			{/* Position label */}
 			{(showLabel || isDragging) && (
 				<div
-					className="absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1"
+					className="absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
 					style={{
-						left: position * scale + 5,
+						left: position * renderScale + 5,
 					}}
 				>
 					<span>
