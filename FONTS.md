@@ -41,7 +41,7 @@
 
 
 ## Serif
-- [ ] Argent
+- [x] [Argent](https://www.allfreefonts.co/argent-cf-font/) (Personal Use)
 - [x] Arial (system font)
 - [ ] Futura
 - [ ] Garamond

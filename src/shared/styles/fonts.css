@@ -179,3 +179,10 @@
 	font-weight: normal;
 	font-style: normal;
 }
+
+@font-face {
+  font-family: "Argent";
+  src: url("/fonts/Fontspring-DEMO-argentcf-regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
