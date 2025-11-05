@@ -1,0 +1,46 @@
+"use client";
+
+import GuideLine from "./guide-line";
+
+interface Guide {
+	id: string;
+	orientation: "horizontal" | "vertical";
+	position: number;
+}
+
+interface GuidesOverlayProps {
+	guides: Guide[];
+	scale: number;
+	canvasWidth: number;
+	canvasHeight: number;
+	onPositionChange: (id: string, position: number) => void;
+	onRemove: (id: string) => void;
+}
+
+export default function GuidesOverlay({
+	guides,
+	scale,
+	canvasWidth,
+	canvasHeight,
+	onPositionChange,
+	onRemove,
+}: GuidesOverlayProps) {
+	return (
+		<div className="absolute inset-0 pointer-events-none z-40">
+			{guides.map((guide) => (
+				<GuideLine
+					key={guide.id}
+					id={guide.id}
+					orientation={guide.orientation}
+					position={guide.position}
+					scale={scale}
+					canvasSize={
+						guide.orientation === "horizontal" ? canvasHeight : canvasWidth
+					}
+					onPositionChange={onPositionChange}
+					onRemove={onRemove}
+				/>
+			))}
+		</div>
+	);
+}

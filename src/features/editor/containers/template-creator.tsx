@@ -10,11 +10,13 @@ import {
 } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
-import RulerContainer from "../components/ruler/ruler-container";
+import GuidesOverlay from "../components/ruler/guides-overlay";
+import RulerSystem from "../components/ruler/ruler-system";
 import Sidebar from "../components/sidebar/sidebar-creator";
 import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
+import { useRulerGuides } from "../hooks/use-ruler-guides";
 import { useTemplateEditor } from "../hooks/use-template-editor";
 import { useTemplatePersistence } from "../hooks/use-template-persistence";
 
@@ -89,33 +91,51 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 
 	const { canvasOffset, bindGesture } = useCanvasGesture();
 
+	// Ruler guides management
+	const { guides, createGuide, updateGuidePosition, removeGuide } =
+		useRulerGuides(scale, template.width, template.height);
+
 	return (
 		<div
 			ref={ref}
 			className="relative flex-1 bg-gray-100 flex items-center justify-center overflow-clip"
 			{...bindGesture}
 		>
+			{/* Rulers fixed to viewport edges */}
+			<RulerSystem
+				scale={scale}
+				canvasWidth={template.width}
+				canvasHeight={template.height}
+				canvasOffset={canvasOffset}
+				containerRef={ref as React.RefObject<HTMLDivElement>}
+				onCreateGuide={createGuide}
+			/>
+
+			{/* Canvas with guides (can pan) */}
 			<div
-				// Apply the canvas offset to the canvas container
+				className="relative"
 				style={{
 					transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
 				}}
 			>
-				<RulerContainer
+				<EditorCanvas
+					template={template}
+					setTemplate={setTemplate}
+					activeElement={activeElement}
+					setActiveElement={setActiveElement}
+					scale={scale}
+					isCustomizing={true}
+					getLayerIndex={getLayerIndex}
+				/>
+				{/* Guide lines overlay on canvas */}
+				<GuidesOverlay
+					guides={guides}
 					scale={scale}
 					canvasWidth={template.width}
 					canvasHeight={template.height}
-				>
-					<EditorCanvas
-						template={template}
-						setTemplate={setTemplate}
-						activeElement={activeElement}
-						setActiveElement={setActiveElement}
-						scale={scale}
-						isCustomizing={true}
-						getLayerIndex={getLayerIndex}
-					/>
-				</RulerContainer>
+					onPositionChange={updateGuidePosition}
+					onRemove={removeGuide}
+				/>
 			</div>
 
 			{/* Zoom control in out */}
