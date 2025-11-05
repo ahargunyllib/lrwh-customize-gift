@@ -2,6 +2,7 @@ import { fontVariables } from "@/shared/lib/fonts";
 import type { Metadata } from "next";
 import Provider from "../shared/components/providers";
 import "../shared/styles/globals.css";
+import "../shared/styles/fonts.css";
 
 export const metadata: Metadata = {
 	title: "LRWH Kustomisasi Hadiah",
