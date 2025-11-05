@@ -43,9 +43,9 @@
 ## Serif
 - [x] [Argent](https://www.allfreefonts.co/argent-cf-font/) (Personal Use)
 - [x] Arial (system font)
-- [ ] Futura
-- [ ] Garamond
-- [ ] Helvetica
+- [x] [Futura](https://fontsgeek.com/futura-font) (Personal Use)
+- [x] [Garamond](https://font.download/font/garamond#google_vignette) (Personal Use)
+- [x] [Helvetica](https://font.download/font/helvetica-255) (Personal Use)
 - [x] [Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans) (SIL Open Font License, Version 1.1)
 - [x] [Lancelot](https://fonts.google.com/specimen/Lancelot) (SIL Open Font License, Version 1.1)
 - [x] [League Spartan](https://fonts.google.com/specimen/League+Spartan) (SIL Open Font License, Version 1.1)
@@ -53,9 +53,9 @@
 - [x] [Lora](https://fonts.google.com/specimen/Lora) (SIL Open Font License, Version 1.1)
 - [x] [Montserrat](https://fonts.google.com/specimen/Montserrat) (SIL Open Font License, Version 1.1)
 - [x] [Poppins](https://fonts.google.com/specimen/Poppins) (SIL Open Font License, Version 1.1)
-- [ ] Source Serif Pro
+- [x] [Source Serif Pro](https://www.1001fonts.com/source-serif-pro-font.html) (Commercial Use)
 - [x] Times New Roman (system font)
-- [ ] Typo Formal
+- [x] [Typo Formal](https://www.dafont.com/typo-formal.font) (Personal Use)
 - [x] [Work Sans](https://fonts.google.com/specimen/Work+Sans) (SIL Open Font License, Version 1.1)
 
 ## Unknown

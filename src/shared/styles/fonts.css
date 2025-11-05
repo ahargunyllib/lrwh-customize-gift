@@ -189,3 +189,38 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: "Futura";
+  src: url("/fonts/Futura Reguler.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Garamond";
+  src: url("/fonts/Garamond.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Source Serif Pro";
+  src: url("/fonts/Source Serif Pro Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Typo Formal";
+  src: url("/fonts/Typo Formal Regular Demo.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
