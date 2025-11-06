@@ -46,6 +46,16 @@ export function useKeyboardDelete({
 					const texts = prev.texts.toSpliced(txtIdx, 1);
 					return { ...prev, texts };
 				}
+				const shpIdx = prev.shapes.findIndex((s) => s.id === activeElement.id);
+				if (shpIdx >= 0) {
+					const shapes = prev.shapes.toSpliced(shpIdx, 1);
+					return { ...prev, shapes };
+				}
+				const lnIdx = prev.lines.findIndex((l) => l.id === activeElement.id);
+				if (lnIdx >= 0) {
+					const lines = prev.lines.toSpliced(lnIdx, 1);
+					return { ...prev, lines };
+				}
 				return prev;
 			});
 			setActiveElement(null);
