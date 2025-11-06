@@ -5,6 +5,7 @@ import {
 	AccordionTrigger,
 } from "@/shared/components/ui/accordion";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
+import Image from "next/image";
 
 export default function HelpCard() {
 	const isMobile = useIsMobile();
@@ -27,7 +28,15 @@ export default function HelpCard() {
 				</AccordionTrigger>
 
 				<AccordionContent>
-					<ol className="list-decimal list-inside text-sm text-[#090E17] space-y-2">
+					<div className="relative aspect-[3/4] w-full">
+						<Image
+							src="/imgs/help.png"
+							alt="Help"
+							fill
+							className="object-contain"
+						/>
+					</div>
+					{/* <ol className="list-decimal list-inside text-sm text-[#090E17] space-y-2">
 						<li>
 							<b>Pilih dulu tab produk di atas </b>
 							<br />
@@ -62,7 +71,7 @@ export default function HelpCard() {
 							Kami akan proses dan pastikan hasilnya sesuai dengan yang kamu
 							mau! 🎁
 						</li>
-					</ol>
+					</ol> */}
 				</AccordionContent>
 			</AccordionItem>
 		</Accordion>
@@ -72,7 +81,15 @@ export default function HelpCard() {
 				Informasi Pengisian Template
 			</h2>
 
-			<ol className="list-decimal list-inside text-sm text-[#090E17] space-y-2">
+			<div className="relative aspect-[3/4] w-full">
+				<Image
+					src="/imgs/help.png"
+					alt="Help"
+					fill
+					className="object-contain"
+				/>
+			</div>
+			{/* <ol className="list-decimal list-inside text-sm text-[#090E17] space-y-2">
 				<li>
 					<b>Pilih dulu tab produk di atas </b>
 					<br />
@@ -105,7 +122,7 @@ export default function HelpCard() {
 					<br />
 					Kami akan proses dan pastikan hasilnya sesuai dengan yang kamu mau! 🎁
 				</li>
-			</ol>
+			</ol> */}
 		</div>
 	);
 }

@@ -27,9 +27,9 @@ export default function FirstVisitDialog() {
 				</DialogDescription>
 			</DialogHeader>
 
-			<div className="relative aspect-video w-full">
+			<div className="relative aspect-[3/4] w-full">
 				<Image
-					src="/imgs/first-visit.jpeg"
+					src="/imgs/first-visit.png"
 					alt="Welcome Image"
 					fill
 					className="object-contain"
