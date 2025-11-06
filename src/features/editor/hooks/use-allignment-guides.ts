@@ -37,7 +37,7 @@ function getElementDimensions(element: ImageElement | TextElement): {
 	borderWidth: number;
 } {
 	// Get border width from element style
-	const borderWidth = element.style?.borderWidth || 0;
+	const borderWidth = 0;
 	const border =
 		typeof borderWidth === "number"
 			? borderWidth
