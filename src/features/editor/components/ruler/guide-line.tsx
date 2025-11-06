@@ -88,7 +88,7 @@ export default function GuideLine({
 					style={{
 						top: position * scale - 30,
 						...(isReversed
-							? { transform: "translateY(calc(-100% + 50px))" }
+							? { transform: "translateY(calc(-100% + 60px))" }
 							: {}),
 					}}
 				>
