@@ -169,7 +169,7 @@ export function useTemplateEditor(initial?: TemplateData) {
 		};
 
 		setTemplate((p) => {
-			console.log(p);
+			// console.log(p);
 			return { ...p, shapes: [...p.shapes, shape], layer: [...p.layer, id] };
 		});
 		setActiveElement({ id, type: "shape" });
