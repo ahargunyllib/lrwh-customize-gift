@@ -34,9 +34,21 @@ export interface Guide {
 function getElementDimensions(element: ImageElement | TextElement): {
 	width: number;
 	height: number;
+	borderWidth: number;
 } {
+	// Get border width from element style
+	const borderWidth = element.style?.borderWidth || 0;
+	const border =
+		typeof borderWidth === "number"
+			? borderWidth
+			: Number.parseFloat(borderWidth) || 0;
+
 	if ("width" in element && "height" in element) {
-		return { width: element.width, height: element.height };
+		return {
+			width: element.width,
+			height: element.height,
+			borderWidth: border,
+		};
 	}
 
 	const textElement = element as TextElement;
@@ -46,6 +58,7 @@ function getElementDimensions(element: ImageElement | TextElement): {
 		return {
 			width: rect.width,
 			height: rect.height,
+			borderWidth: border,
 		};
 	}
 
@@ -70,6 +83,7 @@ function getElementDimensions(element: ImageElement | TextElement): {
 	return {
 		width: maxLineLength * fontSize * 0.6,
 		height: lines.length * fontSize * lineHeight,
+		borderWidth: border,
 	};
 }
 
