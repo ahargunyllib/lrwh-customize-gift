@@ -26,15 +26,20 @@ export default function Sidebar({ open, onClose }: Props) {
 	const isMobile = useIsMobile();
 	const { activeElement } = useTemplateContext();
 
-	const incomingTab: TabValue = useMemo(
-		() => (activeElement?.type === "text" ? "text" : "image"),
-		[activeElement?.type],
-	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const incomingTab: TabValue = useMemo(() => {
+		if (!activeElement) return "settings";
+		if (activeElement.type === "text") return "text";
+		if (activeElement.type === "line" || activeElement.type === "shape")
+			return "settings";
+		return "image";
+	}, [activeElement?.type]);
 	const [tab, setTab] = useState<TabValue>(incomingTab);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		setTab(incomingTab);
-	}, [incomingTab]);
+	}, [incomingTab, activeElement]);
 
 	const Panel = (
 		<div

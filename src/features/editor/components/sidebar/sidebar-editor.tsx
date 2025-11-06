@@ -13,7 +13,7 @@ import { useTemplateContext } from "../../containers/template-editor";
 import ImagesTab from "../tabs/editor/images-tab";
 import TextTab from "../tabs/editor/text-tab";
 
-type TabValue = "image" | "text";
+type TabValue = "image" | "text" | "settings";
 
 export default function EditorSidebar({
 	isOpen,
@@ -25,17 +25,21 @@ export default function EditorSidebar({
 	closeSidebar: () => void;
 }) {
 	const { activeElement } = useTemplateContext();
-	const isMobile = useIsMobile();
 
-	const incomingTab: TabValue = useMemo(
-		() => (activeElement?.type === "text" ? "text" : "image"),
-		[activeElement?.type],
-	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const incomingTab: TabValue = useMemo(() => {
+		if (!activeElement) return "settings";
+		if (activeElement.type === "text") return "text";
+		if (activeElement.type === "line" || activeElement.type === "shape")
+			return "settings";
+		return "image";
+	}, [activeElement?.type]);
 	const [tab, setTab] = useState<TabValue>(incomingTab);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		setTab(incomingTab);
-	}, [incomingTab]);
+	}, [incomingTab, activeElement]);
 
 	const Panel = (
 		<div
