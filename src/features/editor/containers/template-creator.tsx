@@ -1,4 +1,11 @@
 "use client";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuShortcut,
+	ContextMenuTrigger,
+} from "@/shared/components/ui/context-menu";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import {
 	type ReactNode,
@@ -10,10 +17,12 @@ import {
 } from "react";
 import EditorCanvas from "../components/editor-canvas";
 import HeaderBar from "../components/header/header-creator";
+import RulerSystem from "../components/ruler/ruler-system";
 import Sidebar from "../components/sidebar/sidebar-creator";
 import ZoomControl from "../components/zoom-control";
 import { useCanvasGesture } from "../hooks/use-canvas-gesture";
 import { useCanvasScale } from "../hooks/use-canvas-scale";
+import { useRulerGuides } from "../hooks/use-ruler-guides";
 import { useTemplateEditor } from "../hooks/use-template-editor";
 import { useTemplatePersistence } from "../hooks/use-template-persistence";
 
@@ -88,32 +97,94 @@ const CanvasArea = forwardRef<HTMLDivElement>((_, ref) => {
 
 	const { canvasOffset, bindGesture } = useCanvasGesture();
 
-	return (
-		<div
-			ref={ref}
-			className="relative flex-1 bg-gray-100 flex items-center justify-center overflow-clip"
-			{...bindGesture}
-		>
-			<div
-				// Apply the canvas offset to the canvas container
-				style={{
-					transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
-				}}
-			>
-				<EditorCanvas
-					template={template}
-					setTemplate={setTemplate}
-					activeElement={activeElement}
-					setActiveElement={setActiveElement}
-					scale={scale}
-					isCustomizing={true}
-					getLayerIndex={getLayerIndex}
-				/>
-			</div>
+	const getMousePosition = () => {
+		const canvas = document.querySelector('[data-canvas="true"]');
+		if (canvas) {
+			const canvasRect = canvas.getBoundingClientRect();
+			return {
+				x: canvasRect.left + canvasRect.width / 2,
+				y: canvasRect.top + canvasRect.height / 2,
+			};
+		}
+		return { x: 0, y: 0 };
+	};
 
-			{/* Zoom control in out */}
-			<ZoomControl zoomIn={zoomIn} zoomOut={zoomOut} resetZoom={resetZoom} />
-		</div>
+	// Ruler guides management
+	const { guides, createGuide, updateGuidePosition, removeGuide } =
+		useRulerGuides(scale, template.width, template.height);
+
+	const handleAddHorizontalGuide = () => {
+		const mousePosition = getMousePosition();
+		createGuide({
+			orientation: "horizontal",
+			position: mousePosition.y,
+		});
+	};
+
+	const handleAddVerticalGuide = () => {
+		const mousePosition = getMousePosition();
+		createGuide({
+			orientation: "vertical",
+			position: mousePosition.x,
+		});
+	};
+
+	return (
+		<ContextMenu>
+			<ContextMenuTrigger className="bg-red-400 w-full h-full">
+				<div
+					ref={ref}
+					className="relative flex-1 bg-gray-100 flex items-center justify-center overflow-clip h-full"
+					{...bindGesture}
+				>
+					{/* Rulers fixed to viewport edges */}
+					<RulerSystem
+						scale={scale}
+						canvasWidth={template.width}
+						canvasHeight={template.height}
+						canvasOffset={canvasOffset}
+						containerRef={ref as React.RefObject<HTMLDivElement>}
+						onCreateGuide={createGuide}
+					/>
+					{/* Canvas with guides (can pan) */}
+					<div
+						className="relative"
+						style={{
+							transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`,
+						}}
+					>
+						<EditorCanvas
+							template={template}
+							setTemplate={setTemplate}
+							activeElement={activeElement}
+							setActiveElement={setActiveElement}
+							scale={scale}
+							isCustomizing={true}
+							getLayerIndex={getLayerIndex}
+							rulerGuides={guides}
+							onGuidePositionChange={updateGuidePosition}
+							onGuideRemove={removeGuide}
+						/>
+					</div>
+					{/* Zoom control in out */}
+					<ZoomControl
+						zoomIn={zoomIn}
+						zoomOut={zoomOut}
+						resetZoom={resetZoom}
+					/>
+				</div>
+			</ContextMenuTrigger>
+			<ContextMenuContent className="w-60">
+				<ContextMenuItem inset onClick={handleAddHorizontalGuide}>
+					Add Horizontal Guide
+					<ContextMenuShortcut>⌘H</ContextMenuShortcut>
+				</ContextMenuItem>
+				<ContextMenuItem inset onClick={handleAddVerticalGuide}>
+					Add Vertical Guide
+					<ContextMenuShortcut>⌘V</ContextMenuShortcut>
+				</ContextMenuItem>
+			</ContextMenuContent>
+		</ContextMenu>
 	);
 });
 CanvasArea.displayName = "CanvasArea";
