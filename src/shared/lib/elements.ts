@@ -1,4 +1,5 @@
 import type { TextElement } from "../types/template";
+import type { TemplateData } from "../types/template";
 
 export function validateTextElement(text: TextElement): TextElement {
 	return {
@@ -133,3 +134,162 @@ export function getMinimumTextHeight(
 
 	return lineHeightPx + padding * 2;
 }
+
+/**
+ * Apply grayscale effect to a single image element based on percentage
+ */
+export const applyGrayscaleToImage = async (
+	imgElement: HTMLImageElement,
+	grayscalePercent: number,
+): Promise<string> => {
+	// If no grayscale or 0%, return original
+	if (!grayscalePercent || grayscalePercent === 0) {
+		return imgElement.src;
+	}
+
+	// Wait for image to be fully loaded
+	if (!imgElement.complete) {
+		await new Promise((resolve) => {
+			imgElement.onload = resolve;
+			imgElement.onerror = resolve;
+		});
+	}
+
+	const canvas = document.createElement("canvas");
+	const ctx = canvas.getContext("2d");
+
+	if (!ctx) return imgElement.src;
+
+	// Set canvas size to match natural image dimensions
+	canvas.width = imgElement.naturalWidth || imgElement.width;
+	canvas.height = imgElement.naturalHeight || imgElement.height;
+
+	// Draw original image to canvas
+	ctx.drawImage(imgElement, 0, 0);
+
+	// Get pixel data
+	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	const data = imageData.data;
+
+	// Calculate grayscale factor (0 to 1)
+	const factor = Math.min(100, Math.max(0, grayscalePercent)) / 100;
+
+	// Apply grayscale to each pixel
+	for (let i = 0; i < data.length; i += 4) {
+		// Calculate grayscale value using luminosity method
+		const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+
+		// Blend between original color and grayscale based on percentage
+		data[i] = data[i] * (1 - factor) + gray * factor; // red
+		data[i + 1] = data[i + 1] * (1 - factor) + gray * factor; // green
+		data[i + 2] = data[i + 2] * (1 - factor) + gray * factor; // blue
+		// data[i + 3] is alpha (unchanged)
+	}
+
+	// Put modified pixel data back
+	ctx.putImageData(imageData, 0, 0);
+
+	// Return as data URL
+	return canvas.toDataURL("image/png");
+};
+
+/**
+ * Prepare canvas for export by applying grayscale to images
+ * Returns cleanup function to restore original sources
+ */
+export const prepareCanvasForExport = async (
+	canvasRef: HTMLDivElement,
+	template: TemplateData,
+): Promise<() => void> => {
+	// Store reference to actual DOM elements and their original data
+	const processedElements = new Map<
+		HTMLImageElement,
+		{
+			originalSrc: string;
+			originalFilter: string;
+			imageId: string;
+		}
+	>();
+
+	// Get all img elements in canvas
+	const allImages = Array.from(
+		canvasRef.querySelectorAll("img"),
+	) as HTMLImageElement[];
+
+	// Process each image element that needs grayscale
+	for (const imageElement of template.images) {
+		if (!imageElement.grayscalePercent || imageElement.grayscalePercent === 0) {
+			continue;
+		}
+
+		// Find matching img element by src
+		// Important: Find the EXACT element, not just any with matching src
+		const imgEl = allImages.find((img) => {
+			// Match by original src
+			if (img.src === imageElement.src) {
+				// Make sure we haven't processed this element yet
+				return !processedElements.has(img);
+			}
+			return false;
+		});
+
+		if (imgEl?.complete) {
+			// Store original data with reference to the actual DOM element
+			processedElements.set(imgEl, {
+				originalSrc: imgEl.src,
+				originalFilter: imgEl.style.filter || "",
+				imageId: imageElement.id,
+			});
+
+			// Mark element with unique ID for tracking
+			imgEl.setAttribute("data-grayscale-id", imageElement.id);
+
+			// Remove CSS filter to avoid double application
+			imgEl.style.filter = "none";
+
+			try {
+				// Apply grayscale and replace src
+				const grayscaledSrc = await applyGrayscaleToImage(
+					imgEl,
+					imageElement.grayscalePercent,
+				);
+
+				// Replace image source
+				imgEl.src = grayscaledSrc;
+
+				// Wait for new image to load
+				if (!imgEl.complete) {
+					await new Promise((resolve) => {
+						imgEl.onload = resolve;
+						imgEl.onerror = resolve;
+						setTimeout(resolve, 100);
+					});
+				}
+			} catch (error) {
+				console.error(
+					`Failed to apply grayscale to ${imageElement.id}:`,
+					error,
+				);
+			}
+		}
+	}
+
+	// Wait a bit for all images to settle
+	await new Promise((resolve) => setTimeout(resolve, 50));
+
+	// Return cleanup function to restore originals
+	return () => {
+		// Restore each processed element using the Map reference
+		processedElements.forEach((data, imgEl) => {
+			// Restore original src and filter
+			imgEl.src = data.originalSrc;
+			imgEl.style.filter = data.originalFilter;
+
+			// Remove tracking attribute
+			imgEl.removeAttribute("data-grayscale-id");
+		});
+
+		// Clear the map
+		processedElements.clear();
+	};
+};
