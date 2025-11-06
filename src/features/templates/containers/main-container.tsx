@@ -26,10 +26,17 @@ export default function MainContainer() {
 	const searchParams = useSearchParams();
 	const productVariantId = searchParams.get("productVariantId");
 
-	const [selectedProductVariant, setSelectedProductVariant] = useState(
-		productVariants.find((pv) => pv.id === productVariantId) ||
-			productVariants[0],
-	);
+	const selectedProductVariant = useMemo(() => {
+		return (
+			productVariants.find((pv) => pv.id === productVariantId) ||
+			productVariants[0]
+		);
+	}, [productVariants, productVariantId]);
+
+	// const [selectedProductVariant, setSelectedProductVariant] = useState(
+	// 	productVariants.find((pv) => pv.id === productVariantId) ||
+	// 		productVariants[0],
+	// );
 
 	useEffect(() => {
 		if (!hasVisitedTemplates) {
@@ -69,13 +76,13 @@ export default function MainContainer() {
 
 					<Tabs
 						value={selectedProductVariant.id}
-						onValueChange={(value) => {
-							setSelectedProductVariant(
-								productVariants.find(
-									(productVariant) => productVariant.id === value,
-								) || productVariants[0],
-							);
-						}}
+						// onValueChange={(value) => {
+						// 	setSelectedProductVariant(
+						// 		productVariants.find(
+						// 			(productVariant) => productVariant.id === value,
+						// 		) || productVariants[0],
+						// 	);
+						// }}
 						className="overflow-auto"
 					>
 						<TabsList className="bg-white text-[#98A2B3] rounded-md p-0 h-fit space-x-2">

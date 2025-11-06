@@ -42,14 +42,9 @@ export default function ListTemplates({
 		page: Number.parseInt(query.page),
 	});
 
-	const firstEmptyTemplate = useMemo(() => {
-		return (
-			selectedProductVariant.templates.find((template) => !template.dataURL) ||
-			selectedProductVariant.templates[
-				selectedProductVariant.templates.length - 1
-			]
-		);
-	}, [selectedProductVariant.templates]);
+	const firstEmptyTemplate = selectedProductVariant.templates.find(
+		(template) => !template.dataURL,
+	);
 
 	const router = useRouter();
 	const pathname = usePathname();
@@ -78,7 +73,7 @@ export default function ListTemplates({
 				{res?.data?.templates.map((template) => (
 					<Link
 						key={template.id}
-						href={`/templates/${template.id}?orderProductVariantId=${firstEmptyTemplate.id}`}
+						href={`/templates/${template.id}?orderProductVariantId=${firstEmptyTemplate?.id}`}
 					>
 						<div className="h-fit flex flex-col items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg border">
 							<div className="h-40 flex items-center justify-center">
