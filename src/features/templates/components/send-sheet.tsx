@@ -80,19 +80,19 @@ export default function SendSheet() {
 		<SheetContent side="bottom">
 			<div className="relative size-48 w-full">
 				<Image
-					src="/svgs/success-1.svg"
-					alt="Success"
+					src="/svgs/warning-1.svg"
+					alt="Warning"
 					fill
 					objectFit="contain"
 				/>
 			</div>
 			<SheetHeader className="gap-4 sm:text-center">
 				<SheetTitle className="text-center text-[#1D2939] font-bold">
-					Konfirmasi template pemesanan
+					Sudah Yakin?
 				</SheetTitle>
 				<SheetDescription className="text-center text-[#737373] text-sm">
-					Apakah kamu yakin templatenya sudah cocok? kalo udah oke bisa kirim ke
-					kami
+					Yakin sudah cocok? Hasil cetak sesuai dengan desain yang sudah kamu
+					buat ya. Kalau sudah oke, klik "kirim".
 				</SheetDescription>
 			</SheetHeader>
 			<SheetFooter className="flex flex-row gap-2">

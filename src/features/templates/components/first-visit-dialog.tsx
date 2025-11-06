@@ -23,8 +23,7 @@ export default function FirstVisitDialog() {
 					Selamat Datang!
 				</DialogTitle>
 				<DialogDescription className="text-center text-[#737373] text-sm leading-relaxed">
-					Ini adalah halaman untuk mengkustomisasi template gift kamu. Pilih
-					produk, desain template sesuai keinginan, dan kirim pesananmu!
+					Kamu bisa pilih desain sesuai keinginanmu, bisa tambah teks & foto.
 				</DialogDescription>
 			</DialogHeader>
 

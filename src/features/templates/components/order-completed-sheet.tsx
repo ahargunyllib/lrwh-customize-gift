@@ -34,10 +34,11 @@ export default function OrderCompletedSheet() {
 			</div>
 			<SheetHeader className="gap-4 sm:text-center">
 				<SheetTitle className="text-center text-[#1D2939] font-bold">
-					Pesanan berhasil dikirim!
+					Pesananmu di proses
 				</SheetTitle>
 				<SheetDescription className="text-center text-[#737373] text-sm">
-					Pesananmu akan segera diproses
+					Terima kasih, pesananmu sudah masuk dan di proses, akan segera
+					dikirim, ditunggu ya!
 				</SheetDescription>
 			</SheetHeader>
 			<SheetFooter className="flex flex-row gap-2">

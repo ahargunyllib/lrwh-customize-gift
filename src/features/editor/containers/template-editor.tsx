@@ -316,8 +316,9 @@ function ConfirmationDialog({
 							Ini Preview Template kamu
 						</SheetTitle>
 						<SheetDescription className="text-center text-[#737373] text-sm">
-							Yuk dicek dulu, kalau masih ada yang mau diedit, tinggal klik
-							tombol di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
+							Di cek dulu ya jangan sampai salah, karena hasil cetak sesuai
+							preview. Klik edit lagi kalau masih ada yang mau di ubah. Klik
+							simpan kalau sudah oke dan fix.
 						</SheetDescription>
 					</SheetHeader>
 					<div className="flex flex-col items-center justify-center py-4">
@@ -362,8 +363,9 @@ function ConfirmationDialog({
 						Ini Preview Template kamu
 					</DialogTitle>
 					<DialogDescription className="text-center text-[#737373] text-sm">
-						Yuk dicek dulu, kalau masih ada yang mau diedit, tinggal klik tombol
-						di bawah. Kalau udah oke, bisa lanjut ke produk berikutnya
+						Di cek dulu ya jangan sampai salah, karena hasil cetak sesuai
+						preview. Klik edit lagi kalau masih ada yang mau di ubah. Klik
+						simpan kalau sudah oke dan fix.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col items-center justify-center py-4">

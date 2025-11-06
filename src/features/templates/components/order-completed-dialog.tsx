@@ -34,10 +34,11 @@ export default function OrderCompletedDialog() {
 			</div>
 			<DialogHeader className="gap-4 sm:text-center">
 				<DialogTitle className="text-center text-[#1D2939] font-bold">
-					Pesanan berhasil dikirim!
+					Pesananmu di proses
 				</DialogTitle>
 				<DialogDescription className="text-center text-[#737373] text-sm">
-					Pesananmu akan segera diproses
+					Terima kasih, pesananmu sudah masuk dan di proses, akan segera
+					dikirim, ditunggu ya!
 				</DialogDescription>
 			</DialogHeader>
 			<DialogFooter className="flex flex-row gap-2">

@@ -140,7 +140,7 @@ export default function MainContainer() {
 								</h2>
 								<span className="text-xs text-[#475467]">
 									{hasFillAllTemplates ? (
-										"Preview semua template kamu yang kamu edit"
+										'Ini adalah hasil desain yang udah kamu buat, hasil cetak sama & sesuai dengan desain yang sudah kamu buat. Klik "hapus" untuk mengulangi dari awal'
 									) : (
 										<>
 											Pilih template yang kamu inginkan untuk{" "}
