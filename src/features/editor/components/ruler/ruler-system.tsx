@@ -9,7 +9,9 @@ interface RulerSystemProps {
 	canvasHeight: number;
 	canvasOffset: { x: number; y: number };
 	containerRef: React.RefObject<HTMLDivElement>;
-	onCreateGuide: (orientation: "horizontal" | "vertical") => void;
+	onCreateGuide: ({
+		orientation,
+	}: { orientation: "horizontal" | "vertical" }) => void;
 }
 
 export default function RulerSystem({
@@ -51,7 +53,7 @@ export default function RulerSystem({
 		orientation: "horizontal" | "vertical",
 	) => {
 		e.preventDefault();
-		onCreateGuide(orientation);
+		onCreateGuide({ orientation });
 	};
 
 	const canvasRect = getCanvasRect();
@@ -60,7 +62,7 @@ export default function RulerSystem({
 	return (
 		<>
 			{/* Corner square where rulers meet */}
-			<div
+			{/* <div
 				className="absolute bg-gray-300 border-r border-b border-gray-400 z-50 pointer-events-none"
 				style={{
 					width: rulerSize,
@@ -68,7 +70,7 @@ export default function RulerSystem({
 					left: 0,
 					top: 0,
 				}}
-			/>
+			/> */}
 
 			{/* Horizontal ruler bar (top) - fixed to viewport */}
 			<div
@@ -89,12 +91,12 @@ export default function RulerSystem({
 							rulerSize,
 					}}
 				>
-					<RulerBar
+					{/* <RulerBar
 						orientation="horizontal"
 						length={canvasWidth}
 						scale={scale}
 						onDragStart={(e) => handleRulerDragStart(e, "horizontal")}
-					/>
+					/> */}
 				</div>
 			</div>
 
@@ -117,12 +119,12 @@ export default function RulerSystem({
 							rulerSize,
 					}}
 				>
-					<RulerBar
+					{/* <RulerBar
 						orientation="vertical"
 						length={canvasHeight}
 						scale={scale}
 						onDragStart={(e) => handleRulerDragStart(e, "vertical")}
-					/>
+					/> */}
 				</div>
 			</div>
 		</>

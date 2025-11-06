@@ -21,17 +21,23 @@ export function useRulerGuides(
 	} | null>(null);
 
 	// Create new guide
-	const createGuide = useCallback((orientation: "horizontal" | "vertical") => {
-		const newGuide: Guide = {
-			id: uuidv4(),
+	const createGuide = useCallback(
+		({
 			orientation,
-			position: 0,
-		};
+			position,
+		}: { orientation: "horizontal" | "vertical"; position?: number }) => {
+			const newGuide: Guide = {
+				id: uuidv4(),
+				orientation,
+				position: position || 0,
+			};
 
-		setGuides((prev) => [...prev, newGuide]);
-		setIsDraggingNew({ orientation, id: newGuide.id });
-		return newGuide.id;
-	}, []);
+			setGuides((prev) => [...prev, newGuide]);
+			setIsDraggingNew({ orientation, id: newGuide.id });
+			return newGuide.id;
+		},
+		[],
+	);
 
 	// Update guide position
 	const updateGuidePosition = useCallback((id: string, position: number) => {

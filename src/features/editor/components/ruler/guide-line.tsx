@@ -1,5 +1,4 @@
 "use client";
-
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -11,6 +10,7 @@ interface GuideLineProps {
 	canvasSize: number;
 	onPositionChange: (id: string, position: number) => void;
 	onRemove: (id: string) => void;
+	reverseCount?: boolean;
 }
 
 export default function GuideLine({
@@ -21,8 +21,10 @@ export default function GuideLine({
 	canvasSize,
 	onPositionChange,
 	onRemove,
+	reverseCount = false,
 }: GuideLineProps) {
 	const [isDragging, setIsDragging] = useState(false);
+	const [isReversed, setIsReversed] = useState(reverseCount);
 
 	useEffect(() => {
 		if (!isDragging) return;
@@ -31,7 +33,6 @@ export default function GuideLine({
 			const canvas = document.querySelector('[data-canvas="true"]');
 			if (canvas) {
 				const canvasRect = canvas.getBoundingClientRect();
-
 				if (orientation === "horizontal") {
 					const newY = (e.clientY - canvasRect.top) / scale;
 					const constrainedY = Math.max(0, Math.min(canvasSize, newY));
@@ -57,8 +58,12 @@ export default function GuideLine({
 		};
 	}, [isDragging, orientation, scale, canvasSize, onPositionChange, id]);
 
-	const displayPosition = Math.round(position);
-	const cmPosition = (position / 40).toFixed(1);
+	const displayPosition = isReversed
+		? Math.round(canvasSize - position)
+		: Math.round(position);
+	const cmPosition = isReversed
+		? ((canvasSize - position) / 40).toFixed(1)
+		: (position / 40).toFixed(1);
 
 	if (orientation === "horizontal") {
 		return (
@@ -81,10 +86,20 @@ export default function GuideLine({
 				<div
 					className="absolute left-2 px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
 					style={{
-						top: position * scale - 20,
+						top: position * scale - 30,
+						...(isReversed
+							? { transform: "translateY(calc(-100% + 50px))" }
+							: {}),
 					}}
 				>
-					<span>
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+					<span
+						className="cursor-pointer hover:underline"
+						onClick={(e) => {
+							e.stopPropagation();
+							setIsReversed(!isReversed);
+						}}
+					>
 						{displayPosition}px ({cmPosition}cm)
 					</span>
 					<button
@@ -119,14 +134,23 @@ export default function GuideLine({
 					setIsDragging(true);
 				}}
 			/>
-
 			<div
-				className="absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
+				className="text-nowrap absolute top-2 px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded shadow-md z-50 flex items-center gap-1 pointer-events-auto"
 				style={{
 					left: position * scale + 5,
+					...(isReversed
+						? { transform: "translateX(calc(-100% - 10px))" }
+						: {}),
 				}}
 			>
-				<span>
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+				<span
+					className="cursor-pointer hover:underline"
+					onClick={(e) => {
+						e.stopPropagation();
+						setIsReversed(!isReversed);
+					}}
+				>
 					{displayPosition}px ({cmPosition}cm)
 				</span>
 				<button
