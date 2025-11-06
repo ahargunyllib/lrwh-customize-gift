@@ -1,20 +1,20 @@
 # LIST FONT
 
 ## Sambung/latin:
-- [ ] Anastasia Script
-- [ ] Aniyah
-- [ ] Beautiful
-- [ ] Brightwall
-- [ ] Farmhouse
-- [ ] Gistesy
-- [ ] Holiday
-- [ ] Intro Script
-- [ ] Pacifico
+- [x] [Anastasia Script](https://www.dafont.com/anastasia-script.font) (Personal Use)
+- [x] [Aniyah](https://www.dafont.com/aniyah.font) (Personal Use)
+- [x] [Beautiful](https://www.dafont.com/beautiful-6.font) (Personal Use)
+- [x] [Brightwall](https://www.dafont.com/brightwall.font) (Personal Use)
+- [x] [Farmhouse](https://www.dafont.com/farmhouse-13.font) (Personal Use)
+- [x] [Gistesy](https://www.dafont.com/gistesy.font) (Personal Use)
+- [x] [Holiday](https://www.dafont.com/holiday-4.font) (Personal Use)
+- [x] [Intro Script](https://www.downloadfonts.io/intro-script-font-free/) (Personal Use)
+- [x] [Pacifico](https://fonts.google.com/specimen/Pacifico) (SIL Open Font License, Version 1.1)
 - [x] [Pinyon Script](https://fonts.google.com/specimen/Pinyon+Script/license) (SIL Open Font License, Version 1.1)
-- [ ] Playlist Script
-- [ ] Retro Signature
-- [ ] Sallim
-- [ ] Sunset Hill
+- [x] [Playlist Script](https://www.dafontfree.io/playlist-font-free/) (Commercial Use)
+- [x] [Retro Signature](https://www.dafont.com/retro-signature.font) (Personal Use)
+- [x] [Sallim](https://www.dafont.com/sallim.font) (Personal Use)
+- [x] [Sunset Hill](https://www.dafont.com/sunsetstill.font) (Personal Use)
 
 ## Cartoon:
 - [x] [Bakso Sapi](https://www.dafont.com/bakso-sapi.font) (100% Free)
