@@ -22,6 +22,7 @@ import {
 	SheetTrigger,
 } from "@/shared/components/ui/sheet";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
+import { prepareCanvasForExport } from "@/shared/lib/elements";
 import { getTemplateForSize } from "@/shared/lib/template";
 import type { OrderProductVariant } from "@/shared/types";
 import type { TemplateData } from "@/shared/types/template";
@@ -188,7 +189,7 @@ function DownloadPreviewButton({
 	canvasRef: React.RefObject<HTMLDivElement>;
 	resetZoom: () => void;
 }) {
-	const { setActiveElement } = useTemplateContext();
+	const { setActiveElement, template } = useTemplateContext(); // Tambahkan template
 
 	return (
 		<Button
@@ -200,19 +201,30 @@ function DownloadPreviewButton({
 
 				await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
-				// Download preview image
 				if (!canvasRef.current) return;
-				const canvas = await html2canvas(canvasRef.current, {
-					backgroundColor: null,
-				});
-				const dataURL = canvas.toDataURL("image/png");
 
-				const link = document.createElement("a");
-				link.href = dataURL;
-				link.download = "template-preview.png";
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
+				const cleanup = await prepareCanvasForExport(
+					canvasRef.current,
+					template,
+				);
+
+				await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+				try {
+					const canvas = await html2canvas(canvasRef.current, {
+						backgroundColor: null,
+					});
+					const dataURL = canvas.toDataURL("image/png");
+
+					const link = document.createElement("a");
+					link.href = dataURL;
+					link.download = "template-preview.png";
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+				} finally {
+					cleanup();
+				}
 			}}
 		>
 			Download Preview
@@ -238,7 +250,7 @@ function ConfirmationDialog({
 	const {
 		order: { productVariants },
 	} = useTemplatesStore();
-	const { setActiveElement } = useTemplateContext();
+	const { setActiveElement, template } = useTemplateContext();
 
 	const hasMultipleProducts = useMemo(() => {
 		return (
@@ -250,25 +262,36 @@ function ConfirmationDialog({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const onSaveHandler = useCallback(async () => {
 		if (!canvasRef.current) return;
-		const { data: canvas, error } = await tryCatch(
-			html2canvas(canvasRef.current, {
-				backgroundColor: null,
-			}),
-		);
-		if (error) {
-			toast.error("Gagal menyimpan template, silakan coba lagi.", {
-				description: error.message || "Terjadi kesalahan",
-			});
-			return;
+
+		const cleanup = await prepareCanvasForExport(canvasRef.current, template);
+
+		await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+		try {
+			const { data: canvas, error } = await tryCatch(
+				html2canvas(canvasRef.current, {
+					backgroundColor: null,
+				}),
+			);
+
+			if (error) {
+				toast.error("Gagal menyimpan template, silakan coba lagi.", {
+					description: error.message || "Terjadi kesalahan",
+				});
+				return;
+			}
+
+			const dataURL = canvas.toDataURL("image/png");
+
+			saveTemplate(orderProductVariantId, dataURL);
+			toast.success("Template berhasil disimpan!");
+
+			setIsOpen(false);
+			router.back();
+		} finally {
+			cleanup();
 		}
-		const dataURL = canvas.toDataURL("image/png");
-
-		saveTemplate(orderProductVariantId, dataURL);
-		toast.success("Template berhasil disimpan!");
-
-		setIsOpen(false);
-		router.back();
-	}, [canvasRef, saveTemplate, orderProductVariantId]);
+	}, [canvasRef, saveTemplate, orderProductVariantId, template]);
 
 	const nextPaint = () =>
 		new Promise<void>((r) => requestAnimationFrame(() => r()));
@@ -294,13 +317,21 @@ function ConfirmationDialog({
 		await nextPaint();
 
 		if (canvasRef.current) {
-			const canvas = await html2canvas(canvasRef.current, {
-				backgroundColor: null,
-			});
-			const previewImage = document.getElementById(
-				"preview",
-			) as HTMLImageElement | null;
-			if (previewImage) previewImage.src = canvas.toDataURL("image/png");
+			const cleanup = await prepareCanvasForExport(canvasRef.current, template);
+
+			await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+			try {
+				const canvas = await html2canvas(canvasRef.current, {
+					backgroundColor: null,
+				});
+				const previewImage = document.getElementById(
+					"preview",
+				) as HTMLImageElement | null;
+				if (previewImage) previewImage.src = canvas.toDataURL("image/png");
+			} finally {
+				cleanup();
+			}
 		}
 	};
 
