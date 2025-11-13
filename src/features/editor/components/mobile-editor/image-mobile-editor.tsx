@@ -40,11 +40,8 @@ export default function ImageMobileEditor({
 	};
 
 	return (
-		<div
-			className="fixed left-1/2 bottom-4 z-10 flex flex-row gap-2 bg-white rounded-lg shadow-lg p-2"
-			style={{ transform: "translateX(-50%)" }}
-		>
-			<div className="flex gap-1">
+		<div className="fixed bottom-4 z-10 flex flex-row gap-2 bg-white rounded-lg shadow-lg p-2 left-1/2 -translate-x-1/2">
+			<div className="flex grow gap-1">
 				<input
 					type="file"
 					accept="image/*"
@@ -56,13 +53,9 @@ export default function ImageMobileEditor({
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<DialogTrigger asChild>
-								<Button
-									size="icon"
-									variant="ghost"
-									className="size-10"
-									aria-label="Tips"
-								>
-									<HelpCircle className="size-6" />
+								<Button variant="ghost" aria-label="Tips">
+									<HelpCircle className="size-5" />
+									Tips
 								</Button>
 							</DialogTrigger>
 						</TooltipTrigger>
@@ -89,13 +82,12 @@ export default function ImageMobileEditor({
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
-							size="icon"
 							onClick={toggleSidebar}
 							variant="ghost"
-							className="size-10"
 							aria-label="Edit Konten"
 						>
-							<Pen className="size-6" />
+							<Pen className="size-5" />
+							Edit
 						</Button>
 					</TooltipTrigger>
 					<TooltipContent>
@@ -106,13 +98,12 @@ export default function ImageMobileEditor({
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Button
-								size="icon"
 								onClick={() => inputRef.current?.click()}
 								variant="ghost"
-								className="size-10"
 								aria-label="Ganti Gambar"
 							>
-								<ImagesIcon className="size-6" />
+								<ImagesIcon className="size-5" />
+								Ganti
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>
