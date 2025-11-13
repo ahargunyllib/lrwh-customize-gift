@@ -103,7 +103,7 @@ export default function TemplateEditor({
 		>
 			<div className="flex h-screen flex-col">
 				{username && orderNumber ? (
-					<header className="sticky top-0 bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
+					<header className="fixed top-0 z-[999] w-full bg-white px-6 md:px-14 py-4 flex justify-between items-center border-b border-[#F2F4F7]">
 						<div className="space-y-1">
 							<h1 className="text-xl font-medium">Hai, {username}!</h1>
 							<p className="text-xs text-[#98A2B3]">Order ID : {orderNumber}</p>
