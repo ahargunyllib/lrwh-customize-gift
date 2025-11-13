@@ -74,11 +74,16 @@ export default function ImageMobileEditor({
 						<DialogHeader>
 							<DialogTitle>Tips Menggunakan Editor</DialogTitle>
 						</DialogHeader>
-						<ul className="list-disc list-inside text-sm text-gray-600">
+						<ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
 							<li>Tekan lalu geser untuk memindahkan elemen.</li>
 							<li>Tekan dua kali pada elemen untuk mengeditnya.</li>
 							<li>
 								Tekan ikon pensil pada pojok bawah untuk membuka sidebar editor.
+							</li>
+							<li>Cubit dengan dua jari untuk zoom in/out canvas.</li>
+							<li>
+								Geser dengan satu jari sambil menekan tombol spasi atau Alt/Cmd
+								untuk menggeser posisi canvas.
 							</li>
 							<li>
 								Gunakan kontrol zoom untuk memperbesar atau memperkecil canvas.

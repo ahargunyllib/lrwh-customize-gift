@@ -84,7 +84,7 @@ export default function TemplateEditor({
 	);
 
 	// Pass handleZoom to useCanvasGesture
-	const { canvasOffset } = useCanvasGesture(handleZoom);
+	const { canvasOffset, bindGesture } = useCanvasGesture(handleZoom);
 
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const toggleSidebar = () => setSidebarOpen((prev) => !prev);
@@ -142,8 +142,9 @@ export default function TemplateEditor({
 					<div
 						ref={canvasContainerRef}
 						className="flex-1 overflow-hidden bg-gray-100 p-8 flex items-center justify-center relative"
+						{...bindGesture}
 						style={{
-							touchAction: "pan-x pan-y", // Allow panning but prevent zoom
+							touchAction: "none",
 							userSelect: "none",
 							WebkitUserSelect: "none",
 						}}
