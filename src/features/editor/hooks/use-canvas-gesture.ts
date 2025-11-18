@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * Canvas gesture handling hook
+ *
+ * Desktop gestures:
+ * - Mouse wheel: Zoom in/out
+ * - Touchpad pinch (Ctrl+scroll): Zoom in/out
+ * - Alt/Cmd/Ctrl + drag: Pan the canvas
+ * - Middle mouse button drag: Pan the canvas
+ *
+ * Mobile gestures:
+ * - Pinch (two fingers): Zoom in/out
+ * - Single finger drag: Pan the canvas
+ */
 export function useCanvasGesture(onZoom?: (delta: number) => void) {
 	const [isPanning, setIsPanning] = useState(false);
 	const [panStart, setPanStart] = useState({ x: 0, y: 0 });
@@ -49,7 +62,10 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 	const handleCanvasMouseDown = (
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 	) => {
-		if (e.button === 1 || (e.button === 0 && e.altKey)) {
+		if (
+			e.button === 1 ||
+			(e.button === 0 && (e.altKey || e.metaKey || e.ctrlKey))
+		) {
 			e.preventDefault();
 			setIsPanning(true);
 			setPanStart({
@@ -63,6 +79,7 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 	) => {
 		if (isPanning) {
+			document.body.style.cursor = "grabbing";
 			setCanvasOffset({
 				x: e.clientX - panStart.x,
 				y: e.clientY - panStart.y,
@@ -72,12 +89,22 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 
 	const handleCanvasMouseUp = () => {
 		setIsPanning(false);
+		document.body.style.cursor = "default";
 	};
 
 	const handleCanvasWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		const delta = e.deltaY > 0 ? -0.02 : 0.02; // Reduced from 0.1 to 0.02
-		debouncedZoom(delta);
+		e.preventDefault(); // Always prevent default to block browser zoom
+
+		// Touchpad pinch zoom (Ctrl+wheel) or regular mouse wheel
+		if (e.ctrlKey) {
+			// Touchpad pinch: use larger delta for direct zoom response
+			const delta = e.deltaY > 0 ? -0.05 : 0.05;
+			if (onZoom) onZoom(delta); // Direct call for instant response
+		} else {
+			// Regular mouse wheel: smaller delta with debouncing
+			const delta = e.deltaY > 0 ? -0.02 : 0.02;
+			debouncedZoom(delta);
+		}
 	};
 
 	const handleCanvasTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -133,12 +160,13 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 			const currentDistance = getTouchDistance(
 				e.touches as unknown as TouchList,
 			);
-			if (initialTouchDistance > 0) {
+			if (initialTouchDistance > 0 && onZoom) {
 				const distanceRatio = currentDistance / initialTouchDistance;
-				const zoomDelta = (distanceRatio - 1) * 0.1;
+				const zoomDelta = (distanceRatio - 1) * 0.5; // Increased sensitivity
 
-				if (Math.abs(zoomDelta) > 0.005) {
-					debouncedZoom(zoomDelta);
+				if (Math.abs(zoomDelta) > 0.001) {
+					// Lower threshold for smoother zoom
+					onZoom(zoomDelta); // Direct call for instant response
 					setInitialTouchDistance(currentDistance);
 				}
 			}
@@ -195,10 +223,39 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 			document.head.appendChild(viewportMeta);
 		}
 
+		// Global mouse event handlers to fix panning outside canvas
+		const handleGlobalMouseMove = (e: MouseEvent) => {
+			if (isPanning) {
+				setCanvasOffset({
+					x: e.clientX - panStart.x,
+					y: e.clientY - panStart.y,
+				});
+			}
+		};
+
+		const handleGlobalMouseUp = () => {
+			if (isPanning) {
+				setIsPanning(false);
+			}
+		};
+
+		// Prevent browser zoom from touchpad pinch (Ctrl+wheel)
+		const handleGlobalWheel = (e: WheelEvent) => {
+			if (e.ctrlKey) {
+				e.preventDefault(); // Block browser pinch zoom
+			}
+		};
+
+		// Add event listeners
+		document.addEventListener("mousemove", handleGlobalMouseMove);
+		document.addEventListener("mouseup", handleGlobalMouseUp);
+		document.addEventListener("wheel", handleGlobalWheel, { passive: false });
+
 		// Cleanup on unmount
 		return () => {
 			document.body.style.overflow = originalBodyOverflow;
 			document.documentElement.style.overflow = originalDocumentOverflow;
+			document.body.style.cursor = "default";
 
 			// Restore original viewport if it existed
 			if (originalViewport) {
@@ -209,8 +266,13 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 			if (zoomTimeoutRef.current) {
 				clearTimeout(zoomTimeoutRef.current);
 			}
+
+			// Remove event listeners
+			document.removeEventListener("mousemove", handleGlobalMouseMove);
+			document.removeEventListener("mouseup", handleGlobalMouseUp);
+			document.removeEventListener("wheel", handleGlobalWheel);
 		};
-	}, []);
+	}, [isPanning, panStart]);
 
 	const handlers = {
 		onMouseDown: handleCanvasMouseDown,
