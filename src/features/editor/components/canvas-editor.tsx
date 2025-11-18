@@ -375,6 +375,53 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 						? element.style.padding
 						: Number.parseFloat(element.style.padding || "8");
 
+				// Handle curved text
+				if (element.style.curved && element.style.curveRadius) {
+					const curveRadius = element.style.curveRadius;
+					const curveDirection = element.style.curveDirection || "up";
+					const text = element.content;
+					const chars = text.split("");
+					const totalAngle = element.width / curveRadius;
+					const startAngle =
+						curveDirection === "up"
+							? -totalAngle / 2
+							: Math.PI + totalAngle / 2;
+
+					ctx.save();
+					for (let i = 0; i < chars.length; i++) {
+						const char = chars[i];
+						const charWidth = ctx.measureText(char).width;
+						const angle = startAngle + (i * totalAngle) / chars.length;
+
+						ctx.save();
+						ctx.translate(
+							element.position.x + element.width / 2,
+							element.position.y,
+						);
+						ctx.rotate(angle);
+						ctx.translate(
+							0,
+							curveDirection === "up" ? -curveRadius : curveRadius,
+						);
+						if (curveDirection === "down") {
+							ctx.rotate(Math.PI);
+						}
+
+						// Draw stroke first, then fill
+						if (ctx.lineWidth > 0) {
+							ctx.strokeText(char, -charWidth / 2, 0);
+						}
+						ctx.fillText(char, -charWidth / 2, 0);
+
+						ctx.restore();
+					}
+					ctx.restore();
+					ctx.restore();
+					return;
+				}
+
+				// Normal text
+
 				const lines = element.content.split("\n");
 				const lineHeight =
 					typeof element.style.lineHeight === "string"
@@ -530,13 +577,13 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 
 				ctx.save();
 
-				// Selection box
+				// Selection box (scale-independent line width)
 				ctx.strokeStyle = "#2563eb";
-				ctx.lineWidth = 2;
+				ctx.lineWidth = 2 / scale;
 				ctx.strokeRect(pos.x, pos.y, width, height);
 
-				// Resize handles
-				const handleSize = 8;
+				// Resize handles (scale-independent)
+				const handleSize = 8 / scale;
 				const handles = [
 					{ x: pos.x, y: pos.y },
 					{ x: pos.x + width / 2, y: pos.y },
@@ -550,7 +597,7 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 
 				ctx.fillStyle = "#ffffff";
 				ctx.strokeStyle = "#2563eb";
-				ctx.lineWidth = 2;
+				ctx.lineWidth = 2 / scale;
 
 				for (const handle of handles) {
 					ctx.fillRect(
@@ -569,7 +616,7 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 
 				ctx.restore();
 			},
-			[],
+			[scale],
 		);
 
 		// Main render function
@@ -935,10 +982,10 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 					const textElement = clicked.element as TextElement;
 					setEditingTextId(textElement.id);
 					setTextInputPosition({
-						x: textElement.position.x * scale,
-						y: textElement.position.y * scale,
-						width: textElement.width * scale,
-						height: textElement.height * scale,
+						x: textElement.position.x,
+						y: textElement.position.y,
+						width: textElement.width,
+						height: textElement.height,
 					});
 				}
 			},
@@ -1002,7 +1049,14 @@ const CanvasEditor = forwardRef<HTMLCanvasElement, CanvasEditorProps>(
 							top: textInputPosition.y,
 							width: textInputPosition.width,
 							height: textInputPosition.height,
-							fontSize: `${(Number.parseFloat(String(template.texts.find((t) => t.id === editingTextId)?.style.fontSize)) || 16) * scale}px`,
+							fontSize: `${Number.parseFloat(String(template.texts.find((t) => t.id === editingTextId)?.style.fontSize)) || 16}px`,
+							background: "transparent",
+							WebkitTextStroke:
+								template.texts.find((t) => t.id === editingTextId)?.style
+									.WebkitTextStroke ||
+								template.texts.find((t) => t.id === editingTextId)?.style
+									.textStroke ||
+								"none",
 							fontFamily:
 								template.texts.find((t) => t.id === editingTextId)?.style
 									.fontFamily || "Arial",
