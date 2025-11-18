@@ -69,7 +69,7 @@ export function useTemplatePersistence(
 					}
 
 					toast.success("Template created successfully");
-					router.replace("/");
+					router.back();
 					return;
 				},
 			});
@@ -82,7 +82,7 @@ export function useTemplatePersistence(
 					}
 
 					toast.success("Template updated successfully");
-					router.replace("/");
+					router.back();
 					return;
 				},
 			});
