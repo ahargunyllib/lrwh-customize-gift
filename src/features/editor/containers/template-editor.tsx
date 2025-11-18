@@ -38,7 +38,7 @@ import {
 import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import { tryCatch } from "../../../shared/lib/try-catch";
-import EditorCanvas from "../components/editor-canvas";
+import CanvasEditor from "../components/canvas-editor";
 import ImageMobileEditor from "../components/mobile-editor/image-mobile-editor";
 import EditorSidebar from "../components/sidebar/sidebar-editor";
 import ZoomControl from "../components/zoom-control";
@@ -75,7 +75,7 @@ export default function TemplateEditor({
 
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
-	const canvasRef = useRef<HTMLDivElement>(null!);
+	const canvasRef = useRef<HTMLCanvasElement>(null!);
 
 	const { scale, zoomIn, zoomOut, resetZoom, handleZoom } = useCanvasScale(
 		canvasContainerRef as React.RefObject<HTMLDivElement>,
@@ -156,7 +156,7 @@ export default function TemplateEditor({
 								transition: "transform 0.1s ease-out",
 							}}
 						>
-							<EditorCanvas
+							<CanvasEditor
 								ref={canvasRef}
 								template={editor.template}
 								setTemplate={editor.setTemplate}
@@ -186,7 +186,7 @@ function DownloadPreviewButton({
 	canvasRef,
 	resetZoom,
 }: {
-	canvasRef: React.RefObject<HTMLDivElement>;
+	canvasRef: React.RefObject<HTMLCanvasElement>;
 	resetZoom: () => void;
 }) {
 	const { setActiveElement, template } = useTemplateContext();
@@ -226,7 +226,7 @@ function ConfirmationDialog({
 	orderProductVariantId,
 	resetZoom,
 }: {
-	canvasRef: React.RefObject<HTMLDivElement>;
+	canvasRef: React.RefObject<HTMLCanvasElement>;
 	orderProductVariantId: string;
 	resetZoom: () => void;
 }) {

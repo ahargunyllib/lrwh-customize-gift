@@ -1,1 +1,4 @@
-export type ActiveElement = { id: string; type: string } | null;
+export type ActiveElement = {
+	id: string;
+	type: "image" | "text" | "shape" | "line";
+} | null;

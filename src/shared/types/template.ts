@@ -1,6 +1,8 @@
 import type { LineElement } from "./element/line";
 import type { ShapeElement } from "./element/shape";
 
+export type { LineElement, ShapeElement };
+
 export interface Position {
 	x: number;
 	y: number;
