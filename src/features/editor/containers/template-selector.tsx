@@ -184,7 +184,7 @@ function TemplateCard({ template }: { template: TemplateData }) {
 				</div>
 			</CardContent>
 			<CardFooter className="flex flex-col gap-2">
-				<h3 className="text-lg font-medium mb-2">{template.name} (Custom)</h3>
+				<h3 className="text-lg font-medium mb-2">{template.name}</h3>
 				<div className="flex gap-2">
 					<Button
 						className="flex-1"
