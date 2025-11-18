@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Desktop gestures:
  * - Mouse wheel: Zoom in/out
  * - Touchpad pinch (Ctrl+scroll): Zoom in/out
- * - Space + drag: Pan the canvas (like Figma/Photoshop)
  * - Alt/Cmd/Ctrl + drag: Pan the canvas
  * - Middle mouse button drag: Pan the canvas
  *
@@ -18,7 +17,6 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 	const [isPanning, setIsPanning] = useState(false);
 	const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 	const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
-	const [isSpacePressed, setIsSpacePressed] = useState(false);
 
 	const [initialTouchDistance, setInitialTouchDistance] = useState(0);
 	const [isZooming, setIsZooming] = useState(false);
@@ -66,7 +64,7 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 	) => {
 		if (
 			e.button === 1 ||
-			(e.button === 0 && (e.altKey || e.metaKey || e.ctrlKey || isSpacePressed))
+			(e.button === 0 && (e.altKey || e.metaKey || e.ctrlKey))
 		) {
 			e.preventDefault();
 			setIsPanning(true);
@@ -91,7 +89,7 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 
 	const handleCanvasMouseUp = () => {
 		setIsPanning(false);
-		document.body.style.cursor = isSpacePressed ? "grab" : "default";
+		document.body.style.cursor = "default";
 	};
 
 	const handleCanvasWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -225,22 +223,6 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 			document.head.appendChild(viewportMeta);
 		}
 
-		// Keyboard event handlers for spacebar
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.code === "Space" && !e.repeat) {
-				e.preventDefault();
-				setIsSpacePressed(true);
-				document.body.style.cursor = "grab";
-			}
-		};
-
-		const handleKeyUp = (e: KeyboardEvent) => {
-			if (e.code === "Space") {
-				setIsSpacePressed(false);
-				document.body.style.cursor = "default";
-			}
-		};
-
 		// Global mouse event handlers to fix panning outside canvas
 		const handleGlobalMouseMove = (e: MouseEvent) => {
 			if (isPanning) {
@@ -265,8 +247,6 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 		};
 
 		// Add event listeners
-		document.addEventListener("keydown", handleKeyDown);
-		document.addEventListener("keyup", handleKeyUp);
 		document.addEventListener("mousemove", handleGlobalMouseMove);
 		document.addEventListener("mouseup", handleGlobalMouseUp);
 		document.addEventListener("wheel", handleGlobalWheel, { passive: false });
@@ -288,8 +268,6 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 			}
 
 			// Remove event listeners
-			document.removeEventListener("keydown", handleKeyDown);
-			document.removeEventListener("keyup", handleKeyUp);
 			document.removeEventListener("mousemove", handleGlobalMouseMove);
 			document.removeEventListener("mouseup", handleGlobalMouseUp);
 			document.removeEventListener("wheel", handleGlobalWheel);
@@ -309,7 +287,6 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 	return {
 		isPanning,
 		isZooming,
-		isSpacePressed,
 		canvasOffset,
 		bindGesture: handlers,
 	};

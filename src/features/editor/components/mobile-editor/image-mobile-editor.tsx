@@ -82,8 +82,8 @@ export default function ImageMobileEditor({
 							</li>
 							<li>Cubit dengan dua jari untuk zoom in/out canvas.</li>
 							<li>
-								Geser dengan satu jari sambil menekan tombol spasi atau Alt/Cmd
-								untuk menggeser posisi canvas.
+								Geser dengan satu jari sambil menekan tombol atau Alt/Cmd untuk
+								menggeser posisi canvas.
 							</li>
 							<li>
 								Gunakan kontrol zoom untuk memperbesar atau memperkecil canvas.
