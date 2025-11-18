@@ -109,7 +109,7 @@ export interface TemplateData {
 export type TemplateEntity = {
 	id: string;
 	name: string;
-	productVariantId: string;
+	product_variant_id: string;
 	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
 };
 

@@ -127,7 +127,7 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 	const template: TemplateData = {
 		id: templates[0].id,
 		name: templates[0].name,
-		productVariantId: templates[0].productVariantId,
+		productVariantId: templates[0].product_variant_id,
 		...templates[0].data,
 		images: templates[0].data?.images || [],
 		texts: templates[0].data?.texts || [],
