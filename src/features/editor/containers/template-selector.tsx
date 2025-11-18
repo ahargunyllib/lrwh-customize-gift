@@ -41,7 +41,11 @@ export default function TemplateSelector() {
 	const [page, setPage] = useState(currentPage);
 
 	// const [selectedSize, setSelectedSize] = useState(printSizes[1]);
-	const { data: res, isLoading, error } = useGetTemplatesQuery({ page });
+	const {
+		data: res,
+		isLoading,
+		error,
+	} = useGetTemplatesQuery({ page, limit: 9 });
 	const session = useSessionQuery();
 	const { mutate: logout } = useLogoutMutation();
 

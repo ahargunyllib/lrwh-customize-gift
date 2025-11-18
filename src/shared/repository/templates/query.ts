@@ -13,6 +13,7 @@ import type { CreateTemplateRequest } from "./dto";
 export const useGetTemplatesQuery = (query?: {
 	productVariantId?: ProductVariant["id"];
 	page?: number;
+	limit?: number;
 }) => {
 	return useQuery({
 		queryKey: ["templates", query],

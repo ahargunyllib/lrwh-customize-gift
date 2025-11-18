@@ -11,8 +11,9 @@ import type { CreateTemplateRequest, UpdateTemplateRequest } from "./dto";
 export const getTemplates = async (query?: {
 	productVariantId?: ProductVariant["id"];
 	page?: number;
+	limit?: number;
 }) => {
-	const LIMIT = 10;
+	const LIMIT = query?.limit || 10;
 	const page = query?.page || 1;
 
 	const { data: templates, error } = await tryCatch(
