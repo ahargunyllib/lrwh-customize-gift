@@ -4,7 +4,7 @@ import { db } from "@/server/db";
 import { templatesTable } from "@/server/db/schema/templates";
 import { tryCatch } from "@/shared/lib/try-catch";
 import type { TemplateData, TemplateEntity } from "@/shared/types/template";
-import { count, eq, sql } from "drizzle-orm";
+import { asc, count, desc, eq, sql } from "drizzle-orm";
 import type { Pagination, ProductVariant } from "../../types";
 import type { CreateTemplateRequest, UpdateTemplateRequest } from "./dto";
 
@@ -25,7 +25,8 @@ export const getTemplates = async (query?: {
 					: undefined,
 			)
 			.limit(LIMIT)
-			.offset((page - 1) * LIMIT),
+			.offset((page - 1) * LIMIT)
+			.orderBy(asc(templatesTable.name)),
 	);
 	if (error) {
 		console.error(error);
