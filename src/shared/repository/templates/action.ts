@@ -67,8 +67,8 @@ export const getTemplates = async (query?: {
 			id: template.id,
 			name: template.name,
 			productVariantId: template.productVariantId,
-      previewUrl: template.previewUrl,
-      previewFile: null,
+			previewUrl: template.previewUrl,
+			previewFile: null,
 			...template.data,
 			images: template.data?.images || [],
 			texts: template.data?.texts || [],
@@ -133,8 +133,8 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 		id: templates[0].id,
 		name: templates[0].name,
 		productVariantId: templates[0].product_variant_id,
-    previewUrl: templates[0].preview_url,
-    previewFile: null,
+		previewUrl: templates[0].preview_url,
+		previewFile: null,
 		...templates[0].data,
 		images: templates[0].data?.images || [],
 		texts: templates[0].data?.texts || [],
@@ -175,16 +175,24 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		const { data: uploadRes, error: uploadErr } = await tryCatch(
 			uploadFileToS3(req.previewFile),
 		);
-    if (uploadErr) {
-      console.error(uploadErr);
-      return {
-        success: false,
-        error: uploadErr.message,
-        message: "Failed to upload preview file",
-      };
-    }
+		if (uploadErr) {
+			console.error(uploadErr);
+			return {
+				success: false,
+				error: uploadErr.message,
+				message: "Failed to upload preview file",
+			};
+		}
 
-    previewUrl = uploadRes.data?.fileUrl ?? null;
+		if (!uploadRes.success) {
+			return {
+				success: false,
+				error: new Error(uploadRes.message || "Upload failed"),
+				message: "Failed to upload preview file",
+			};
+		}
+
+		previewUrl = uploadRes.data?.fileUrl ?? null;
 	}
 
 	const queryBuilder = sql`
@@ -227,9 +235,9 @@ export const updateTemplate = async (
 		layer: req.layer,
 	};
 
-  let previewUrl: string | null = req.previewUrl || null;
+	let previewUrl: string | null = req.previewUrl || null;
 	if (req.previewFile) {
-    console.log("Uploading new preview file...");
+		console.log("Uploading new preview file...");
 		const { data: uploadRes, error: uploadErr } = await tryCatch(
 			uploadFileToS3(req.previewFile),
 		);
@@ -241,12 +249,20 @@ export const updateTemplate = async (
 				message: "Failed to upload preview file",
 			};
 		}
-    console.log("Preview file uploaded:", uploadRes);
+		console.log("Preview file uploaded:", uploadRes);
+
+		if (!uploadRes.success) {
+			return {
+				success: false,
+				error: new Error(uploadRes.message || "Upload failed"),
+				message: "Failed to upload preview file",
+			};
+		}
 
 		previewUrl = uploadRes.data?.fileUrl ?? null;
 	}
 
-  console.log("Updating template with previewUrl:", previewUrl);
+	console.log("Updating template with previewUrl:", previewUrl);
 
 	const queryBuilder = sql`
     update templates
