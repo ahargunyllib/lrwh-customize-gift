@@ -232,12 +232,10 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						/>
 					</div>
 				</div>
-
-				{/* Text Outline Settings */}
+				{/* 
 				<div className="space-y-2 col-span-2 border-t pt-2">
 					<Label className="text-sm font-medium">Text Outline</Label>
 
-					{/* Enable Outline */}
 					<div className="flex items-center justify-between">
 						<Label className="text-xs">Enable Outline</Label>
 						<Switch
@@ -261,7 +259,6 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						/>
 					</div>
 
-					{/* Outline Width */}
 					{txt.style.textStroke !== "none" && txt.style.textStroke && (
 						<>
 							<div className="space-y-0.5">
@@ -292,7 +289,6 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 								/>
 							</div>
 
-							{/* Outline Color */}
 							<div className="space-y-0.5">
 								<Label className="text-xs">Outline Color</Label>
 								<div className="flex items-center gap-2">
@@ -335,7 +331,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 							</div>
 						</>
 					)}
-				</div>
+				</div> */}
 
 				{/* Letter Spacing */}
 				<div className="space-y-0.5 col-span-2">

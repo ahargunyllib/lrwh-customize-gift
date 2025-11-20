@@ -334,8 +334,8 @@ export default function TemplateText({
 				? "normal"
 				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
-		textStroke: textStroke || WebkitTextStroke || undefined,
-		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
+		// textStroke: textStroke || WebkitTextStroke || undefined,
+		// WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 		zIndex: layerIndex,
 		display: "block",
 	});
@@ -363,8 +363,8 @@ export default function TemplateText({
 				: `${Number.parseFloat(String(letterSpacing || "0")) * scale}px`,
 		boxSizing: "border-box",
 		overflow: "hidden",
-		textStroke: textStroke || WebkitTextStroke || undefined,
-		WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
+		// textStroke: textStroke || WebkitTextStroke || undefined,
+		// WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 		zIndex: layerIndex,
 	});
 
