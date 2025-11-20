@@ -102,7 +102,7 @@ export default function TemplateLine(props: Props) {
 	const { startLineDrag, startEndpointDrag } = useLineTransform({
 		start: props.element.startPoint,
 		end: props.element.endPoint,
-		scale: props.scale, // Pass scale to the hook
+		scale: props.scale,
 		onChange: (points) => {
 			props.onUpdate({
 				startPoint: points.start,
@@ -112,8 +112,6 @@ export default function TemplateLine(props: Props) {
 	});
 
 	const element = props.element;
-
-	// Start and end points
 	const startX = element.startPoint?.x ?? 0;
 	const startY = element.startPoint?.y ?? 0;
 	const endX = element.endPoint?.x ?? 0;
@@ -132,45 +130,53 @@ export default function TemplateLine(props: Props) {
 	const lineStyle = element.variant || "line-medium";
 	const styleInfo = LINE_STYLES[lineStyle] || LINE_STYLES["line-medium"];
 
-	// Scale
 	const scale = props.scale ?? 1;
 
-	// Calculate trimming distances using scaled strokeWidth to match rendered tips
+	// Calculate padding needed for tips and stroke
 	const startTipSize = getTipSize(startTip, strokeWidth * scale);
 	const endTipSize = getTipSize(endTip, strokeWidth * scale);
+	const maxTipSize = Math.max(startTipSize, endTipSize);
+	const padding = Math.max(maxTipSize, strokeWidth * scale * 2, 10);
 
-	// Calculate unit vector for the line direction
+	// Calculate bounding box
+	const minX = Math.min(0, dx * scale);
+	const maxX = Math.max(0, dx * scale);
+	const minY = Math.min(0, dy * scale);
+	const maxY = Math.max(0, dy * scale);
+
+	const svgWidth = maxX - minX + padding * 2;
+	const svgHeight = maxY - minY + padding * 2;
+	const offsetX = -minX + padding;
+	const offsetY = -minY + padding;
+
+	// Trimming
 	const unitX = length > 0 ? dx / length : 0;
 	const unitY = length > 0 ? dy / length : 0;
-
-	// Calculate trimmed line coordinates (in scaled space)
 	const trimmedStartX = startTipSize * unitX;
 	const trimmedStartY = startTipSize * unitY;
 	const trimmedEndX = dx * scale - endTipSize * unitX;
 	const trimmedEndY = dy * scale - endTipSize * unitY;
 
 	return (
-		// Container for the line element
 		<div
 			className={`line-element ${props.isElementActive ? "active" : ""}`}
 			style={{
 				position: "absolute",
-				transform: `translate(${startX * scale}px, ${startY * scale}px)`,
-				width: `${Math.abs(dx) * scale}px`,
-				height: `${strokeWidth * scale}px`,
+				transform: `translate(${startX * scale + minX - padding}px, ${startY * scale + minY - padding}px)`,
+				width: `${svgWidth}px`,
+				height: `${svgHeight}px`,
 				pointerEvents: "none",
 				zIndex: props.layerIndex,
 			}}
 		>
 			<svg
-				width="100%"
-				height="100%"
-				style={{ overflow: "visible", pointerEvents: "auto" }}
+				width={svgWidth}
+				height={svgHeight}
+				style={{ pointerEvents: "auto" }}
 			>
 				<title>{"Line Element"}</title>
-				<g>
-					{/* Base line (invisible, for clicking) */}
-					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+				<g transform={`translate(${offsetX}, ${offsetY})`}>
+					{/* Rest of the SVG content remains the same */}
 					<line
 						x1={0}
 						y1={0}
@@ -178,9 +184,7 @@ export default function TemplateLine(props: Props) {
 						y2={dy * scale}
 						stroke="transparent"
 						strokeWidth={Math.max(strokeWidth * 3 * scale, 10)}
-						style={{
-							cursor: props.isPreview ? "auto" : "pointer",
-						}}
+						style={{ cursor: props.isPreview ? "auto" : "pointer" }}
 						onClick={(e) => {
 							e.stopPropagation();
 							props.toggleActive(e);
@@ -191,12 +195,7 @@ export default function TemplateLine(props: Props) {
 						}}
 					/>
 
-					<g
-						style={{
-							opacity: element.opacity / 100,
-						}}
-					>
-						{/* Visible line (trimmed if tips are present) */}
+					<g style={{ opacity: element.opacity / 100 }}>
 						<line
 							x1={trimmedStartX}
 							y1={trimmedStartY}
@@ -208,7 +207,6 @@ export default function TemplateLine(props: Props) {
 							style={{ pointerEvents: "none" }}
 						/>
 
-						{/* Line Tip */}
 						{renderLineTip({
 							tip: startTip,
 							isStart: true,
@@ -229,10 +227,8 @@ export default function TemplateLine(props: Props) {
 						})}
 					</g>
 
-					{/* Active Selection - Keep handles outside clipping */}
 					{props.isElementActive && (
 						<>
-							{/* dash line for showing selection */}
 							<line
 								x1={trimmedStartX}
 								y1={trimmedStartY}
@@ -243,7 +239,6 @@ export default function TemplateLine(props: Props) {
 										? "#1E88E5"
 										: "#fff"
 								}
-								// max width is 10px
 								strokeWidth={Math.min(strokeWidth * scale * 0.5, 2)}
 								strokeDasharray="4,4"
 								style={{ pointerEvents: "none" }}
@@ -261,7 +256,6 @@ export default function TemplateLine(props: Props) {
 									startEndpointDrag("start")(e);
 								}}
 							/>
-							{/* dash line */}
 							<circle
 								cx={dx * scale}
 								cy={dy * scale}
