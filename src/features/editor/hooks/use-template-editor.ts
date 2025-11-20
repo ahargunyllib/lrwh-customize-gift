@@ -17,6 +17,8 @@ export function useTemplateEditor(initial?: TemplateData) {
 		initial ?? {
 			id: uuidv4(),
 			name: "Custom Template",
+      previewUrl: null,
+      previewFile: null,
 			width: 10 * 40,
 			height: 20 * 40,
 			backgroundColor: "#ffffff",

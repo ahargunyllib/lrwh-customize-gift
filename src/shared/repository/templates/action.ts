@@ -4,7 +4,8 @@ import { db } from "@/server/db";
 import { templatesTable } from "@/server/db/schema/templates";
 import { tryCatch } from "@/shared/lib/try-catch";
 import type { TemplateData, TemplateEntity } from "@/shared/types/template";
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { asc, count, eq, sql } from "drizzle-orm";
+import { uploadFileToS3 } from "../../../server/s3";
 import type { Pagination, ProductVariant } from "../../types";
 import type { CreateTemplateRequest, UpdateTemplateRequest } from "./dto";
 
@@ -66,6 +67,8 @@ export const getTemplates = async (query?: {
 			id: template.id,
 			name: template.name,
 			productVariantId: template.productVariantId,
+			previewUrl: template.previewUrl,
+			previewFile: null,
 			...template.data,
 			images: template.data?.images || [],
 			texts: template.data?.texts || [],
@@ -130,6 +133,8 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 		id: templates[0].id,
 		name: templates[0].name,
 		productVariantId: templates[0].product_variant_id,
+		previewUrl: templates[0].preview_url,
+		previewFile: null,
 		...templates[0].data,
 		images: templates[0].data?.images || [],
 		texts: templates[0].data?.texts || [],
@@ -165,9 +170,34 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		layer: req.layer,
 	};
 
+	let previewUrl: string | null = null;
+	if (req.previewFile) {
+		const { data: uploadRes, error: uploadErr } = await tryCatch(
+			uploadFileToS3(req.previewFile),
+		);
+		if (uploadErr) {
+			console.error(uploadErr);
+			return {
+				success: false,
+				error: uploadErr.message,
+				message: "Failed to upload preview file",
+			};
+		}
+
+		if (!uploadRes.success) {
+			return {
+				success: false,
+				error: new Error(uploadRes.message || "Upload failed"),
+				message: "Failed to upload preview file",
+			};
+		}
+
+		previewUrl = uploadRes.data?.fileUrl ?? null;
+	}
+
 	const queryBuilder = sql`
-    insert into templates (id, name, product_variant_id, data)
-    values (${req.id}, ${req.name}, ${req.productVariantId}, ${data})
+    insert into templates (id, name, product_variant_id, preview_url, data)
+    values (${req.id}, ${req.name}, ${req.productVariantId}, ${previewUrl}, ${data})
   `;
 
 	console.log(queryBuilder, "queryBuilder");
@@ -205,9 +235,38 @@ export const updateTemplate = async (
 		layer: req.layer,
 	};
 
+	let previewUrl: string | null = req.previewUrl || null;
+	if (req.previewFile) {
+		console.log("Uploading new preview file...");
+		const { data: uploadRes, error: uploadErr } = await tryCatch(
+			uploadFileToS3(req.previewFile),
+		);
+		if (uploadErr) {
+			console.error(uploadErr);
+			return {
+				success: false,
+				error: uploadErr.message,
+				message: "Failed to upload preview file",
+			};
+		}
+		console.log("Preview file uploaded:", uploadRes);
+
+		if (!uploadRes.success) {
+			return {
+				success: false,
+				error: new Error(uploadRes.message || "Upload failed"),
+				message: "Failed to upload preview file",
+			};
+		}
+
+		previewUrl = uploadRes.data?.fileUrl ?? null;
+	}
+
+	console.log("Updating template with previewUrl:", previewUrl);
+
 	const queryBuilder = sql`
     update templates
-    set name = ${req.name}, data = ${data}, product_variant_id = ${req.productVariantId}
+    set name = ${req.name}, data = ${data}, product_variant_id = ${req.productVariantId}, preview_url = ${previewUrl}
     where id = ${id}
   `;
 

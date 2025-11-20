@@ -15,6 +15,7 @@ export const templatesTable = pgTable("templates", {
 	productVariantId: uuid("product_variant_id")
 		.notNull()
 		.references(() => productVariantsTable.id, { onDelete: "cascade" }),
-	data: json("data").notNull().$type<Omit<TemplateData, "id" | "name">>(),
+	data: json("data").notNull().$type<Omit<TemplateData, "id" | "name" | "productVariantId" | "previewUrl" | "previewFile">>(),
+  previewUrl: text("preview_url"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
