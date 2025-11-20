@@ -125,6 +125,8 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 			setTemplate({
 				id: uuidv4(),
 				name: "Custom Template",
+        previewUrl: null,
+        previewFile: null,
 				width: template.width,
 				height: template.height,
 				backgroundColor: "#ffffff",
