@@ -180,17 +180,17 @@ function TemplateCard({ template }: { template: TemplateData }) {
 		<Card key={template.id} className="overflow-hidden">
 			<CardContent className="p-4">
 				<div className="flex flex-col items-center gap-4">
-					<div className="h-40 flex items-center justify-center">
+					<div className="h-80 flex items-center justify-center">
 						{template.previewUrl ? (
               <Image
                 src={template.previewUrl}
                 alt={template.name}
-                width={160}
-                height={160}
-                className="object-contain h-40"
+                width={240}
+                height={320}
+                className="object-contain"
               />
             ) : (
-              <span className="text-gray-500 p-2">No Preview Available</span>
+              <span className="text-gray-500 p-2 text-center">No Preview Available</span>
             )}
           </div>
 				</div>

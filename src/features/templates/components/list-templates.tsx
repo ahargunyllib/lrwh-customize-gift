@@ -77,17 +77,17 @@ export default function ListTemplates({
 						href={`/templates/${template.id}?orderProductVariantId=${firstEmptyTemplate?.id}`}
 					>
 						<div className="h-fit flex flex-col items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg border">
-							<div className="h-40 flex items-center justify-center">
+							<div className="h-80 flex items-center justify-center">
 								{template.previewUrl ? (
                   <Image
                     src={template.previewUrl}
                     alt={template.name}
-                    width={160}
-                    height={160}
-                    className="object-contain h-40"
+                    width={240}
+                    height={320}
+                    className="object-contain"
                   />
                 ) : (
-                  <span className="text-gray-500 p-2">No Preview Available</span>
+                  <span className="text-gray-500 p-2 text-center">No Preview Available</span>
                 )}
 							</div>
 							<h3 className="text-xs font-medium mb-2">{template.name}</h3>
