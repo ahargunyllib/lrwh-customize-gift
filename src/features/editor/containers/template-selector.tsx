@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import TemplateLine from "../components/template-elements/template-line";
 import TemplateShape from "../components/template-elements/template-shape";
+import Image from "next/image";
 
 export default function TemplateSelector() {
 	const router = useRouter();
@@ -180,11 +181,18 @@ function TemplateCard({ template }: { template: TemplateData }) {
 			<CardContent className="p-4">
 				<div className="flex flex-col items-center gap-4">
 					<div className="h-40 flex items-center justify-center">
-						{renderTemplatePreview(template, {
-							width: template.width,
-							height: template.height,
-						})}
-					</div>
+						{template.previewUrl ? (
+              <Image
+                src={template.previewUrl}
+                alt={template.name}
+                width={160}
+                height={160}
+                className="object-contain h-40"
+              />
+            ) : (
+              <span className="text-gray-500 p-2">No Preview Available</span>
+            )}
+          </div>
 				</div>
 			</CardContent>
 			<CardFooter className="flex flex-col gap-2">

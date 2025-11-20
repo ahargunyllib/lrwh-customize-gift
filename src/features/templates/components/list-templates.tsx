@@ -11,6 +11,7 @@ import type {
 	TemplateData,
 } from "@/shared/types";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -77,10 +78,17 @@ export default function ListTemplates({
 					>
 						<div className="h-fit flex flex-col items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg border">
 							<div className="h-40 flex items-center justify-center">
-								{renderTemplatePreview(template, {
-									width: template.width,
-									height: template.height,
-								})}
+								{template.previewUrl ? (
+                  <Image
+                    src={template.previewUrl}
+                    alt={template.name}
+                    width={160}
+                    height={160}
+                    className="object-contain h-40"
+                  />
+                ) : (
+                  <span className="text-gray-500 p-2">No Preview Available</span>
+                )}
 							</div>
 							<h3 className="text-xs font-medium mb-2">{template.name}</h3>
 						</div>

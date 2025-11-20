@@ -86,6 +86,8 @@ export interface TemplateData {
 	id: string;
 	name: string;
 	productVariantId?: string;
+  previewUrl: string | null;
+  previewFile: File | null;
 	width: number;
 	height: number;
 	backgroundColor: string;
@@ -110,7 +112,8 @@ export type TemplateEntity = {
 	id: string;
 	name: string;
 	product_variant_id: string;
-	data: Omit<TemplateData, "id" | "name" | "productVariantId">;
+  preview_url: string | null;
+	data: Omit<TemplateData, "id" | "name" | "productVariantId" | "previewUrl" | "previewFile">;
 };
 
 declare module "react" {

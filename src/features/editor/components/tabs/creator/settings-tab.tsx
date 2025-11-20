@@ -46,6 +46,17 @@ export default function SettingsTab() {
 				/>
 			</div>
 
+			<div className="space-y-1.5">
+				<Label>Preview Image</Label>
+				<Input
+					type="file"
+          accept="image/*"
+					onChange={(e) =>
+						setTemplate((p) => ({ ...p, previewFile: e.target.files?.[0] || null }))
+					}
+				/>
+			</div>
+
 			{/* Print size */}
 			{/* <div className="space-y-1.5">
 				<Label>Print Size</Label>
