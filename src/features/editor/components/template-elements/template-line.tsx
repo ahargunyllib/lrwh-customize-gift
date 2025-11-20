@@ -69,16 +69,34 @@ function renderLineTip({
 		);
 	}
 
+	if (tip === "rectangle") {
+		const size = Math.max(strokeWidth * 1.5, 6);
+		return (
+			<rect
+				x={-size}
+				y={-size / 2}
+				width={size}
+				height={size}
+				transform={`translate(${xPosition}, ${yPosition}) rotate(${isStart ? angle + 180 : angle})`}
+				fill={strokeColor}
+			/>
+		);
+	}
+
+	// Fallback to rectangle
+	const size = Math.max(strokeWidth * 1.5, 6);
 	return (
-		<polygon
-			points="-5,-5 5,0 -5,5"
-			transform={`translate(${xPosition}, ${yPosition}) rotate(${angle})`}
+		<rect
+			x={-size}
+			y={-size / 2}
+			width={size}
+			height={size}
+			transform={`translate(${xPosition}, ${yPosition}) rotate(${isStart ? angle + 180 : angle})`}
 			fill={strokeColor}
 		/>
 	);
 }
 
-// Helper function to calculate tip size for trimming (unscaled)
 function getTipSize(tip: string, strokeWidth: number): number {
 	if (tip === "none") return 0;
 
@@ -94,8 +112,12 @@ function getTipSize(tip: string, strokeWidth: number): number {
 		return strokeWidth * 0.05;
 	}
 
-	// Default tip size
-	return 5;
+	if (tip === "rectangle") {
+		return Math.max(strokeWidth * 1.5, 6);
+	}
+
+	// Default fallback size
+	return Math.max(strokeWidth * 1.5, 6);
 }
 
 export default function TemplateLine(props: Props) {
