@@ -210,14 +210,14 @@ export function useCanvasGesture(onZoom?: (delta: number) => void) {
 		document.body.style.overflow = "hidden";
 		document.documentElement.style.overflow = "hidden";
 
-		// Set viewport for proper mobile rendering, but allow zoom
+		// Prevent viewport zoom on mobile - only allow canvas zoom
 		const viewportMeta =
 			document.querySelector('meta[name="viewport"]') ||
 			document.createElement("meta");
 		viewportMeta.setAttribute("name", "viewport");
 		viewportMeta.setAttribute(
 			"content",
-			"width=device-width, initial-scale=1.0, viewport-fit=cover",
+			"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover",
 		);
 		if (!document.querySelector('meta[name="viewport"]')) {
 			document.head.appendChild(viewportMeta);
