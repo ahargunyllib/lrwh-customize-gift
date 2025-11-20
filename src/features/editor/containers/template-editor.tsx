@@ -214,6 +214,7 @@ function DownloadPreviewButton({
 				try {
 					const canvas = await html2canvas(canvasRef.current, {
 						backgroundColor: null,
+						scale: 2,
 					});
 					const dataURL = canvas.toDataURL("image/png");
 
@@ -272,6 +273,7 @@ function ConfirmationDialog({
 			const { data: canvas, error } = await tryCatch(
 				html2canvas(canvasRef.current, {
 					backgroundColor: null,
+					scale: 2,
 				}),
 			);
 
@@ -325,6 +327,7 @@ function ConfirmationDialog({
 			try {
 				const canvas = await html2canvas(canvasRef.current, {
 					backgroundColor: null,
+					scale: 2,
 				});
 				const previewImage = document.getElementById(
 					"preview",
