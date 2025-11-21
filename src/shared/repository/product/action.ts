@@ -8,6 +8,8 @@ import {
 } from "../../../server/db/schema/products";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse, Pagination } from "../../types";
+import { createAuditLog } from "../audit-log/action";
+import { getSession } from "../session-manager/action";
 import type {
 	CreateProductRequest,
 	CreateProductVariantParams,
@@ -113,12 +115,17 @@ export const getProducts = async (
 };
 
 export const createProduct = async (data: CreateProductRequest) => {
-	const { error: createErr } = await tryCatch(
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	const { data: result, error: createErr } = await tryCatch(
 		db.insert(productsTable).values({
 			name: data.name,
 			description: data.description,
 			shopeeUrl: data.shopeeUrl,
-		}),
+		}).returning({ id: productsTable.id }),
 	);
 	if (createErr) {
 		return {
@@ -127,6 +134,15 @@ export const createProduct = async (data: CreateProductRequest) => {
 			message: "Failed to create product",
 		};
 	}
+
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "CREATE",
+		entityType: "product",
+		entityId: result[0].id,
+		entityName: data.name,
+		details: data,
+	});
 
 	return {
 		success: true,
@@ -139,6 +155,11 @@ export const updateProduct = async (
 	{ id }: UpdateProductParams,
 	data: UpdateProductRequest,
 ) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
 	const { error: updateErr } = await tryCatch(
 		db
 			.update(productsTable)
@@ -157,6 +178,15 @@ export const updateProduct = async (
 		};
 	}
 
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "UPDATE",
+		entityType: "product",
+		entityId: id,
+		entityName: data.name,
+		details: data,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -165,6 +195,16 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async ({ id }: DeleteProductParams) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	// Get product name before deleting
+	const { data: product } = await tryCatch(
+		db.select({ name: productsTable.name }).from(productsTable).where(eq(productsTable.id, id)),
+	);
+
 	const { error: deleteErr } = await tryCatch(
 		db.delete(productsTable).where(eq(productsTable.id, id)),
 	);
@@ -175,6 +215,14 @@ export const deleteProduct = async ({ id }: DeleteProductParams) => {
 			message: "Failed to delete product",
 		};
 	}
+
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "DELETE",
+		entityType: "product",
+		entityId: id,
+		entityName: product?.[0]?.name,
+	});
 
 	return {
 		success: true,
@@ -187,14 +235,19 @@ export const createProductVariant = async (
 	{ productId }: CreateProductVariantParams,
 	data: CreateProductVariantRequest,
 ) => {
-	const { error: createErr } = await tryCatch(
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	const { data: result, error: createErr } = await tryCatch(
 		db.insert(productVariantsTable).values({
 			productId,
 			name: data.name,
 			description: data.description,
 			width: data.width,
 			height: data.height,
-		}),
+		}).returning({ id: productVariantsTable.id }),
 	);
 	if (createErr) {
 		return {
@@ -203,6 +256,15 @@ export const createProductVariant = async (
 			message: "Failed to create product variant",
 		};
 	}
+
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "CREATE",
+		entityType: "product_variant",
+		entityId: result[0].id,
+		entityName: data.name,
+		details: { ...data, productId },
+	});
 
 	return {
 		success: true,
@@ -215,6 +277,11 @@ export const updateProductVariant = async (
 	{ productId, variantId }: UpdateProductVariantParams,
 	data: UpdateProductVariantRequest,
 ) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
 	const { error: updateErr } = await tryCatch(
 		db
 			.update(productVariantsTable)
@@ -239,6 +306,15 @@ export const updateProductVariant = async (
 		};
 	}
 
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "UPDATE",
+		entityType: "product_variant",
+		entityId: variantId,
+		entityName: data.name,
+		details: { ...data, productId },
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -250,6 +326,16 @@ export const deleteProductVariant = async ({
 	productId,
 	variantId,
 }: DeleteProductVariantParams) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	// Get variant name before deleting
+	const { data: variant } = await tryCatch(
+		db.select({ name: productVariantsTable.name }).from(productVariantsTable).where(eq(productVariantsTable.id, variantId)),
+	);
+
 	const { error: deleteErr } = await tryCatch(
 		db
 			.delete(productVariantsTable)
@@ -267,6 +353,15 @@ export const deleteProductVariant = async ({
 			message: "Failed to delete product variant",
 		};
 	}
+
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "DELETE",
+		entityType: "product_variant",
+		entityId: variantId,
+		entityName: variant?.[0]?.name,
+		details: { productId },
+	});
 
 	return {
 		success: true,

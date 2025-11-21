@@ -7,6 +7,8 @@ import type { TemplateData, TemplateEntity } from "@/shared/types/template";
 import { asc, count, eq, sql } from "drizzle-orm";
 import { uploadFileToS3 } from "../../../server/s3";
 import type { Pagination, ProductVariant } from "../../types";
+import { createAuditLog } from "../audit-log/action";
+import { getSession } from "../session-manager/action";
 import type { CreateTemplateRequest, UpdateTemplateRequest } from "./dto";
 
 export const getTemplates = async (query?: {
@@ -158,6 +160,11 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 };
 
 export const createTemplate = async (req: CreateTemplateRequest) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
 	const data = {
 		width: req.width,
 		height: req.height,
@@ -212,6 +219,15 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		};
 	}
 
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "CREATE",
+		entityType: "template",
+		entityId: req.id,
+		entityName: req.name,
+		details: { name: req.name, productVariantId: req.productVariantId },
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -223,6 +239,11 @@ export const updateTemplate = async (
 	req: UpdateTemplateRequest,
 	id: TemplateEntity["id"],
 ) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
 	const data = {
 		width: req.width,
 		height: req.height,
@@ -280,6 +301,15 @@ export const updateTemplate = async (
 		};
 	}
 
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "UPDATE",
+		entityType: "template",
+		entityId: id,
+		entityName: req.name,
+		details: { name: req.name, productVariantId: req.productVariantId },
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -288,6 +318,16 @@ export const updateTemplate = async (
 };
 
 export const deleteTemplate = async (id: TemplateEntity["id"]) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	// Get template name before deleting
+	const { data: template } = await tryCatch(
+		db.select({ name: templatesTable.name }).from(templatesTable).where(eq(templatesTable.id, id)),
+	);
+
 	const queryBuilder = sql`
     delete from templates
     where id = ${id}
@@ -302,6 +342,14 @@ export const deleteTemplate = async (id: TemplateEntity["id"]) => {
 			message: "Failed to delete template",
 		};
 	}
+
+	await createAuditLog({
+		userId: Number(session.userId),
+		action: "DELETE",
+		entityType: "template",
+		entityId: id,
+		entityName: template?.[0]?.name,
+	});
 
 	return {
 		success: true,

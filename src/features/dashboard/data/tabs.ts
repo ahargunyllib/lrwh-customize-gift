@@ -1,4 +1,5 @@
 import {
+	ClipboardListIcon,
 	LayoutTemplate,
 	ReceiptIcon,
 	ShoppingCartIcon,
@@ -54,6 +55,11 @@ export const tabsData = {
 			label: "User Management",
 			href: "/dashboard/user-management",
 			icon: UsersIcon,
+		},
+		{
+			label: "Audit Log",
+			href: "/dashboard/audit-log",
+			icon: ClipboardListIcon,
 		},
 	],
 } as const;
