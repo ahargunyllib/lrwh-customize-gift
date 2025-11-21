@@ -333,7 +333,12 @@ export const deleteProductVariant = async ({
 
 	// Get variant name before deleting
 	const { data: variant } = await tryCatch(
-		db.select({ name: productVariantsTable.name }).from(productVariantsTable).where(eq(productVariantsTable.id, variantId)),
+		db.select({ name: productVariantsTable.name }).from(productVariantsTable).where(
+			and(
+				eq(productVariantsTable.productId, productId),
+				eq(productVariantsTable.id, variantId),
+			),
+		),
 	);
 
 	const { error: deleteErr } = await tryCatch(
