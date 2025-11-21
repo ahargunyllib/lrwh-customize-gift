@@ -3,6 +3,7 @@ import {
 	ReceiptIcon,
 	ShoppingCartIcon,
 	User2Icon,
+	UsersIcon,
 } from "lucide-react";
 
 export const tabsData = {
@@ -48,6 +49,11 @@ export const tabsData = {
 			label: "Manage Templates",
 			href: "/old",
 			icon: LayoutTemplate,
+		},
+		{
+			label: "User Management",
+			href: "/dashboard/user-management",
+			icon: UsersIcon,
 		},
 	],
 } as const;
