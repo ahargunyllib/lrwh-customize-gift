@@ -1,0 +1,54 @@
+services:
+  reverse-proxy:
+    container_name: lrwh-reverse-proxy
+    image: traefik:v3.1
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik
+
+  postgres:
+    container_name: lrwh-postgres
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: lrwhuser
+      POSTGRES_PASSWORD: lrwhpassword
+      POSTGRES_DB: lrwhdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - lrwh-postgres-data:/var/lib/postgresql/data
+    networks:
+      - traefik
+    restart: always
+
+  lrwh-app:
+    container_name: lrwh-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.lrwh-app.rule=Host(`lrwhgift.my.id`) || Host(`www.lrwhgift.my.id`) || Host(`localhost`)"
+      - "traefik.http.routers.lrwh-app.entrypoints=web"
+      - "traefik.http.services.lrwh-app.loadbalancer.server.port=3000"
+    networks:
+      - traefik
+    restart: always
+
+networks:
+  traefik:
+    driver: bridge
+
+volumes:
+  lrwh-postgres-data:
