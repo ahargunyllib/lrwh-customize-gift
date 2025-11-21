@@ -1,9 +1,27 @@
-"use client";
-
-import { useSessionQuery } from "@/shared/repository/session-manager/query";
+import ProfileContainer from "@/features/profile/containers/profile-container";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/shared/components/ui/card";
+import { Suspense } from "react";
 
 export default function Page() {
-	const { data: res, isLoading } = useSessionQuery();
-
-	return <section>{JSON.stringify(res)}</section>;
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle>Profile</CardTitle>
+				<CardDescription>
+					Manage your account settings and preferences.
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<Suspense fallback={<div>Loading...</div>}>
+					<ProfileContainer />
+				</Suspense>
+			</CardContent>
+		</Card>
+	);
 }
