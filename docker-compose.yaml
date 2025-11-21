@@ -1,7 +1,7 @@
 services:
   reverse-proxy:
     container_name: lrwh-reverse-proxy
-    image: traefik:v3.1
+    image: traefik:v3.6.1
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -21,8 +21,8 @@ services:
       POSTGRES_USER: lrwhuser
       POSTGRES_PASSWORD: lrwhpassword
       POSTGRES_DB: lrwhdb
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     volumes:
       - lrwh-postgres-data:/var/lib/postgresql/data
     networks:
