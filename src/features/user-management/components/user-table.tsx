@@ -42,7 +42,6 @@ import {
 } from "@tanstack/react-table";
 import { EditIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { DataTablePagination } from "@/shared/components/data-table-pagination";
 import UpdateUserFormDialog from "./update-user-form-dialog";
 
 type Props = {
@@ -50,8 +49,6 @@ type Props = {
 };
 
 export default function UserTable({ data }: Props) {
-	const { openDialog } = useDialogStore();
-
 	const columns: ColumnDef<Admin>[] = [
 		{
 			accessorKey: "name",
@@ -109,7 +106,10 @@ export default function UserTable({ data }: Props) {
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id} className="border-b border-gray-200">
+							<TableRow
+								key={headerGroup.id}
+								className="border-b border-gray-200"
+							>
 								{headerGroup.headers.map((header) => (
 									<TableHead
 										key={header.id}
@@ -157,7 +157,6 @@ export default function UserTable({ data }: Props) {
 					</TableBody>
 				</Table>
 			</div>
-			<DataTablePagination table={table} />
 		</div>
 	);
 }

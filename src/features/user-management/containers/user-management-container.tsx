@@ -18,16 +18,12 @@ export default function UserManagementContainer() {
 	const { openDialog } = useDialogStore();
 	const { data: response, isLoading } = useGetAllAdminsQuery();
 
-	const admins = response?.success ? response.data?.admins ?? [] : [];
-
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-center justify-between">
 				<div>
 					<CardTitle>User Management</CardTitle>
-					<CardDescription>
-						Manage admin users in the system.
-					</CardDescription>
+					<CardDescription>Manage admin users in the system.</CardDescription>
 				</div>
 				<Button
 					onClick={() => {
@@ -45,8 +41,10 @@ export default function UserManagementContainer() {
 					<div className="flex items-center justify-center h-32">
 						<p className="text-muted-foreground">Loading users...</p>
 					</div>
+				) : response?.success ? (
+					<UserTable data={response.data.admins} />
 				) : (
-					<UserTable data={admins} />
+					"Failed to load users."
 				)}
 			</CardContent>
 		</Card>
