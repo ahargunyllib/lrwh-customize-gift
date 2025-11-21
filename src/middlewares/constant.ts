@@ -1,7 +1,7 @@
 export const PROTECTED_ROUTES = [
 	{
 		path: /^\/dashboard/,
-		roles: ["admin", "user"],
+		roles: ["admin", "superadmin"],
 	},
 	{
 		path: /^\/editor\/[^\/]+\/edit$/, // matches /editor/:id/edit
