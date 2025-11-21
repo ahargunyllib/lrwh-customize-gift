@@ -36,6 +36,21 @@ export const tabsData = {
 			icon: User2Icon,
 		},
 		{
+			label: "Product Management",
+			href: "/dashboard/product-management",
+			icon: ShoppingCartIcon,
+		},
+		{
+			label: "Order Management",
+			href: "/dashboard/order-management",
+			icon: ReceiptIcon,
+		},
+		{
+			label: "Manage Templates",
+			href: "/old",
+			icon: LayoutTemplate,
+		},
+		{
 			label: "User Management",
 			href: "/dashboard/user-management",
 			icon: UsersIcon,
