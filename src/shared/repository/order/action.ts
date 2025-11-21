@@ -354,7 +354,8 @@ export const createOrder = async ({
 	}
 
 	if (createdOrderId) {
-		await createAuditLog({
+		// Fire-and-forget: don't block main operation
+	createAuditLog({
 			userId: Number(session.userId),
 			action: "CREATE",
 			entityType: "order",
@@ -453,7 +454,8 @@ export const updateOrder = async (
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "UPDATE",
 		entityType: "order",
@@ -510,7 +512,8 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "DELETE",
 		entityType: "order",

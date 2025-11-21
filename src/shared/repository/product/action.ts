@@ -135,7 +135,8 @@ export const createProduct = async (data: CreateProductRequest) => {
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "CREATE",
 		entityType: "product",
@@ -178,7 +179,8 @@ export const updateProduct = async (
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "UPDATE",
 		entityType: "product",
@@ -216,7 +218,8 @@ export const deleteProduct = async ({ id }: DeleteProductParams) => {
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "DELETE",
 		entityType: "product",
@@ -257,7 +260,8 @@ export const createProductVariant = async (
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "CREATE",
 		entityType: "product_variant",
@@ -306,7 +310,8 @@ export const updateProductVariant = async (
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "UPDATE",
 		entityType: "product_variant",
@@ -359,7 +364,8 @@ export const deleteProductVariant = async ({
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "DELETE",
 		entityType: "product_variant",

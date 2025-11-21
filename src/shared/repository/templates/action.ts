@@ -219,7 +219,8 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "CREATE",
 		entityType: "template",
@@ -301,7 +302,8 @@ export const updateTemplate = async (
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "UPDATE",
 		entityType: "template",
@@ -343,7 +345,8 @@ export const deleteTemplate = async (id: TemplateEntity["id"]) => {
 		};
 	}
 
-	await createAuditLog({
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
 		userId: Number(session.userId),
 		action: "DELETE",
 		entityType: "template",
