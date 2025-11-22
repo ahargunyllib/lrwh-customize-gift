@@ -20,6 +20,8 @@ import {
 } from "../../lib/data-url";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
+import { createAuditLog } from "../audit-log/action";
+import { getSession } from "../session-manager/action";
 import type {
 	CreateOrderRequest,
 	GetOrdersQuery,
@@ -298,6 +300,13 @@ export const createOrder = async ({
 	username,
 	productVariants,
 }: CreateOrderRequest) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	let createdOrderId: string | null = null;
+
 	const { error } = await tryCatch(
 		db.transaction(async (tx) => {
 			const { data: createdOrder, error } = await tryCatch(
@@ -316,6 +325,8 @@ export const createOrder = async ({
 				tx.rollback();
 				return;
 			}
+
+			createdOrderId = createdOrder[0].id;
 
 			const { error: fetchError } = await tryCatch(
 				tx.insert(orderProductVariantsTable).values(
@@ -342,6 +353,18 @@ export const createOrder = async ({
 		};
 	}
 
+	if (createdOrderId) {
+		// Fire-and-forget: don't block main operation
+	createAuditLog({
+			userId: Number(session.userId),
+			action: "CREATE",
+			entityType: "order",
+			entityId: createdOrderId,
+			entityName: orderNumber,
+			details: { orderNumber, username, productVariants },
+		});
+	}
+
 	return {
 		success: true,
 		data: null,
@@ -353,6 +376,11 @@ export const updateOrder = async (
 	{ id }: UpdateOrderParams,
 	{ orderNumber, username, productVariants }: UpdateOrderRequest,
 ) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
 	const { data: existingOrder, error: fetchError } = await tryCatch(
 		db.select().from(ordersTable).where(eq(ordersTable.id, id)),
 	);
@@ -426,6 +454,16 @@ export const updateOrder = async (
 		};
 	}
 
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
+		userId: Number(session.userId),
+		action: "UPDATE",
+		entityType: "order",
+		entityId: id,
+		entityName: orderNumber,
+		details: { orderNumber, username, productVariants },
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -434,6 +472,16 @@ export const updateOrder = async (
 };
 
 export const deleteOrder = async ({ id }: UpdateOrderParams) => {
+	const session = await getSession();
+	if (!session.isLoggedIn) {
+		return { success: false, error: "Unauthorized", message: "Unauthorized" };
+	}
+
+	// Get order details before deleting
+	const { data: order } = await tryCatch(
+		db.select({ orderNumber: ordersTable.orderNumber }).from(ordersTable).where(eq(ordersTable.id, id)),
+	);
+
 	const { error } = await tryCatch(
 		db.transaction(async (tx) => {
 			const { error: deleteError } = await tryCatch(
@@ -463,6 +511,15 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 			message: "Failed to delete order",
 		};
 	}
+
+	// Fire-and-forget: don't block main operation
+	createAuditLog({
+		userId: Number(session.userId),
+		action: "DELETE",
+		entityType: "order",
+		entityId: id,
+		entityName: order?.[0]?.orderNumber,
+	});
 
 	return {
 		success: true,
