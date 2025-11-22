@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/shared/components/ui/badge";
 import {
 	Table,
 	TableBody,
@@ -8,9 +9,18 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/components/ui/table";
-import { Badge } from "@/shared/components/ui/badge";
 import type { AuditLog } from "@/shared/types";
 import { format } from "date-fns";
+import { EyeIcon } from "lucide-react";
+import { Button } from "../../../shared/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "../../../shared/components/ui/dialog";
 
 type AuditLogTableProps = {
 	data: AuditLog[];
@@ -40,12 +50,16 @@ export default function AuditLogTable({ data }: AuditLogTableProps) {
 					<TableHead>Entity Type</TableHead>
 					<TableHead>Entity Name</TableHead>
 					<TableHead>Entity ID</TableHead>
+					<TableHead>Detail</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
 				{data.length === 0 ? (
 					<TableRow>
-						<TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+						<TableCell
+							colSpan={6}
+							className="text-center py-8 text-muted-foreground"
+						>
 							No audit logs found
 						</TableCell>
 					</TableRow>
@@ -71,6 +85,26 @@ export default function AuditLogTable({ data }: AuditLogTableProps) {
 							<TableCell>{log.entityName || "-"}</TableCell>
 							<TableCell className="font-mono text-xs max-w-[200px] truncate">
 								{log.entityId}
+							</TableCell>
+							<TableCell>
+								<Dialog>
+									<DialogTrigger asChild>
+										<Button size="icon" variant="ghost">
+											<EyeIcon />
+										</Button>
+									</DialogTrigger>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>Audit Log Details</DialogTitle>
+                      <DialogDescription>
+                        Details for entity ID: {log.entityId}
+                      </DialogDescription>
+										</DialogHeader>
+										<pre className="max-h-[80vh] overflow-auto text-xs rounded-sm p-2 bg-muted border text-muted-foreground">
+											<code>{JSON.stringify(log.details, null, 2)}</code>
+										</pre>
+									</DialogContent>
+								</Dialog>
 							</TableCell>
 						</TableRow>
 					))
