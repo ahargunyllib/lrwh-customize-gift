@@ -1,10 +1,13 @@
 import AuditLogContainer from "@/features/audit-log/containers/audit-log-container";
+import { Suspense } from "react";
 
 export default function AuditLogPage() {
 	return (
 		<div className="container mx-auto py-6">
 			<h1 className="text-2xl font-bold mb-6">Audit Log</h1>
-			<AuditLogContainer />
+			<Suspense>
+				<AuditLogContainer />
+			</Suspense>
 		</div>
 	);
 }
