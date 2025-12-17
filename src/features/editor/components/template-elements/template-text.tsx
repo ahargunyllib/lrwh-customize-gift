@@ -284,6 +284,8 @@ export default function TemplateText({
 
 	const getContainerStyle = (): React.CSSProperties => {
 		const dimensions = getCurvedTextDimensions();
+		// Only apply clipPath if element is not rotated to avoid incorrect clipping
+		const shouldClip = !text.rotate || text.rotate === 0;
 
 		return {
 			position: "absolute",
@@ -300,7 +302,7 @@ export default function TemplateText({
 				: `${2 * scale}px solid transparent`,
 			cursor: text.draggable && !isEditing ? "move" : "default",
 			boxSizing: "border-box",
-			clipPath: getClipPath(),
+			clipPath: shouldClip ? getClipPath() : undefined,
 			overflow: "visible",
 			zIndex: layerIndex,
 			padding: 0,

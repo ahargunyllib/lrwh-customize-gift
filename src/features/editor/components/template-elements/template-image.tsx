@@ -234,7 +234,9 @@ export default function TemplateImage({
 	};
 
 	const getImageStyle = (): React.CSSProperties => {
-		const clipPath = getClipPath();
+		// Only apply clipPath if element is not rotated to avoid incorrect clipping
+		const shouldClip = !image.rotate || image.rotate === 0;
+		const clipPath = shouldClip ? getClipPath() : undefined;
 		const imageOffset = image.imageOffset || { x: 0, y: 0 };
 		const scaleX = (image.scaleX || 1) * scale;
 		const scaleY = (image.scaleY || 1) * scale;
