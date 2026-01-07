@@ -45,16 +45,19 @@ function Provider({
 	const editor = useTemplateEditor();
 	const { setTemplate, template } = editor;
 
-	const { save } = useTemplatePersistence(loadId, setTemplate);
+	const { save, isSaving } = useTemplatePersistence(loadId, setTemplate);
 	return (
 		<TemplateCtx.Provider value={editor}>
 			{/* Header */}
 			<HeaderBar
-				title="Create New Template"
+				title={
+          loadId ? `Editing Template: ${template.name}` : "Create New Template"
+        }
 				onMenuClick={() => editor.setActiveElement(null)}
 				onSave={() => {
 					save(template);
 				}}
+        isSaving={isSaving}
 			/>
 			{children}
 		</TemplateCtx.Provider>

@@ -88,5 +88,5 @@ export function useTemplatePersistence(
 			});
 	};
 
-	return { save };
+	return { save, isSaving: isCreating || isUpdating  };
 }
