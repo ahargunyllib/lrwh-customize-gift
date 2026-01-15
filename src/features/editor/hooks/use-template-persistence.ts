@@ -72,6 +72,13 @@ export function useTemplatePersistence(
 					router.back();
 					return;
 				},
+				onError: (error) => {
+					toast.error(
+						error instanceof Error
+							? error.message
+							: "Failed to create template. The template data might be too large.",
+					);
+				},
 			});
 		else
 			updateTemplate(tpl, {
@@ -85,8 +92,15 @@ export function useTemplatePersistence(
 					router.back();
 					return;
 				},
+				onError: (error) => {
+					toast.error(
+						error instanceof Error
+							? error.message
+							: "Failed to update template. The template data might be too large.",
+					);
+				},
 			});
 	};
 
-	return { save, isSaving: isCreating || isUpdating  };
+	return { save, isSaving: isCreating || isUpdating };
 }
