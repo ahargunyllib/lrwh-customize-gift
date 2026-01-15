@@ -13,6 +13,9 @@ export const PROTECTED_ROUTES = [
 	{
 		path: /^\/design-system/,
 	},
+  {
+    path: /^\/old/,
+  }
 ];
 
 export const DEV_ONLY_ROUTES = ["/design-system"];
