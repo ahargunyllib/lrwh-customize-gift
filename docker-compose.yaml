@@ -36,6 +36,8 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: production
+    volumes:
+      - lrwh-app-logs:/app/logs
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
@@ -52,3 +54,4 @@ networks:
 
 volumes:
   lrwh-postgres-data:
+  lrwh-app-logs:

@@ -4,8 +4,10 @@ import { db } from "@/server/db";
 import { usersTable } from "@/server/db/schema/users";
 import { compare, hash } from "bcrypt-ts";
 import { eq } from "drizzle-orm";
+import { logOperation } from "../../lib/logger";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
+import { getSession } from "../session-manager/action";
 import type {
 	GetUserParams,
 	GetUserResponse,
@@ -63,6 +65,15 @@ export const updateUser = async (
 	params: UpdateUserParams,
 	data: UpdateUserRequest,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+	const session = await getSession();
+
+	const baseContext = {
+		operation: "user.update",
+		entityId: String(params.id),
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	const { error: updateErr } = await tryCatch(
 		db
 			.update(usersTable)
@@ -74,12 +85,25 @@ export const updateUser = async (
 	);
 
 	if (updateErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: updateErr.message,
+			errorStack: updateErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: updateErr.message,
 			message: "Failed to update user",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,
@@ -92,6 +116,15 @@ export const updatePassword = async (
 	params: UpdatePasswordParams,
 	data: UpdatePasswordRequest,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+	const session = await getSession();
+
+	const baseContext = {
+		operation: "user.updatePassword",
+		entityId: String(params.id),
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	const { data: users, error: fetchErr } = await tryCatch(
 		db
 			.select({ password: usersTable.password })
@@ -100,6 +133,12 @@ export const updatePassword = async (
 	);
 
 	if (fetchErr || !users || users.length === 0) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "User not found",
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: "User not found",
@@ -107,8 +146,17 @@ export const updatePassword = async (
 		};
 	}
 
-	const isPasswordValid = await compare(data.currentPassword, users[0].password);
+	const isPasswordValid = await compare(
+		data.currentPassword,
+		users[0].password,
+	);
 	if (!isPasswordValid) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Invalid current password",
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: "Invalid current password",
@@ -126,12 +174,25 @@ export const updatePassword = async (
 	);
 
 	if (updateErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: updateErr.message,
+			errorStack: updateErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: updateErr.message,
 			message: "Failed to update password",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,

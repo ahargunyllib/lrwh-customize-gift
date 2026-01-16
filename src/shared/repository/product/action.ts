@@ -6,6 +6,7 @@ import {
 	productVariantsTable,
 	productsTable,
 } from "../../../server/db/schema/products";
+import { logOperation } from "../../lib/logger";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse, Pagination } from "../../types";
 import { createAuditLog } from "../audit-log/action";
@@ -115,19 +116,42 @@ export const getProducts = async (
 };
 
 export const createProduct = async (data: CreateProductRequest) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "product.create",
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	const { data: result, error: createErr } = await tryCatch(
-		db.insert(productsTable).values({
-			name: data.name,
-			description: data.description,
-			shopeeUrl: data.shopeeUrl,
-		}).returning({ id: productsTable.id }),
+		db
+			.insert(productsTable)
+			.values({
+				name: data.name,
+				description: data.description,
+				shopeeUrl: data.shopeeUrl,
+			})
+			.returning({ id: productsTable.id }),
 	);
 	if (createErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: createErr.message,
+			errorStack: createErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: createErr.message,
@@ -145,6 +169,13 @@ export const createProduct = async (data: CreateProductRequest) => {
 		details: data,
 	});
 
+	logOperation({
+		...baseContext,
+		entityId: result[0].id,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -156,8 +187,22 @@ export const updateProduct = async (
 	{ id }: UpdateProductParams,
 	data: UpdateProductRequest,
 ) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "product.update",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -172,6 +217,13 @@ export const updateProduct = async (
 			.where(eq(productsTable.id, id)),
 	);
 	if (updateErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: updateErr.message,
+			errorStack: updateErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: updateErr.message,
@@ -189,6 +241,12 @@ export const updateProduct = async (
 		details: data,
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -197,20 +255,44 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async ({ id }: DeleteProductParams) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "product.delete",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	// Get product name before deleting
 	const { data: product } = await tryCatch(
-		db.select({ name: productsTable.name }).from(productsTable).where(eq(productsTable.id, id)),
+		db
+			.select({ name: productsTable.name })
+			.from(productsTable)
+			.where(eq(productsTable.id, id)),
 	);
 
 	const { error: deleteErr } = await tryCatch(
 		db.delete(productsTable).where(eq(productsTable.id, id)),
 	);
 	if (deleteErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: deleteErr.message,
+			errorStack: deleteErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: deleteErr.message,
@@ -227,6 +309,12 @@ export const deleteProduct = async ({ id }: DeleteProductParams) => {
 		entityName: product?.[0]?.name,
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -238,21 +326,44 @@ export const createProductVariant = async (
 	{ productId }: CreateProductVariantParams,
 	data: CreateProductVariantRequest,
 ) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "productVariant.create",
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	const { data: result, error: createErr } = await tryCatch(
-		db.insert(productVariantsTable).values({
-			productId,
-			name: data.name,
-			description: data.description,
-			width: data.width,
-			height: data.height,
-		}).returning({ id: productVariantsTable.id }),
+		db
+			.insert(productVariantsTable)
+			.values({
+				productId,
+				name: data.name,
+				description: data.description,
+				width: data.width,
+				height: data.height,
+			})
+			.returning({ id: productVariantsTable.id }),
 	);
 	if (createErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: createErr.message,
+			errorStack: createErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: createErr.message,
@@ -270,6 +381,13 @@ export const createProductVariant = async (
 		details: { ...data, productId },
 	});
 
+	logOperation({
+		...baseContext,
+		entityId: result[0].id,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -281,8 +399,22 @@ export const updateProductVariant = async (
 	{ productId, variantId }: UpdateProductVariantParams,
 	data: UpdateProductVariantRequest,
 ) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "productVariant.update",
+		entityId: variantId,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -303,6 +435,13 @@ export const updateProductVariant = async (
 			),
 	);
 	if (updateErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: updateErr.message,
+			errorStack: updateErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: updateErr.message,
@@ -320,6 +459,12 @@ export const updateProductVariant = async (
 		details: { ...data, productId },
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -331,19 +476,36 @@ export const deleteProductVariant = async ({
 	productId,
 	variantId,
 }: DeleteProductVariantParams) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "productVariant.delete",
+		entityId: variantId,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	// Get variant name before deleting
 	const { data: variant } = await tryCatch(
-		db.select({ name: productVariantsTable.name }).from(productVariantsTable).where(
-			and(
-				eq(productVariantsTable.productId, productId),
-				eq(productVariantsTable.id, variantId),
+		db
+			.select({ name: productVariantsTable.name })
+			.from(productVariantsTable)
+			.where(
+				and(
+					eq(productVariantsTable.productId, productId),
+					eq(productVariantsTable.id, variantId),
+				),
 			),
-		),
 	);
 
 	const { error: deleteErr } = await tryCatch(
@@ -357,6 +519,13 @@ export const deleteProductVariant = async ({
 			),
 	);
 	if (deleteErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: deleteErr.message,
+			errorStack: deleteErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: deleteErr.message,
@@ -372,6 +541,12 @@ export const deleteProductVariant = async ({
 		entityId: variantId,
 		entityName: variant?.[0]?.name,
 		details: { productId },
+	});
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
 	});
 
 	return {

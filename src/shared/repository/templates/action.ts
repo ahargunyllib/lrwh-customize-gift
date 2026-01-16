@@ -2,6 +2,7 @@
 
 import { db } from "@/server/db";
 import { templatesTable } from "@/server/db/schema/templates";
+import { logOperation } from "@/shared/lib/logger";
 import { tryCatch } from "@/shared/lib/try-catch";
 import type { TemplateData, TemplateEntity } from "@/shared/types/template";
 import { asc, count, eq, sql } from "drizzle-orm";
@@ -33,7 +34,6 @@ export const getTemplates = async (query?: {
 			.orderBy(asc(templatesTable.name)),
 	);
 	if (error) {
-		console.error(error);
 		return {
 			success: false,
 			error: error.message,
@@ -54,7 +54,6 @@ export const getTemplates = async (query?: {
 			),
 	);
 	if (countError) {
-		console.error(countError);
 		return {
 			success: false,
 			error: countError.message,
@@ -113,7 +112,6 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 		db.execute<TemplateEntity>(queryBuilder),
 	);
 	if (error) {
-		console.error(error);
 		return {
 			success: false,
 			error: error.message,
@@ -160,8 +158,22 @@ export const getTemplateById = async (id: TemplateEntity["id"]) => {
 };
 
 export const createTemplate = async (req: CreateTemplateRequest) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "template.create",
+		entityId: req.id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -183,7 +195,13 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 			uploadFileToS3(req.previewFile),
 		);
 		if (uploadErr) {
-			console.error(uploadErr);
+			logOperation({
+				...baseContext,
+				success: false,
+				error: uploadErr.message,
+				errorStack: uploadErr.stack,
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: uploadErr.message,
@@ -192,6 +210,12 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		}
 
 		if (!uploadRes.success) {
+			logOperation({
+				...baseContext,
+				success: false,
+				error: uploadRes.message || "Upload failed",
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: new Error(uploadRes.message || "Upload failed"),
@@ -207,11 +231,15 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
     values (${req.id}, ${req.name}, ${req.productVariantId}, ${previewUrl}, ${data})
   `;
 
-	console.log(queryBuilder, "queryBuilder");
-
 	const { error } = await tryCatch(db.execute(queryBuilder));
 	if (error) {
-		console.error(error);
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -229,6 +257,12 @@ export const createTemplate = async (req: CreateTemplateRequest) => {
 		details: { name: req.name, productVariantId: req.productVariantId },
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -240,8 +274,22 @@ export const updateTemplate = async (
 	req: UpdateTemplateRequest,
 	id: TemplateEntity["id"],
 ) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "template.update",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -259,21 +307,31 @@ export const updateTemplate = async (
 
 	let previewUrl: string | null = req.previewUrl || null;
 	if (req.previewFile) {
-		console.log("Uploading new preview file...");
 		const { data: uploadRes, error: uploadErr } = await tryCatch(
 			uploadFileToS3(req.previewFile),
 		);
 		if (uploadErr) {
-			console.error(uploadErr);
+			logOperation({
+				...baseContext,
+				success: false,
+				error: uploadErr.message,
+				errorStack: uploadErr.stack,
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: uploadErr.message,
 				message: "Failed to upload preview file",
 			};
 		}
-		console.log("Preview file uploaded:", uploadRes);
 
 		if (!uploadRes.success) {
+			logOperation({
+				...baseContext,
+				success: false,
+				error: uploadRes.message || "Upload failed",
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: new Error(uploadRes.message || "Upload failed"),
@@ -284,8 +342,6 @@ export const updateTemplate = async (
 		previewUrl = uploadRes.data?.fileUrl ?? null;
 	}
 
-	console.log("Updating template with previewUrl:", previewUrl);
-
 	const queryBuilder = sql`
     update templates
     set name = ${req.name}, data = ${data}, product_variant_id = ${req.productVariantId}, preview_url = ${previewUrl}
@@ -294,7 +350,13 @@ export const updateTemplate = async (
 
 	const { error } = await tryCatch(db.execute(queryBuilder));
 	if (error) {
-		console.error(error);
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -312,6 +374,12 @@ export const updateTemplate = async (
 		details: { name: req.name, productVariantId: req.productVariantId },
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -320,14 +388,31 @@ export const updateTemplate = async (
 };
 
 export const deleteTemplate = async (id: TemplateEntity["id"]) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "template.delete",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	// Get template name before deleting
 	const { data: template } = await tryCatch(
-		db.select({ name: templatesTable.name }).from(templatesTable).where(eq(templatesTable.id, id)),
+		db
+			.select({ name: templatesTable.name })
+			.from(templatesTable)
+			.where(eq(templatesTable.id, id)),
 	);
 
 	const queryBuilder = sql`
@@ -337,7 +422,13 @@ export const deleteTemplate = async (id: TemplateEntity["id"]) => {
 
 	const { error } = await tryCatch(db.execute(queryBuilder));
 	if (error) {
-		console.error(error);
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -352,6 +443,12 @@ export const deleteTemplate = async (id: TemplateEntity["id"]) => {
 		entityType: "template",
 		entityId: id,
 		entityName: template?.[0]?.name,
+	});
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
 	});
 
 	return {

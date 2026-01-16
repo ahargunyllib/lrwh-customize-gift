@@ -4,8 +4,10 @@ import { db } from "@/server/db";
 import { usersTable } from "@/server/db/schema/users";
 import { hash } from "bcrypt-ts";
 import { eq } from "drizzle-orm";
+import { logOperation } from "../../lib/logger";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
+import { getSession } from "../session-manager/action";
 import type {
 	CreateAdminRequest,
 	DeleteAdminParams,
@@ -101,6 +103,14 @@ export const getAdmin = async (
 export const createAdmin = async (
 	data: CreateAdminRequest,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+	const session = await getSession();
+
+	const baseContext = {
+		operation: "admin.create",
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	const hashedPassword = await hash(data.password, 10);
 
 	const { error: createErr } = await tryCatch(
@@ -114,18 +124,37 @@ export const createAdmin = async (
 
 	if (createErr) {
 		if (createErr.message.includes("unique")) {
+			logOperation({
+				...baseContext,
+				success: false,
+				error: "Email already exists",
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: "Email already exists",
 				message: "Email already exists",
 			};
 		}
+		logOperation({
+			...baseContext,
+			success: false,
+			error: createErr.message,
+			errorStack: createErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: createErr.message,
 			message: "Failed to create admin",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,
@@ -138,6 +167,15 @@ export const updateAdmin = async (
 	params: UpdateAdminParams,
 	data: UpdateAdminRequest,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+	const session = await getSession();
+
+	const baseContext = {
+		operation: "admin.update",
+		entityId: String(params.id),
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	const { error: updateErr } = await tryCatch(
 		db
 			.update(usersTable)
@@ -150,18 +188,37 @@ export const updateAdmin = async (
 
 	if (updateErr) {
 		if (updateErr.message.includes("unique")) {
+			logOperation({
+				...baseContext,
+				success: false,
+				error: "Email already exists",
+				duration: Date.now() - startTime,
+			});
 			return {
 				success: false,
 				error: "Email already exists",
 				message: "Email already exists",
 			};
 		}
+		logOperation({
+			...baseContext,
+			success: false,
+			error: updateErr.message,
+			errorStack: updateErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: updateErr.message,
 			message: "Failed to update admin",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,
@@ -173,17 +230,39 @@ export const updateAdmin = async (
 export const deleteAdmin = async (
 	params: DeleteAdminParams,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+	const session = await getSession();
+
+	const baseContext = {
+		operation: "admin.delete",
+		entityId: String(params.id),
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	const { error: deleteErr } = await tryCatch(
 		db.delete(usersTable).where(eq(usersTable.id, params.id)),
 	);
 
 	if (deleteErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: deleteErr.message,
+			errorStack: deleteErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: deleteErr.message,
 			message: "Failed to delete admin",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,

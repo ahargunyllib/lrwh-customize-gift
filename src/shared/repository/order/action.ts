@@ -18,6 +18,7 @@ import {
 	parseDataUrl,
 	sha256,
 } from "../../lib/data-url";
+import { logOperation } from "../../lib/logger";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse } from "../../types";
 import { createAuditLog } from "../audit-log/action";
@@ -300,8 +301,21 @@ export const createOrder = async ({
 	username,
 	productVariants,
 }: CreateOrderRequest) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "order.create",
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -321,7 +335,6 @@ export const createOrder = async ({
 					}),
 			);
 			if (error) {
-				console.error(error);
 				tx.rollback();
 				return;
 			}
@@ -339,13 +352,19 @@ export const createOrder = async ({
 				),
 			);
 			if (fetchError) {
-				console.error(fetchError);
 				tx.rollback();
 				return;
 			}
 		}),
 	);
 	if (error) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -355,7 +374,7 @@ export const createOrder = async ({
 
 	if (createdOrderId) {
 		// Fire-and-forget: don't block main operation
-	createAuditLog({
+		createAuditLog({
 			userId: Number(session.userId),
 			action: "CREATE",
 			entityType: "order",
@@ -364,6 +383,13 @@ export const createOrder = async ({
 			details: { orderNumber, username, productVariants },
 		});
 	}
+
+	logOperation({
+		...baseContext,
+		entityId: createdOrderId ?? undefined,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,
@@ -376,8 +402,22 @@ export const updateOrder = async (
 	{ id }: UpdateOrderParams,
 	{ orderNumber, username, productVariants }: UpdateOrderRequest,
 ) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "order.update",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
@@ -385,7 +425,13 @@ export const updateOrder = async (
 		db.select().from(ordersTable).where(eq(ordersTable.id, id)),
 	);
 	if (fetchError) {
-		console.error(fetchError);
+		logOperation({
+			...baseContext,
+			success: false,
+			error: fetchError.message,
+			errorStack: fetchError.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: fetchError.message,
@@ -394,6 +440,12 @@ export const updateOrder = async (
 	}
 
 	if (existingOrder.length === 0) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Order not found",
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: "Order not found",
@@ -413,7 +465,6 @@ export const updateOrder = async (
 					.where(eq(ordersTable.id, id)),
 			);
 			if (updateError) {
-				console.error(updateError);
 				tx.rollback();
 				return;
 			}
@@ -424,7 +475,6 @@ export const updateOrder = async (
 					.where(eq(orderProductVariantsTable.orderId, id)),
 			);
 			if (deleteError) {
-				console.error(deleteError);
 				tx.rollback();
 				return;
 			}
@@ -440,13 +490,19 @@ export const updateOrder = async (
 				),
 			);
 			if (insertError) {
-				console.error(insertError);
 				tx.rollback();
 				return;
 			}
 		}),
 	);
 	if (error) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -464,6 +520,12 @@ export const updateOrder = async (
 		details: { orderNumber, username, productVariants },
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -472,14 +534,31 @@ export const updateOrder = async (
 };
 
 export const deleteOrder = async ({ id }: UpdateOrderParams) => {
+	const startTime = Date.now();
 	const session = await getSession();
+
+	const baseContext = {
+		operation: "order.delete",
+		entityId: id,
+		userId: session.isLoggedIn ? Number(session.userId) : undefined,
+	};
+
 	if (!session.isLoggedIn) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Unauthorized",
+			duration: Date.now() - startTime,
+		});
 		return { success: false, error: "Unauthorized", message: "Unauthorized" };
 	}
 
 	// Get order details before deleting
 	const { data: order } = await tryCatch(
-		db.select({ orderNumber: ordersTable.orderNumber }).from(ordersTable).where(eq(ordersTable.id, id)),
+		db
+			.select({ orderNumber: ordersTable.orderNumber })
+			.from(ordersTable)
+			.where(eq(ordersTable.id, id)),
 	);
 
 	const { error } = await tryCatch(
@@ -490,7 +569,6 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 					.where(eq(orderProductVariantsTable.orderId, id)),
 			);
 			if (deleteError) {
-				console.error(deleteError);
 				tx.rollback();
 				return;
 			}
@@ -498,13 +576,19 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 				tx.delete(ordersTable).where(eq(ordersTable.id, id)),
 			);
 			if (orderDeleteError) {
-				console.error(orderDeleteError);
 				tx.rollback();
 				return;
 			}
 		}),
 	);
 	if (error) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: error.message,
+			errorStack: error.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: error.message,
@@ -521,6 +605,12 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 		entityName: order?.[0]?.orderNumber,
 	});
 
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
+
 	return {
 		success: true,
 		data: null,
@@ -529,12 +619,25 @@ export const deleteOrder = async ({ id }: UpdateOrderParams) => {
 };
 
 export const submitOrder = async (req: SubmitOrderRequest) => {
+	const startTime = Date.now();
 	const { orderId, templates } = req;
+
+	const baseContext = {
+		operation: "order.submit",
+		entityId: orderId,
+	};
 
 	const { data: orderExists, error: orderFetchErr } = await tryCatch(
 		db.select().from(ordersTable).where(eq(ordersTable.id, orderId)),
 	);
 	if (orderFetchErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: orderFetchErr.message,
+			errorStack: orderFetchErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: orderFetchErr.message,
@@ -542,6 +645,12 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 		};
 	}
 	if (orderExists.length === 0) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: "Order not found",
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: "Order not found",
@@ -565,9 +674,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 					),
 			);
 			if (fetchErr) {
-				console.error(
-					`Failed to fetch existing variant ${t.orderProductVariantId}: ${fetchErr.message}`,
-				);
 				return {
 					success: false as const,
 					orderProductVariantId: t.orderProductVariantId,
@@ -596,9 +702,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 				Promise.resolve(parseDataUrl(t.dataURL)),
 			);
 			if (parseErr || !parsed) {
-				console.error(
-					`Failed to parse Data URL for variant ${t.orderProductVariantId}: ${parseErr?.message}`,
-				);
 				return {
 					success: false as const,
 					orderProductVariantId: t.orderProductVariantId,
@@ -608,14 +711,8 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			}
 
 			const { mime, base64 } = parsed;
-			console.log(
-				`Processing Data URL for variant ${t.orderProductVariantId}: mime=${mime}, base64 length=${base64.length}`,
-			);
 			const approxDecodedBytes = Buffer.byteLength(base64, "base64");
 			if (approxDecodedBytes > MAX_BYTES) {
-				console.error(
-					`Data URL for variant ${t.orderProductVariantId} exceeds ${MAX_BYTES} bytes`,
-				);
 				return {
 					success: false as const,
 					orderProductVariantId: t.orderProductVariantId,
@@ -672,9 +769,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			);
 
 			if (uploadErr) {
-				console.error(
-					`Failed to upload file for key ${key}: ${uploadErr.message}`,
-				);
 				return {
 					success: false as const,
 					key,
@@ -683,7 +777,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 				};
 			}
 			if (!uploadRes.success) {
-				console.error(`Upload failed for key ${key}: ${uploadRes.error}`);
 				return {
 					success: false as const,
 					key,
@@ -719,7 +812,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 			for (const item of validItems) {
 				const fileUrl = keyToUrl.get(item.key);
 				if (!fileUrl) {
-					console.error(`Missing URL for key ${item.key}`);
 					tx.rollback();
 					return;
 				}
@@ -736,9 +828,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 						),
 				);
 				if (updateErr) {
-					console.error(
-						`DB update failed for variant ${item.orderProductVariantId}: ${updateErr.message}`,
-					);
 					tx.rollback();
 					return;
 				}
@@ -752,9 +841,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 					.where(eq(orderProductVariantsTable.orderId, orderId)),
 			);
 			if (fetchAllErr) {
-				console.error(
-					`Failed to fetch all order products for status update: ${fetchAllErr.message}`,
-				);
 				tx.rollback();
 				return;
 			}
@@ -778,9 +864,6 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 					.where(eq(ordersTable.id, orderId)),
 			);
 			if (statusUpdateErr) {
-				console.error(
-					`Failed to update order status: ${statusUpdateErr.message}`,
-				);
 				tx.rollback();
 				return;
 			}
@@ -792,12 +875,29 @@ export const submitOrder = async (req: SubmitOrderRequest) => {
 	);
 
 	if (txErr) {
+		logOperation({
+			...baseContext,
+			success: false,
+			error: txErr.message,
+			errorStack: txErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: txErr.message,
 			message: "Failed to update order with uploaded files",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+		data: {
+			status: finalStatus?.status,
+			remainingCount: finalStatus?.remainingCount,
+		},
+	});
 
 	return {
 		success: true,

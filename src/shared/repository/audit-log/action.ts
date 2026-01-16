@@ -4,6 +4,7 @@ import { db } from "@/server/db";
 import { auditLogsTable } from "@/server/db/schema/audit-logs";
 import { usersTable } from "@/server/db/schema/users";
 import { and, count, desc, eq, ilike, or } from "drizzle-orm";
+import { logOperation } from "../../lib/logger";
 import { tryCatch } from "../../lib/try-catch";
 import type { ApiResponse, Pagination } from "../../types";
 import type {
@@ -85,7 +86,11 @@ export const getAuditLogs = async (
 		id: log.id,
 		userId: log.userId,
 		action: log.action as "CREATE" | "UPDATE" | "DELETE",
-		entityType: log.entityType as "product" | "product_variant" | "order" | "template",
+		entityType: log.entityType as
+			| "product"
+			| "product_variant"
+			| "order"
+			| "template",
 		entityId: log.entityId,
 		entityName: log.entityName,
 		details: log.details as Record<string, unknown> | null,
@@ -121,6 +126,14 @@ export const getAuditLogs = async (
 export const createAuditLog = async (
 	data: CreateAuditLogRequest,
 ): Promise<ApiResponse<null>> => {
+	const startTime = Date.now();
+
+	const baseContext = {
+		operation: "auditLog.create",
+		entityId: data.entityId,
+		userId: data.userId,
+	};
+
 	const { error: createErr } = await tryCatch(
 		db.insert(auditLogsTable).values({
 			userId: data.userId,
@@ -133,13 +146,25 @@ export const createAuditLog = async (
 	);
 
 	if (createErr) {
-		console.error("Failed to create audit log:", createErr.message);
+		logOperation({
+			...baseContext,
+			success: false,
+			error: createErr.message,
+			errorStack: createErr.stack,
+			duration: Date.now() - startTime,
+		});
 		return {
 			success: false,
 			error: createErr.message,
 			message: "Failed to create audit log",
 		};
 	}
+
+	logOperation({
+		...baseContext,
+		success: true,
+		duration: Date.now() - startTime,
+	});
 
 	return {
 		success: true,

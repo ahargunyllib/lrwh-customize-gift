@@ -42,6 +42,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Create logs directory with correct permissions
+RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app/logs
+
 USER nextjs
 EXPOSE 3000
 ENV HOSTNAME="0.0.0.0"
