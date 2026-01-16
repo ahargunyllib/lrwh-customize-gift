@@ -10,6 +10,17 @@ import {
 	DialogTrigger,
 } from "@/shared/components/ui/dialog";
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -198,24 +209,41 @@ function TemplateCard({ template }: { template: TemplateData }) {
 			<CardFooter className="flex flex-col gap-2">
 				<h3 className="text-lg font-medium mb-2">{template.name}</h3>
 				<div className="flex gap-2">
-					<Button
-						className="flex-1"
-						variant="destructive"
-						onClick={() =>
-							deleteTemplate(undefined, {
-								onSuccess: (res) => {
-									if (!res.success) {
-										toast.error(res.message);
-										return;
-									}
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button className="flex-1" variant="destructive">
+								Delete
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+								<AlertDialogDescription>
+									This will permanently delete the template "{template.name}". This
+									action cannot be undone.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									onClick={() =>
+										deleteTemplate(undefined, {
+											onSuccess: (res) => {
+												if (!res.success) {
+													toast.error(res.message);
+													return;
+												}
 
-									toast.success(res.message);
-								},
-							})
-						}
-					>
-						Delete
-					</Button>
+												toast.success(res.message);
+											},
+										})
+									}
+								>
+									Delete
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 					<Button
 						className="flex-1"
 						variant="outline"
