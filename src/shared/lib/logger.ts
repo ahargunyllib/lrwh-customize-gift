@@ -8,7 +8,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const isDevelopment = !isProduction;
 
 // Log level based on environment
-const logLevel = isProduction ? "warn" : "debug";
+const logLevel = isProduction ? "info" : "debug";
 
 /**
  * Custom format for console output (human-readable)
