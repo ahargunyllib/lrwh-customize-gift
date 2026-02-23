@@ -21,7 +21,14 @@ import {
 import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
+import {
+	AlignCenter,
+	AlignJustify,
+	AlignLeft,
+	AlignRight,
+	ItalicIcon,
+	UnderlineIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTemplateContext } from "../../containers/template-creator";
 
@@ -232,7 +239,7 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						/>
 					</div>
 				</div>
-				{/* 
+				{/*
 				<div className="space-y-2 col-span-2 border-t pt-2">
 					<Label className="text-sm font-medium">Text Outline</Label>
 
@@ -566,6 +573,39 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 						</ToggleGroupItem>
 						<ToggleGroupItem value="justify" className="p-2">
 							<AlignJustify className="w-4 h-4" />
+						</ToggleGroupItem>
+					</ToggleGroup>
+				</div>
+
+				{/* Text Decoration */}
+				<div className="space-y-0.5 col-span-2">
+					<Label className="text-xs">Text Decoration</Label>
+					<ToggleGroup
+						className="grid grid-cols-2 gap-1"
+						type="multiple"
+						onValueChange={(values) => {
+							updateText(txt.id, {
+								style: {
+									...txt.style,
+									underline: values.includes("underline"),
+									italic: values.includes("italic"),
+								},
+							});
+						}}
+					>
+						<ToggleGroupItem
+							value="italic"
+							aria-label="Toggle italic"
+							className="p-2"
+						>
+							<ItalicIcon className="w-4 h-4" />
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="underline"
+							aria-label="Toggle underline"
+							className="p-2"
+						>
+							<UnderlineIcon className="w-4 h-4" />
 						</ToggleGroupItem>
 					</ToggleGroup>
 				</div>

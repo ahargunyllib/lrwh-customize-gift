@@ -12,16 +12,23 @@ import {
 	SelectValue,
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@/shared/components/ui/toggle-group";
 import { fontArray } from "@/shared/lib/font";
 import { cn } from "@/shared/lib/utils";
 import type { TextElement } from "@/shared/types/template";
-import { useState } from "react";
+import { ItalicIcon, UnderlineIcon } from "lucide-react";
 
 interface TextEditorProps {
 	text: TextElement;
 	isActive: boolean;
 	onChange: (value: string) => void;
-	onStyleChange: (property: string, value: string) => void;
+	onPropChange: (
+		updates?: Partial<Omit<TextElement, "style" | "id" | "type" | "content">>,
+	) => void;
+	onStyleChange: (updates?: Partial<TextElement["style"]>) => void;
 	onSelect: () => void;
 }
 
@@ -29,6 +36,7 @@ export default function TextEditor({
 	text,
 	isActive,
 	onChange,
+	onPropChange,
 	onStyleChange,
 	onSelect,
 }: TextEditorProps) {
@@ -76,7 +84,7 @@ export default function TextEditor({
 										(f) => f.fontname === value,
 									)?.fontfamily;
 									if (selectedFont) {
-										onStyleChange("fontFamily", selectedFont);
+										onStyleChange({ fontFamily: selectedFont });
 									}
 								}}
 							>
@@ -113,7 +121,7 @@ export default function TextEditor({
 										: text.style.fontSize
 								}
 								onChange={(e) =>
-									onStyleChange("fontSize", `${e.target.value}px`)
+									onStyleChange({ fontSize: `${e.target.value}px` })
 								}
 								className="h-8"
 							/>
@@ -127,12 +135,12 @@ export default function TextEditor({
 								<input
 									type="color"
 									value={text.style.color}
-									onChange={(e) => onStyleChange("color", e.target.value)}
+									onChange={(e) => onStyleChange({ color: e.target.value })}
 									className="w-8 h-8 rounded border p-0"
 								/>
 								<Input
 									value={text.style.color}
-									onChange={(e) => onStyleChange("color", e.target.value)}
+									onChange={(e) => onStyleChange({ color: e.target.value })}
 									className="h-8 flex-1"
 								/>
 							</div>
@@ -144,7 +152,7 @@ export default function TextEditor({
 							</Label>
 							<Select
 								value={text.style.textAlign}
-								onValueChange={(value) => onStyleChange("textAlign", value)}
+								onValueChange={(value) => onStyleChange({ textAlign: value })}
 							>
 								<SelectTrigger id={`align-${text.id}`} className="h-8">
 									<SelectValue placeholder="Align" />
@@ -166,12 +174,50 @@ export default function TextEditor({
 									id={`limit-${text.id}`}
 									type="number"
 									value={text.textLimit}
-									onChange={(e) => onStyleChange("textLimit", e.target.value)}
+									onChange={(e) =>
+										onPropChange({
+											textLimit: Number.parseInt(e.target.value) || 0,
+										})
+									}
 									className="h-8"
 									disabled
 								/>
 							</div>
 						)}
+
+						<div className="space-y-0.5 col-span-2">
+							<Label className="text-xs">Text Decoration</Label>
+							<ToggleGroup
+								className="grid grid-cols-2 gap-1"
+								type="multiple"
+								variant="outline"
+								defaultValue={[
+									text.style.italic ? "italic" : undefined,
+									text.style.underline ? "underline" : undefined,
+								].filter((v) => v !== undefined)}
+								onValueChange={(values) => {
+									onStyleChange({
+										underline: values.includes("underline"),
+										italic: values.includes("italic"),
+									});
+								}}
+							>
+								<ToggleGroupItem
+									value="italic"
+									aria-label="Toggle italic"
+									className="p-2"
+								>
+									<ItalicIcon className="w-4 h-4" />
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="underline"
+									aria-label="Toggle underline"
+									className="p-2"
+								>
+									<UnderlineIcon className="w-4 h-4" />
+								</ToggleGroupItem>
+							</ToggleGroup>
+						</div>
 					</div>
 				)}
 			</div>

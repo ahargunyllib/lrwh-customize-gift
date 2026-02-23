@@ -340,6 +340,8 @@ export default function TemplateText({
 		// WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 		zIndex: layerIndex,
 		display: "block",
+    fontStyle: text.style.italic ? "italic" : "normal",
+    textDecoration: text.style.underline ? "underline" : "none",
 	});
 
 	const getDisplayStyle = (): React.CSSProperties => ({
@@ -368,6 +370,8 @@ export default function TemplateText({
 		// textStroke: textStroke || WebkitTextStroke || undefined,
 		// WebkitTextStroke: (WebkitTextStroke || textStroke) as string,
 		zIndex: layerIndex,
+    fontStyle: text.style.italic ? "italic" : "normal",
+    textDecoration: text.style.underline ? "underline" : "none",
 	});
 
 	const handleMouseDown = (e: React.MouseEvent) => {

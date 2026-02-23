@@ -20,9 +20,14 @@ export default function TextTab() {
 						text={txt}
 						isActive={activeElement?.id === txt.id}
 						onChange={(v) => updateText(txt.id, { content: v })}
-						onStyleChange={(prop, val) =>
+						onPropChange={(updates) =>
 							updateText(txt.id, {
-								style: { ...txt.style, [prop]: val },
+								...updates,
+							})
+						}
+						onStyleChange={(updates) =>
+							updateText(txt.id, {
+								style: { ...txt.style, ...updates },
 							})
 						}
 						onSelect={() => setActiveElement({ id: txt.id, type: "text" })}

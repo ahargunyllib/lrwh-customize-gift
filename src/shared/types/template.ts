@@ -74,6 +74,10 @@ export interface TextElement {
 		paddingCenter?: boolean;
 		letterSpacing?: string | number;
 
+    underline?: boolean;
+
+    italic?: boolean;
+
 		// Outline/Stroke properties
 		textStroke?: string;
 		WebkitTextStroke?: string;
