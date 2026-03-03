@@ -79,7 +79,7 @@ The DB insert uses `req.id` verbatim — no server-generated fallback.
 ### INV-2: layer[] is the z-index source of truth
 Every element ID must appear in `layer[]`. Index position = CSS z-index.
 - Elements with IDs absent from `layer[]` render at z-index 0 (behind everything).
-- Stale IDs in `layer[]` after deletion are harmless but accumulate. → See `engine/layers.md` for the delete bug.
+- Stale IDs in `layer[]` after deletion are **not harmless**: elements added after the deletion may receive an unexpectedly high z-index because `getLayerIndex` returns the stale entry's position. → See `engine/layers.md` for the delete bug and mitigation steps.
 
 ### INV-3: width/height come from ProductVariant
 `TemplateData.width` and `TemplateData.height` are set from `productVariant.width/height` at creation time. They are NOT recalculated if the variant dimensions change later. Existing templates will have mismatched dimensions if the variant is edited.

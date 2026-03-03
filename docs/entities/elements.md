@@ -68,9 +68,9 @@ interface TextElement {
     lineHeight: string
     verticalAlign?: "top" | "middle" | "bottom"
 
-    // Curved text (SVG textPath when true)
+    // Curved text (CSS per-character transforms — NOT SVG textPath; see engine/rendering.md)
     curved?: boolean
-    curveRadius?: number
+    curveRadius?: number              // -100 to 100; negative = curve down, positive = curve up
     curveDirection?: "up" | "down"
     curveIntensity?: number
 
@@ -96,8 +96,13 @@ interface TextElement {
 }
 ```
 
-`textLimit` is enforced via `validateTextElement()` in `src/shared/lib/elements.ts`.
-Auto-height growth: `src/features/editor/hooks/use-auto-text-height.ts` uses `calculateTextHeight()` (canvas `measureText`) on every content change.
+**`textLimit` enforcement**: Enforced by `maxLength={text.textLimit}` on the `<textarea>` in `template-text.tsx` — the browser rejects excess characters at input time. `validateTextElement()` (`src/shared/lib/elements.ts`) does NOT check or truncate against `textLimit`; it normalizes `width`, `height`, `position.x/y`, `padding`, `textAlign`, and `verticalAlign`, and is called by `editor-canvas.tsx` on every content change event.
+
+**Auto-height measurement paths** (two active paths):
+1. `template-text.tsx` — a persistent hidden off-screen `<textarea>` (ref-based, `top:-9999px`) has content set on every change; `scrollHeight` is read to update `text.height` in state. Skipped when a `data-resizing` attribute is present on the handle element.
+2. `use-resize-text.ts` — during resize, a temporary `<textarea>` is created, appended to `document.body`, measured via `scrollHeight`, then removed.
+
+**Note**: `use-auto-text-height.ts` (which wraps `calculateTextHeight()` from `src/shared/lib/elements.ts`, using canvas `measureText`) is imported in `editor-canvas.tsx` but its `updateTextHeight` return value is never called — it is effectively dead code. → See `risks/debt.md`.
 
 ---
 
