@@ -11,35 +11,62 @@ Server renders nothing — all element rendering is client-side React.
 ## ImageElement Rendering
 
 ```tsx
-// template-image.tsx (inferred structure):
-<div                                    // FRAME div
-  style={{
-    position: "absolute",
-    left: position.x * scale,
-    top: position.y * scale,
-    width: width * scale,
-    height: height * scale,
-    transform: `rotate(${rotate ?? 0}deg)`,
-    borderRadius: borderRadius * scale,
-    overflow: "hidden",                 // clips img to frame bounds
-    zIndex: getLayerIndex(id),          // from layer[] array, NOT element.zIndex
-  }}
->
-  <img
-    src={src}
+// template-image.tsx:
+<>
+  {/* OUTER CONTAINER — position, size, rotation, z-index, canvas clip */}
+  <div
+    ref={dropZoneRef}
+    className="absolute overflow-hidden"
     style={{
-      transform: `translate(${imageOffset.x * scale}px, ${imageOffset.y * scale}px)
-                  scale(${scaleX ?? 1}, ${scaleY ?? 1})`,
-      // CSS filter for display grayscale (bypassed during export — see engine/export.md)
-      filter: grayscale ? `grayscale(${grayscalePercent}%)` : "none",
+      left: image.position.x * scale,       // overridden if centerX is set
+      top: image.position.y * scale,        // overridden if centerY is set
+      width: image.width * scale,
+      height: image.height * scale,
+      transform: `rotate(${image.rotate ?? 0}deg)`,
+      transformOrigin: "center center",
+      zIndex: layerIndex,                   // passed as prop from parent (layer[].indexOf)
+      // clipPath only applied when rotate === 0 to avoid incorrect clipping:
+      clipPath: shouldClip ? `inset(${top}% ${right}% ${bottom}% ${left}%)` : undefined,
     }}
-  />
-  {/* Resize handles rendered when element is active */}
-</div>
+    onDrop={handleDrop}                     // file drop → dispatches "imageReplace" event
+    onMouseDown={handleMouseDown}           // drag → only if image.draggable === true
+  >
+    {/* INNER div for borderRadius clipping */}
+    <div className="w-full h-full overflow-hidden" style={{ borderRadius: image.borderRadius ?? 0 }}>
+      <img
+        src={image.src}
+        style={{
+          width: originalDimensions?.width || "auto",   // natural pixel size
+          height: originalDimensions?.height || "auto",
+          maxWidth: "none",
+          maxHeight: "none",
+          transformOrigin: "0 0",
+          transform: `translate(${imageOffset.x * scale}px, ${imageOffset.y * scale}px)
+                      scale(${scaleX * scale}, ${scaleY * scale})`,
+          filter: image.grayscalePercent ? `grayscale(${image.grayscalePercent}%)` : "none",
+        }}
+        onLoad={handleImageLoad}            // dispatches "imageAdjust" to set initial cover scale
+      />
+    </div>
+    {/* Resize handles (8-direction) — visible when isActive && isCustomizing */}
+  </div>
+
+  {/* CropModal — rendered outside container as overlay */}
+  {isCropMode && <CropModal ... />}
+</>
 ```
 
-**Cropping**: `overflow: hidden` on the frame + CSS translate/scale on `img`.
-No `clip-path` or SVG mask — this is pan+zoom-within-frame.
+**Centering override**: If `image.centerX` is set, `left` is overridden to `((canvasWidth - image.width) / 2) * scale`. Same for `centerY`.
+
+**Canvas boundary clipping**: Uses `clipPath: inset()` on the outer container (not overflow:hidden) so elements can extend outside the frame without overflow issues. Only applied when `rotate === 0`.
+
+**Cropping within frame**: `overflow: hidden` on the inner div + CSS `translate/scale` on `<img>`. The img is rendered at its natural pixel size (`originalDimensions.width × height`) and repositioned via transform. `transformOrigin: "0 0"` means scale anchors at the img's top-left.
+
+**Initial image fit**: On `onLoad`, `handleImageLoad` dispatches `imageAdjust` custom event to set `scaleX/scaleY/imageOffset` such that the image fills the frame (background-size: cover behavior).
+
+**Drag-and-drop replacement**: Drop a file onto an image element → reads as DataURL → dispatches `imageReplace` custom event: `{ id, src: dataURL }`.
+
+**Dragging**: Only active when `image.draggable === true`. Dispatches `elementMove` custom event with new position in natural pixels.
 
 **Grayscale display vs export**: CSS `filter: grayscale()` for display. Before export, `prepareCanvasForExport()` replaces `img.src` with a pixel-processed grayscale data URL. → `engine/export.md`
 
@@ -49,54 +76,109 @@ No `clip-path` or SVG mask — this is pan+zoom-within-frame.
 
 ```tsx
 // template-text.tsx:
-<div
-  style={{
-    position: "absolute",
-    left: position.x * scale,
-    top: position.y * scale,
-    width: width * scale,
-    height: height * scale,
-    transform: `rotate(${rotate ?? 0}deg)`,
-    zIndex: getLayerIndex(id),
-  }}
->
-  {editingTextId === id
-    ? <textarea ... />                  // inline editing mode
-    : <div style={{ ...style, fontSize: style.fontSize * scale }} />
-  }
-</div>
+<>
+  {/* Hidden off-screen textarea for height measurement */}
+  <textarea ref={hiddenTextareaRef} style={{ position: "absolute", top: "-9999px", ... }} readOnly />
+
+  {/* CONTAINER — position, size, rotation, active border, z-index, canvas clip */}
+  <div
+    ref={textRef}
+    style={{
+      position: "absolute",
+      left: (text.position.x || 0) * scale,
+      top: (text.position.y || 0) * scale,
+      width: curvedDimensions.width * scale,    // getCurvedTextDimensions() for curved, text.width for flat
+      height: curvedDimensions.height * scale,
+      transform: `rotate(${text.rotate}deg)`,
+      transformOrigin: "center center",
+      backgroundColor: style.backgroundColor || "transparent",
+      borderRadius: (style.borderRadius || 0) * scale,
+      border: isActive ? `${2 * scale}px solid #3b82f6` : `${2 * scale}px solid transparent`,
+      zIndex: layerIndex,                       // passed as prop from parent (layer[].indexOf)
+      clipPath: shouldClip ? getClipPath() : undefined,  // canvas boundary; only when rotate===0
+    }}
+    onMouseDown={handleMouseDown}               // drag → only if text.draggable && !isEditing
+  >
+    {isEditing
+      ? <textarea ref={textareaRef} value={text.content} maxLength={text.textLimit} />
+      : curved && curveRadius !== 0
+        ? renderCurvedText()
+        : <div style={getDisplayStyle()}>{text.content}</div>
+    }
+    {/* Resize handles (8-direction) — visible when isActive && !isEditing */}
+  </div>
+</>
 ```
 
 ### Curved Text
-When `style.curved = true`, renders as SVG `<textPath>` on an arc:
+When `style.curved = true` and `style.curveRadius !== 0`, renders per-character using CSS transforms (NOT SVG `<textPath>`):
+
 ```tsx
-<svg>
-  <defs>
-    <path id="curve" d={arcPath(curveRadius, curveDirection)} />
-  </defs>
-  <text>
-    <textPath href="#curve">{content}</textPath>
-  </text>
-</svg>
+// template-text.tsx — renderCurvedText():
+{chars.map((char, index) => {
+  const { x, y, rotation } = calculateCharTransform(index, chars.length, curveRadius, curveDirection)
+  return (
+    <span
+      key={...}
+      style={{
+        position: "absolute",
+        left: `${centerX * scale}px`,   // centered in the element
+        top: `${centerY * scale}px`,
+        transform: `translate(${x * scale}px, ${y * scale}px) rotate(${rotation}deg) translate(-50%, -50%)`,
+        transformOrigin: "center center",
+        fontSize: fontSizeNum * scale,
+        // other text style props...
+      }}
+    >
+      {char}
+    </span>
+  )
+})}
 ```
+
+**Curve math** (`calculateCharTransform`):
+- `curveRadius` range: **-100 to 100** (negative = curve down, positive = curve up)
+- Mapped to a circle radius: `r = 500 - 400 * (|curveRadius| / 100) ^ 0.7` → range `[100, 500]`
+- Characters placed along arc: `startAngle = -angleSpan / 2`, each char at `startAngle + anglePerChar * i`
+- `directionMultiplier = curveRadius > 0 ? 1 : -1` (sign of y-offset determines up/down)
+
+**Container for curved text**: `getCurvedTextDimensions()` computes a bounding box large enough for the arc span, overriding `text.width/height`.
 
 ### Text Height Auto-Grow
-`useAutoTextHeight` hook: on every `content` change, calls `calculateTextHeight()`:
-```typescript
-// lib/elements.ts:
-function calculateTextHeight(text, style, width): number {
-  const ctx = document.createElement("canvas").getContext("2d")
-  ctx.font = `${style.fontSize}px ${style.fontFamily}`
-  // word-wrap simulation via measureText()
-  // returns pixel height in natural space
-}
+Done inside `template-text.tsx` using a **hidden off-screen `<textarea>`** (not a separate hook or `lib/elements.ts`):
+
+```tsx
+// Hidden textarea positioned at top:-9999px left:-9999px:
+<textarea ref={hiddenTextareaRef} style={{ width: text.width * scale }} readOnly />
+
+// updateHeightFromTextarea(content):
+hiddenTextarea.value = content
+hiddenTextarea.style.height = "auto"
+const newHeight = hiddenTextarea.scrollHeight   // browser does the wrapping math
+setTemplate(prev => ({
+  ...prev,
+  texts: prev.texts.map(t => t.id === text.id ? { ...t, height: newHeight + padding*2 } : t)
+}))
 ```
-Creates a new canvas element on every call. No persistent canvas reference.
+
+Triggered by `useEffect` on `[text.content, text.width, fontSizeNum, text.style.lineHeight, ...]`.
+**Skipped when resizing**: checks for `document.querySelector('[data-resizing="${text.id}"]')` attribute — a resize handle sets `data-resizing` on `mousedown` and removes it on `mouseup`.
 
 ### Text Editing
-`editingTextId` state in `useTemplateEditor` controls which text is in edit mode.
-Double-click activates; click elsewhere deactivates.
-`textLimit` enforced in `validateTextElement()` → `lib/elements.ts`.
+`isEditing` is passed as a **prop** to `TemplateText` (not tracked inside `useTemplateEditor`). The parent container manages `editingTextId` state.
+Double-click activates edit mode. Clicking outside deactivates.
+`textLimit` enforced via `maxLength={text.textLimit}` on the `<textarea>`.
+
+### Additional Text Style Fields (not in basic docs)
+| Field | Effect |
+|---|---|
+| `style.italic` | `fontStyle: "italic"` |
+| `style.underline` | `textDecoration: "underline"` |
+| `style.letterSpacing` | Scaled by `scale` factor in px |
+| `style.backgroundColor` | Applied to container div |
+| `style.borderRadius` | Applied to container div, scaled |
+| `style.padding` | Used in height calculation, not applied as CSS directly |
+| `style.textStroke` / `style.WebkitTextStroke` | Applied to individual chars in curved mode; commented out in flat mode |
 
 ---
 
