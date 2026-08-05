@@ -261,6 +261,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(
 							onResizeStart={handleTextResizeStart}
 							setTemplate={setTemplate}
 							layerIndex={getLayerIndex(text.id)}
+							isCustomizing={isCustomizing}
 						/>
 					))}
 

@@ -30,7 +30,7 @@
    ├── If invalid → router.back() (prevents unauthorized access)
    └── getTemplateById(templateId) SA → hydrates TemplateEditor
 
-9. TemplateEditor renders EditorCanvas with isCustomizing=true:
+9. TemplateEditor renders EditorCanvas without passing isCustomizing (defaults to false):
    ├── initialTemplate = null (blank slate) on first visit
    └── OR initialTemplate = stored state if returning
 
@@ -84,15 +84,17 @@
 
 ## isCustomizing Flag Behavior
 
-When `isCustomizing=true` on EditorCanvas:
-- `useCanvasDrop` is active (image drop/upload enabled)
-- Sidebar shows only user-permitted controls (not all creator controls)
-- Elements with `draggable=false` cannot be repositioned
-- Text with `textLimit` set enforces character limit
+**Naming caveat**: despite the name, `isCustomizing={true}` is passed only by `TemplateCreator` — the **admin authoring tool** (`/editor/create`, `/editor/[id]/edit`). `TemplateEditor` — used by both the real customer session (this flow) and the admin's "Test" preview route (`/editor/[id]`) — never passes it, so it defaults to `false`. The bullets below were previously mislabeled (swapped); this reflects the verified code behavior. → See `entities/elements.md`.
 
-When `isCustomizing=false` (admin creator mode):
-- All element types can be added
-- All elements are draggable regardless of `draggable` field
+When `isCustomizing=false` (this flow, and the admin's Test route):
+- Elements with `draggable=false` cannot be repositioned
+- Elements with `isSizeLocked` set (text only) cannot be resized; box/font size are frozen — see `entities/elements.md`
+- Text with `textLimit` set enforces character limit
+- Sidebar shows only user-permitted controls (not all creator controls)
+
+When `isCustomizing=true` (admin creator mode, `TemplateCreator` only):
+- `useCanvasDrop` is active (image drop/upload enabled)
+- All elements are draggable/resizable regardless of `draggable`/`isSizeLocked` fields
 - Full sidebar with all controls
 
 ---

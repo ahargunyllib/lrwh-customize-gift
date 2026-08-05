@@ -123,6 +123,7 @@ export default function TextEditor({
 								onChange={(e) =>
 									onStyleChange({ fontSize: `${e.target.value}px` })
 								}
+								disabled={text.isSizeLocked}
 								className="h-8"
 							/>
 						</div>

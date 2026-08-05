@@ -164,6 +164,8 @@ setTemplate(prev => ({
 Triggered by `useEffect` on `[text.content, text.width, fontSizeNum, text.style.lineHeight, ...]`.
 **Skipped when resizing**: checks for `document.querySelector('[data-resizing="${text.id}"]')` attribute — a resize handle sets `data-resizing` on `mousedown` and removes it on `mouseup`.
 
+**Skipped when size-locked**: if `text.isSizeLocked && !isCustomizing`, `updateHeightFromTextarea` takes a different branch entirely — it never touches `width`/`height` (flat or curved), and instead calls `calculateShrunkFontSize()` (`src/shared/lib/elements.ts`) to shrink `style.fontSize` down (floored at 8px) until `content` fits the existing fixed box. A `baseFontSizeRef`, updated only while `isCustomizing` is true, remembers the admin-authored font size so the box can grow the font back toward it as content shortens. Resize handles (`template-text.tsx`, gated at `isActive && !isEditing && !(text.isSizeLocked && !isCustomizing)`) are hidden under the same condition. The admin's own authoring canvas (`isCustomizing=true`) is exempt from all of this — see the `isCustomizing` naming caveat in `entities/elements.md`.
+
 ### Text Editing
 `isEditing` is passed as a **prop** to `TemplateText` (not tracked inside `useTemplateEditor`). The parent container manages `editingTextId` state.
 Double-click activates edit mode. Clicking outside deactivates.

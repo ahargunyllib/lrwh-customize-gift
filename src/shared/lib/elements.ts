@@ -116,6 +116,40 @@ export function calculateTextHeight(
 	};
 }
 
+const AUTO_SHRINK_MIN_FONT_SIZE = 8;
+
+// Finds the largest font size (down to AUTO_SHRINK_MIN_FONT_SIZE) at which content fits a fixed width/height, for size-locked text boxes.
+export function calculateShrunkFontSize(
+	content: string,
+	baseFontSize: number,
+	lineHeight: string | number,
+	fontFamily: string,
+	width: number,
+	height: number,
+	padding = 8,
+): number {
+	let fontSize = baseFontSize;
+
+	while (fontSize > AUTO_SHRINK_MIN_FONT_SIZE) {
+		const { requiredHeight } = calculateTextHeight(
+			content,
+			fontSize,
+			lineHeight,
+			width,
+			fontFamily,
+			padding,
+		);
+
+		if (requiredHeight <= height) {
+			return fontSize;
+		}
+
+		fontSize -= 1;
+	}
+
+	return AUTO_SHRINK_MIN_FONT_SIZE;
+}
+
 export function getMinimumTextHeight(
 	fontSize: number,
 	lineHeight: string | number,

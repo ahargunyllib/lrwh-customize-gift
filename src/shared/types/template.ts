@@ -45,6 +45,7 @@ export interface TextElement {
 	zIndex?: number;
 	rotate?: number;
 	textLimit?: number;
+	isSizeLocked?: boolean;
 
 	style: {
 		fontFamily: string;

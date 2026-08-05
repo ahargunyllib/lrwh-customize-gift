@@ -545,6 +545,18 @@ export default function TextCard({ txt, selected, onSelect }: Props) {
 					/>
 				</div> */}
 
+				<div className="flex items-center justify-between pt-1">
+					<Label className="text-xs">Lock Size</Label>
+					<Switch
+						checked={txt.isSizeLocked === true}
+						onCheckedChange={(value) =>
+							updateText(txt.id, {
+								isSizeLocked: value,
+							})
+						}
+					/>
+				</div>
+
 				{/* Text Align */}
 				<div className="space-y-0.5 col-span-2">
 					<Label className="text-xs">Text Align</Label>

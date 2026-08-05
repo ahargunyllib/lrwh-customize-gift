@@ -58,6 +58,7 @@ interface TextElement {
   zIndex?: number                     // legacy; actual z-index from layer[]
   rotate?: number
   textLimit?: number                  // max character count enforced at edit time
+  isSizeLocked?: boolean              // true = width/height/font size frozen outside the admin authoring canvas
 
   style: {
     fontFamily: string                // must match a name from lib/font.ts fontFamily map
@@ -103,6 +104,8 @@ interface TextElement {
 2. `use-resize-text.ts` — during resize, a temporary `<textarea>` is created, appended to `document.body`, measured via `scrollHeight`, then removed.
 
 **Note**: `use-auto-text-height.ts` (which wraps `calculateTextHeight()` from `src/shared/lib/elements.ts`, using canvas `measureText`) is imported in `editor-canvas.tsx` but its `updateTextHeight` return value is never called — it is effectively dead code. → See `risks/debt.md`.
+
+**`isSizeLocked` (size lock)**: when true and `isCustomizing === false` (i.e. outside the admin's own authoring canvas — this covers both the real customer session and the admin's "Test" preview route, which the code cannot currently distinguish), `template-text.tsx` skips both auto-height-to-content and the `getCurvedTextDimensions()` override — `width`/`height` stay exactly as authored. Instead, `calculateShrunkFontSize()` (`src/shared/lib/elements.ts`) shrinks `style.fontSize` down (floored at 8px, matching `use-resize-text.ts`'s existing clamp) so content keeps fitting inside the fixed box; beyond that floor content clips (`overflow: hidden`). Resize handles are also hidden under the same condition. The admin's authoring canvas (`isCustomizing === true`) is always exempt — the admin can freely resize regardless of `isSizeLocked`. The end-user font-size input (`text-editor.tsx`) is disabled when `isSizeLocked` is true, since font size is then fully computed by the auto-shrink engine.
 
 ---
 
@@ -168,6 +171,9 @@ Default configs per variant: `src/features/editor/utils/line-config.ts`
 | `position` | image, text, shape | natural pixels from canvas origin (top-left) |
 | `startPoint`/`endPoint` | line only | replaces `position` concept for lines |
 | `zIndex` | all | **legacy field, not used for rendering** — actual z-index from `layer[]` |
-| `draggable` | all | controls user editability in `isCustomizing=true` mode |
+| `draggable` | all | controls user editability outside the admin authoring canvas (`isCustomizing=false`) |
+| `isSizeLocked` | text | freezes width/height/font size outside the admin authoring canvas (`isCustomizing=false`) |
+
+**Note on `isCustomizing`**: despite the name, `isCustomizing={true}` is passed only by `TemplateCreator` (the admin authoring tool, `/editor/create` and `/editor/[id]/edit`). `TemplateEditor` — used by both the real customer session (`/templates/[id]`) and the admin's "Test" preview route (`/editor/[id]`) — never passes it, so it defaults to `false`. Fields meant to be admin-only overrides (`draggable`, `isSizeLocked`) should therefore be gated on `isCustomizing === false`, not `=== true`. → See `flows/order-customization.md`.
 
 **Note on `zIndex` field**: The element-level `zIndex` field is a legacy holdover. The rendering system uses `getLayerIndex(id)` against `template.layer[]`. The element-level field is not authoritative. → See `engine/layers.md`.

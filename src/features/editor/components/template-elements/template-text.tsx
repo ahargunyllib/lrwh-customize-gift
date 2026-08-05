@@ -1,5 +1,6 @@
 "use client";
 
+import { calculateShrunkFontSize } from "@/shared/lib/elements";
 import type { TemplateData, TextElement } from "@/shared/types/template";
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
@@ -38,6 +39,7 @@ interface TemplateTextProps {
 	) => void;
 	setTemplate: React.Dispatch<React.SetStateAction<TemplateData>>;
 	layerIndex: number;
+	isCustomizing?: boolean;
 }
 
 export default function TemplateText({
@@ -58,6 +60,7 @@ export default function TemplateText({
 	onResizeStart,
 	setTemplate,
 	layerIndex,
+	isCustomizing = false,
 }: TemplateTextProps) {
 	const {
 		backgroundColor,
@@ -82,6 +85,15 @@ export default function TemplateText({
 		typeof text.style.fontSize === "string"
 			? Number.parseFloat(text.style.fontSize)
 			: text.style.fontSize;
+
+	// Tracks the admin-authored font size so a locked box can shrink to fit
+	// content and still grow back when the content is shortened again.
+	const baseFontSizeRef = useRef(fontSizeNum);
+	useEffect(() => {
+		if (isCustomizing) {
+			baseFontSizeRef.current = fontSizeNum;
+		}
+	}, [isCustomizing, fontSizeNum]);
 
 	const calculateCharTransform = (
 		index: number,
@@ -206,6 +218,32 @@ export default function TemplateText({
 	};
 
 	const updateHeightFromTextarea = (content: string) => {
+		if (text.isSizeLocked && !isCustomizing) {
+			// Locked box: width/height stay fixed. Shrink font size to keep
+			// content visible instead, floored at the resize handles' 8px minimum.
+			const shrunkFontSize = calculateShrunkFontSize(
+				content,
+				baseFontSizeRef.current,
+				text.style.lineHeight,
+				text.style.fontFamily,
+				text.width,
+				text.height,
+				Number(padding) || 0,
+			);
+
+			if (shrunkFontSize !== fontSizeNum) {
+				setTemplate((prev) => ({
+					...prev,
+					texts: prev.texts.map((t) =>
+						t.id === text.id
+							? { ...t, style: { ...t.style, fontSize: shrunkFontSize } }
+							: t,
+					),
+				}));
+			}
+			return;
+		}
+
 		if (hiddenTextareaRef.current && !curved) {
 			const hiddenTextarea = hiddenTextareaRef.current;
 			hiddenTextarea.value = content;
@@ -631,7 +669,7 @@ export default function TemplateText({
 				)}
 
 				{/* Resize Handles - Properly scaled */}
-				{isActive && !isEditing && (
+				{isActive && !isEditing && !(text.isSizeLocked && !isCustomizing) && (
 					<>
 						{/* Horizontal edges */}
 						<div
