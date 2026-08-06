@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install pnpm directly using npm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.19.0
 
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm i --frozen-lockfile
@@ -22,7 +22,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm install -g pnpm && pnpm run build
+RUN npm install -g pnpm@10.19.0 && pnpm run build
 
 # 3. Run
 FROM base AS runner
