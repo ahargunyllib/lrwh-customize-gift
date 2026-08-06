@@ -69,11 +69,18 @@ docker exec "$CONTAINER_NAME" pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip 
 log "Dump written to $FILEPATH ($(du -h "$FILEPATH" | cut -f1))"
 
 log "Uploading to s3://${AWS_S3_BUCKET_NAME}/${S3_PREFIX}/${FILENAME} (endpoint: $AWS_S3_URL)..."
+# Uses `s3api put-object` (single PUT, known Content-Length) instead of `s3 cp`,
+# since `s3 cp` switches to multipart+chunked-encoding above ~8MB and this
+# S3-compatible provider rejects those uploads with MissingContentLength.
 AWS_ACCESS_KEY_ID="$AWS_S3_ACCESS_KEY" \
 AWS_SECRET_ACCESS_KEY="$AWS_S3_SECRET_ACCESS_KEY" \
-aws s3 cp "$FILEPATH" "s3://${AWS_S3_BUCKET_NAME}/${S3_PREFIX}/${FILENAME}" \
+aws s3api put-object \
+	--bucket "$AWS_S3_BUCKET_NAME" \
+	--key "${S3_PREFIX}/${FILENAME}" \
+	--body "$FILEPATH" \
 	--endpoint-url "$AWS_S3_URL" \
-	--region ap-southeast-1
+	--region ap-southeast-1 \
+	> /dev/null
 
 log "Upload complete."
 
