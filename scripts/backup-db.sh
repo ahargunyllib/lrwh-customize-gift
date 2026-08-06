@@ -72,8 +72,13 @@ log "Uploading to s3://${AWS_S3_BUCKET_NAME}/${S3_PREFIX}/${FILENAME} (endpoint:
 # Uses `s3api put-object` (single PUT, known Content-Length) instead of `s3 cp`,
 # since `s3 cp` switches to multipart+chunked-encoding above ~8MB and this
 # S3-compatible provider rejects those uploads with MissingContentLength.
+# AWS_REQUEST_CHECKSUM_CALCULATION=when_required disables aws-cli v2's default
+# CRC32 checksum, which otherwise also forces chunked transfer-encoding and
+# hits the same MissingContentLength error even on a single PutObject.
 AWS_ACCESS_KEY_ID="$AWS_S3_ACCESS_KEY" \
 AWS_SECRET_ACCESS_KEY="$AWS_S3_SECRET_ACCESS_KEY" \
+AWS_REQUEST_CHECKSUM_CALCULATION=when_required \
+AWS_RESPONSE_CHECKSUM_VALIDATION=when_required \
 aws s3api put-object \
 	--bucket "$AWS_S3_BUCKET_NAME" \
 	--key "${S3_PREFIX}/${FILENAME}" \
