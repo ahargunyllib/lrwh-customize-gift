@@ -304,6 +304,15 @@ export default function TemplateText({
 	useEffect(() => {
 		if (isEditing && textareaRef.current && !curved) {
 			const textarea = textareaRef.current;
+
+			if (text.isSizeLocked && !isCustomizing) {
+				// Locked box: keep the DOM height pinned to the frozen height
+				// instead of growing it from scrollHeight. Font shrinking is
+				// handled separately by updateHeightFromTextarea.
+				textarea.style.height = `${text.height}px`;
+				return;
+			}
+
 			textarea.style.height = "auto";
 			const newHeight = textarea.scrollHeight;
 
@@ -318,7 +327,17 @@ export default function TemplateText({
 				),
 			}));
 		}
-	}, [text.content, isEditing, text.id, setTemplate, curved, padding]);
+	}, [
+		text.content,
+		isEditing,
+		text.id,
+		setTemplate,
+		curved,
+		padding,
+		text.isSizeLocked,
+		text.height,
+		isCustomizing,
+	]);
 
 	const getContainerStyle = (): React.CSSProperties => {
 		const dimensions = getCurvedTextDimensions();
